@@ -22,6 +22,7 @@ import { Credentials } from './features/credentials/pages/Credentials';
 import { Templates } from './features/templates/pages/Templates';
 import { Executions } from './features/executions/pages/Executions';
 import { ReliabilityDashboard } from './features/reliability/pages/ReliabilityDashboard';
+import { AIBuilderPage } from './features/ai/pages/AIBuilderPage';
 
 export function App() {
   return (
@@ -63,6 +64,9 @@ export function App() {
 
             {/* Phase 11 Reliability Engine & Dead Letter Queue Route */}
             <Route path="/reliability" element={<ReliabilityDashboard />} />
+
+            {/* Phase 12 AI Workflow Builder Route */}
+            <Route path="/ai-builder" element={<AIBuilderPage />} />
 
             {/* Phase 7 Integrations Vault & Marketplace Routes */}
             <Route path="/credentials" element={<Credentials />} />

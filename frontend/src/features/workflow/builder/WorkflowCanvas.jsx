@@ -35,10 +35,13 @@ import { PublishDialog } from '../components/PublishDialog';
 import { CompareVersionsModal } from '../components/CompareVersionsModal';
 import { versionService } from '../services/versionService';
 
+// Phase 12 — AI Assistant Component
+import { AIAssistantDrawer } from '../components/AIAssistantDrawer';
+
 import { executionService } from '../services/executionService';
 import { Loader } from '../../../components/ui/Loader';
 import toast from 'react-hot-toast';
-import { ArrowLeft, GitFork, Terminal, Webhook, History, Rocket, Tag } from 'lucide-react';
+import { ArrowLeft, GitFork, Terminal, Webhook, History, Rocket, Tag, Sparkles } from 'lucide-react';
 
 const nodeTypes = {
   [NODE_TYPES.START]: TriggerNode,
@@ -65,6 +68,9 @@ const BuilderInner = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [compareVersions, setCompareVersions] = useState(null); // { versionA, versionB }
   const [publishingVersion, setPublishingVersion] = useState(false);
+
+  // ─── Phase 12: AI State ──────────────────────────────────────────────────────
+  const [showAiDrawer, setShowAiDrawer] = useState(false);
 
   const {
     workflow,
@@ -297,6 +303,16 @@ const BuilderInner = () => {
             Version History
           </button>
 
+          {/* Phase 12: AI Assistant Button */}
+          <button
+            onClick={() => setShowAiDrawer(true)}
+            className="p-1.5 px-3 bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-indigo-500/30 transition-colors shadow-sm"
+            title="Open AI Assistant (Generate, Explain, Optimize, Auto-Fix)"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/20" />
+            AI Assistant
+          </button>
+
           {/* Phase 10: Publish Button */}
           <button
             onClick={() => setShowPublishDialog(true)}
@@ -414,6 +430,21 @@ const BuilderInner = () => {
           versionA={compareVersions.versionA}
           versionB={compareVersions.versionB}
           onClose={() => setCompareVersions(null)}
+        />
+      )}
+
+      {/* Phase 12: AI Assistant Drawer */}
+      {showAiDrawer && (
+        <AIAssistantDrawer
+          workflowId={id}
+          nodes={nodes}
+          edges={edges}
+          onApplyDefinition={(newNodes, newEdges) => {
+            setNodes(newNodes);
+            setEdges(newEdges);
+            saveWorkflow(newNodes, newEdges);
+          }}
+          onClose={() => setShowAiDrawer(false)}
         />
       )}
     </div>
