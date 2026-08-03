@@ -1,0 +1,126 @@
+import {
+  Zap,
+  Webhook,
+  Clock,
+  Globe,
+  Hourglass,
+  Code,
+  GitBranch,
+  Terminal,
+} from 'lucide-react';
+
+export const NODE_TYPES = {
+  // Triggers
+  MANUAL_TRIGGER: 'MANUAL_TRIGGER',
+  WEBHOOK_TRIGGER: 'WEBHOOK_TRIGGER',
+  SCHEDULE_TRIGGER: 'SCHEDULE_TRIGGER',
+
+  // Actions
+  HTTP_REQUEST: 'HTTP_REQUEST',
+  DELAY: 'DELAY',
+  CODE_TRANSFORM: 'CODE_TRANSFORM',
+  CONDITION: 'CONDITION',
+  LOG_ACTION: 'LOG_ACTION',
+};
+
+export const NODE_REGISTRY = {
+  [NODE_TYPES.MANUAL_TRIGGER]: {
+    type: NODE_TYPES.MANUAL_TRIGGER,
+    category: 'TRIGGER',
+    label: 'Manual Trigger',
+    description: 'Triggers workflow execution manually via button click or API',
+    icon: Zap,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: {},
+  },
+  [NODE_TYPES.WEBHOOK_TRIGGER]: {
+    type: NODE_TYPES.WEBHOOK_TRIGGER,
+    category: 'TRIGGER',
+    label: 'Webhook Trigger',
+    description: 'Triggers workflow when HTTP POST/GET request is received',
+    icon: Webhook,
+    color: 'purple',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    defaultConfig: {
+      path: '/api/v1/webhooks/:token',
+    },
+  },
+  [NODE_TYPES.SCHEDULE_TRIGGER]: {
+    type: NODE_TYPES.SCHEDULE_TRIGGER,
+    category: 'TRIGGER',
+    label: 'Schedule (Cron)',
+    description: 'Runs workflow automatically at recurring time intervals',
+    icon: Clock,
+    color: 'amber',
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    defaultConfig: {
+      cron: '0 * * * *',
+    },
+  },
+  [NODE_TYPES.HTTP_REQUEST]: {
+    type: NODE_TYPES.HTTP_REQUEST,
+    category: 'ACTION',
+    label: 'HTTP Request',
+    description: 'Makes REST API calls (GET, POST, PUT, DELETE)',
+    icon: Globe,
+    color: 'blue',
+    badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    defaultConfig: {
+      method: 'GET',
+      url: 'https://jsonplaceholder.typicode.com/todos/1',
+      headers: '{\n  "Content-Type": "application/json"\n}',
+      body: '',
+    },
+  },
+  [NODE_TYPES.DELAY]: {
+    type: NODE_TYPES.DELAY,
+    category: 'ACTION',
+    label: 'Delay / Sleep',
+    description: 'Pauses workflow execution for specified time',
+    icon: Hourglass,
+    color: 'amber',
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    defaultConfig: {
+      seconds: 2,
+    },
+  },
+  [NODE_TYPES.CODE_TRANSFORM]: {
+    type: NODE_TYPES.CODE_TRANSFORM,
+    category: 'ACTION',
+    label: 'JavaScript Code',
+    description: 'Transforms payload using custom JavaScript function',
+    icon: Code,
+    color: 'cyan',
+    badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    defaultConfig: {
+      code: 'return {\n  transformed: true,\n  timestamp: new Date().toISOString(),\n  data: $input\n};',
+    },
+  },
+  [NODE_TYPES.CONDITION]: {
+    type: NODE_TYPES.CONDITION,
+    category: 'LOGIC',
+    label: 'If / Else Condition',
+    description: 'Evaluates logic condition and branches workflow',
+    icon: GitBranch,
+    color: 'rose',
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    defaultConfig: {
+      field: '$prev.status',
+      operator: 'equals',
+      value: '200',
+    },
+  },
+  [NODE_TYPES.LOG_ACTION]: {
+    type: NODE_TYPES.LOG_ACTION,
+    category: 'ACTION',
+    label: 'Console Logger',
+    description: 'Prints message and payload to execution log viewer',
+    icon: Terminal,
+    color: 'slate',
+    badgeColor: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+    defaultConfig: {
+      message: 'Step execution completed successfully.',
+    },
+  },
+};

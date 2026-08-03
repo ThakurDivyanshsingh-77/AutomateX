@@ -1,0 +1,88 @@
+import {
+  Play,
+  Globe,
+  Clock,
+  Terminal,
+  SquareCheck,
+  Zap,
+} from 'lucide-react';
+
+export const NODE_TYPES = {
+  START: 'start',
+  HTTP: 'http',
+  DELAY: 'delay',
+  LOG: 'log',
+  END: 'end',
+};
+
+export const NODE_REGISTRY = {
+  [NODE_TYPES.START]: {
+    type: NODE_TYPES.START,
+    category: 'TRIGGER',
+    label: 'Start Trigger',
+    description: 'Entry point for workflow execution',
+    icon: Play,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    hasInputHandle: false,
+    hasOutputHandle: true,
+    defaultConfig: {},
+  },
+  [NODE_TYPES.HTTP]: {
+    type: NODE_TYPES.HTTP,
+    category: 'ACTION',
+    label: 'HTTP Request',
+    description: 'Makes REST API HTTP calls (GET, POST, PUT, DELETE)',
+    icon: Globe,
+    color: 'blue',
+    badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    hasInputHandle: true,
+    hasOutputHandle: true,
+    defaultConfig: {
+      method: 'GET',
+      url: 'https://jsonplaceholder.typicode.com/todos/1',
+      headers: '{\n  "Content-Type": "application/json"\n}',
+      body: '',
+    },
+  },
+  [NODE_TYPES.DELAY]: {
+    type: NODE_TYPES.DELAY,
+    category: 'ACTION',
+    label: 'Delay / Sleep',
+    description: 'Pauses workflow execution for specified time',
+    icon: Clock,
+    color: 'amber',
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    hasInputHandle: true,
+    hasOutputHandle: true,
+    defaultConfig: {
+      seconds: 2,
+    },
+  },
+  [NODE_TYPES.LOG]: {
+    type: NODE_TYPES.LOG,
+    category: 'ACTION',
+    label: 'Console Logger',
+    description: 'Logs message and payload to execution log viewer',
+    icon: Terminal,
+    color: 'cyan',
+    badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    hasInputHandle: true,
+    hasOutputHandle: true,
+    defaultConfig: {
+      message: 'Workflow step executed successfully.',
+    },
+  },
+  [NODE_TYPES.END]: {
+    type: NODE_TYPES.END,
+    category: 'CONTROL',
+    label: 'End Completion',
+    description: 'Terminal node marking successful workflow completion',
+    icon: SquareCheck,
+    color: 'rose',
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    hasInputHandle: true,
+    hasOutputHandle: false,
+    defaultConfig: {},
+  },
+};
