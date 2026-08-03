@@ -1,4 +1,20 @@
+import { TriggerRegistry } from '../../runtime/registry/TriggerRegistry.js';
+
 export class GraphValidator {
+  /**
+   * Helper to determine if a node is a Trigger node based on node category metadata or TriggerRegistry.
+   */
+  static isTriggerNode(node) {
+    if (!node) return false;
+    const category = (node.category || node.data?.category || '').toLowerCase();
+    if (category === 'trigger') return true;
+
+    const type = (node.type || '').toLowerCase();
+    if (type === 'start' || type === 'trigger') return true;
+
+    return TriggerRegistry.isTrigger(type);
+  }
+
   static validate(parsedWorkflow) {
     const { nodes, edges, nodeMap } = parsedWorkflow;
     const errors = [];
@@ -7,10 +23,10 @@ export class GraphValidator {
       return { isValid: false, errors: ['Workflow graph is empty and contains no nodes'] };
     }
 
-    // 1. Locate Start Node
-    const startNodes = nodes.filter((n) => n.type === 'start');
-    if (startNodes.length === 0) {
-      errors.push('Workflow must contain at least one Start Trigger node');
+    // 1. Locate Trigger Nodes (Start Trigger, Webhook Trigger, Cron Trigger, etc.)
+    const triggerNodes = nodes.filter((n) => this.isTriggerNode(n));
+    if (triggerNodes.length === 0) {
+      errors.push('Workflow must contain at least one Trigger node.');
     }
 
     // 2. Validate Edge Target & Source Integrity
@@ -26,7 +42,8 @@ export class GraphValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      startNode: startNodes[0] ? nodeMap.get(startNodes[0].id) : null,
+      startNode: triggerNodes[0] ? nodeMap.get(triggerNodes[0].id) : null,
+      triggerNodes: triggerNodes.map((n) => nodeMap.get(n.id)),
     };
   }
 }

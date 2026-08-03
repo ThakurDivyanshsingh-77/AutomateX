@@ -4,13 +4,21 @@ import { CronTrigger } from '../triggers/CronTrigger.js';
 
 export class TriggerRegistry {
   static triggers = new Map([
+    ['start', new ManualTrigger()],
     ['manual', new ManualTrigger()],
     ['webhook', new WebhookTrigger()],
     ['cron', new CronTrigger()],
   ]);
 
+  static isTrigger(type) {
+    if (!type) return false;
+    const normalized = String(type).toLowerCase();
+    return normalized === 'start' || normalized === 'manual' || this.triggers.has(normalized) || this.triggers.has(type);
+  }
+
   static getTrigger(type) {
-    const trigger = this.triggers.get(type);
+    const normalized = String(type).toLowerCase();
+    const trigger = this.triggers.get(normalized) || this.triggers.get(type);
     if (!trigger) {
       throw new Error(`Unsupported trigger type: "${type}"`);
     }

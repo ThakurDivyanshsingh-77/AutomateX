@@ -61,3 +61,10 @@ export const getNodeDefinition = (type) => {
 export const getNodeValidator = (type) => {
   return nodeValidators[type] || (() => ({ isValid: true, errors: [] }));
 };
+
+// Helper: Check if a node type is a trigger node using registry metadata
+export const isTriggerNode = (type) => {
+  const def = getNodeDefinition(type);
+  if (def && String(def.category).toLowerCase() === 'trigger') return true;
+  return type === 'start' || type === 'webhook' || type === 'cron' || type === 'manual';
+};
