@@ -29,7 +29,7 @@ export const initiateGoogleOAuth = asyncHandler(async (req, res) => {
 
   // Encode state as base64 JSON so special characters don't break the URL
   const statePayload = Buffer.from(JSON.stringify({ name, userId, frontendUrl: frontendOrigin })).toString('base64');
-  const authUrl = googleOAuthClient.generateAuthUrl(statePayload);
+  const authUrl = googleOAuthClient.generateAuthUrl(statePayload, req);
 
   res.redirect(authUrl);
 });
@@ -65,7 +65,7 @@ export const handleGoogleCallback = asyncHandler(async (req, res) => {
   const { name, userId } = decodedState || {};
 
   // Exchange authorization code for tokens
-  const tokens = await googleOAuthClient.exchangeCodeForTokens(code);
+  const tokens = await googleOAuthClient.exchangeCodeForTokens(code, req);
 
   if (!tokens.refresh_token) {
     return res.redirect(
