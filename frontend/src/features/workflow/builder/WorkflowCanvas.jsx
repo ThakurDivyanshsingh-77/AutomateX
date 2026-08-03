@@ -29,10 +29,16 @@ import { PropertiesPanel } from './PropertiesPanel';
 import { CanvasControls } from './CanvasControls';
 import { ExecutionLogsDrawer } from './ExecutionLogsDrawer';
 
+// Phase 10 — Versioning Components
+import { VersionHistoryPanel } from '../components/VersionHistoryPanel';
+import { PublishDialog } from '../components/PublishDialog';
+import { CompareVersionsModal } from '../components/CompareVersionsModal';
+import { versionService } from '../services/versionService';
+
 import { executionService } from '../services/executionService';
 import { Loader } from '../../../components/ui/Loader';
 import toast from 'react-hot-toast';
-import { ArrowLeft, GitFork, Terminal, Webhook } from 'lucide-react';
+import { ArrowLeft, GitFork, Terminal, Webhook, History, Rocket, Tag } from 'lucide-react';
 
 const nodeTypes = {
   [NODE_TYPES.START]: TriggerNode,
@@ -53,6 +59,12 @@ const BuilderInner = () => {
 
   const [isRunning, setIsRunning] = useState(false);
   const [activeExecution, setActiveExecution] = useState(null);
+
+  // ─── Phase 10: Versioning State ──────────────────────────────────────────────
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [compareVersions, setCompareVersions] = useState(null); // { versionA, versionB }
+  const [publishingVersion, setPublishingVersion] = useState(false);
 
   const {
     workflow,
@@ -180,11 +192,48 @@ const BuilderInner = () => {
     }
   };
 
+  // ─── Phase 10: Publish Handler ────────────────────────────────────────────────
+  const handlePublish = async ({ bump, title, description, changeSummary }) => {
+    setPublishingVersion(true);
+    try {
+      // Save first, then publish
+      await saveWorkflow(nodes, edges);
+      const currentDefinition = { nodes, edges, viewport: { x: 0, y: 0, zoom: 1 } };
+
+      const res = await versionService.publishVersion(id, {
+        definition: currentDefinition,
+        changeSummary,
+        bump,
+        title,
+        description,
+      });
+
+      const newVersion = res.version?.version || res.workflow?.currentVersion || 'new version';
+      toast.success(`🚀 Workflow published as ${newVersion}!`);
+      setShowPublishDialog(false);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Publish failed';
+      toast.error(msg);
+      throw err; // Let dialog handle state reset
+    } finally {
+      setPublishingVersion(false);
+    }
+  };
+
+  // ─── Phase 10: Restore Handler ────────────────────────────────────────────────
+  const handleRestore = async (versionTag) => {
+    const res = await versionService.restoreVersion(id, versionTag);
+    toast.success(res.message || `Restored to ${versionTag}`);
+    // Reload workflow to pick up restored definition
+    window.location.reload();
+  };
+
   if (loading) {
     return <Loader fullScreen text="Opening Visual Canvas Editor..." />;
   }
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const currentVersion = workflow?.currentVersion || workflow?.publishedVersion;
 
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
@@ -208,9 +257,23 @@ const BuilderInner = () => {
               <h2 className="text-xs font-bold text-white tracking-tight">
                 {workflow?.name || 'Untitled Workflow'}
               </h2>
-              <span className="text-[10px] font-mono text-slate-500 capitalize">
-                Status: {workflow?.status || 'draft'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-slate-500 capitalize">
+                  {workflow?.status || 'draft'}
+                </span>
+                {/* Version badge */}
+                {currentVersion && (
+                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-600/15 border border-indigo-500/25 text-indigo-400 flex items-center gap-0.5">
+                    <Tag className="w-2.5 h-2.5" /> {currentVersion}
+                  </span>
+                )}
+                {/* Draft indicator */}
+                {saveStatus === 'unsaved' && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/25 text-amber-400">
+                    DRAFT
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -222,6 +285,27 @@ const BuilderInner = () => {
             title="Copy Public Webhook Endpoint"
           >
             <Webhook className="w-3.5 h-3.5" /> Webhook URL
+          </button>
+
+          {/* Phase 10: Version History Button */}
+          <button
+            onClick={() => setShowVersionHistory(true)}
+            className="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-colors"
+            title="View Version History"
+          >
+            <History className="w-3.5 h-3.5 text-indigo-400" />
+            Version History
+          </button>
+
+          {/* Phase 10: Publish Button */}
+          <button
+            onClick={() => setShowPublishDialog(true)}
+            disabled={publishingVersion}
+            className="p-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/20 disabled:opacity-60"
+            title="Publish New Version"
+          >
+            <Rocket className="w-3.5 h-3.5" />
+            Publish
           </button>
 
           {activeExecution && (
@@ -292,6 +376,46 @@ const BuilderInner = () => {
           />
         )}
       </div>
+
+      {/* ─── Phase 10: Versioning Modals & Panels ─────────────────────── */}
+
+      {/* Version History Slide-Over */}
+      {showVersionHistory && (
+        <VersionHistoryPanel
+          workflowId={id}
+          currentVersion={currentVersion}
+          onClose={() => setShowVersionHistory(false)}
+          onRestore={handleRestore}
+          onCompare={(vA, vB) => {
+            setShowVersionHistory(false);
+            setCompareVersions({ versionA: vA, versionB: vB });
+          }}
+          onPublish={() => {
+            setShowVersionHistory(false);
+            setShowPublishDialog(true);
+          }}
+        />
+      )}
+
+      {/* Publish Dialog */}
+      {showPublishDialog && (
+        <PublishDialog
+          workflowId={id}
+          currentVersion={currentVersion}
+          onPublish={handlePublish}
+          onClose={() => setShowPublishDialog(false)}
+        />
+      )}
+
+      {/* Compare Versions Modal */}
+      {compareVersions && (
+        <CompareVersionsModal
+          workflowId={id}
+          versionA={compareVersions.versionA}
+          versionB={compareVersions.versionB}
+          onClose={() => setCompareVersions(null)}
+        />
+      )}
     </div>
   );
 };

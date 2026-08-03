@@ -37,6 +37,28 @@ const workflowSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+    // ─── Phase 10: Versioning Fields ─────────────────────────────────────
+    currentVersion: {
+      type: String,
+      default: null,  // e.g. "v1.0.0"
+    },
+    publishedVersion: {
+      type: String,
+      default: null,  // Last published semver tag
+    },
+    draftVersion: {
+      type: String,
+      default: null,  // Current in-progress draft version tag
+    },
+    lastPublishedAt: {
+      type: Date,
+      default: null,
+    },
+    totalVersions: {
+      type: Number,
+      default: 0,
+    },
+    // ─────────────────────────────────────────────────────────────────────
     tags: {
       type: [String],
       default: [],

@@ -9,7 +9,9 @@ import {
   Globe,
   Archive,
   ExternalLink,
-  Webhook
+  Webhook,
+  Tag,
+  History
 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import toast from 'react-hot-toast';
@@ -74,11 +76,17 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
       <div className="space-y-3">
         {/* Card Header */}
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="p-2.5 rounded-xl bg-indigo-600/10 border border-indigo-600/20 text-indigo-400 group-hover:scale-105 transition-transform">
               <GitFork className="w-4 h-4" />
             </div>
             {getStatusBadge(workflow.status)}
+            {/* Phase 10: Version badge */}
+            {workflow.currentVersion && (
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
+                <Tag className="w-2.5 h-2.5" /> {workflow.currentVersion}
+              </span>
+            )}
           </div>
 
           {/* Action Dropdown Button */}
@@ -203,7 +211,14 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
 
       {/* Card Action Buttons & Timestamps */}
       <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="text-[10px] text-slate-500 font-mono">Created {formattedCreated}</span>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] text-slate-500 font-mono">Created {formattedCreated}</span>
+          {workflow.totalVersions > 0 && (
+            <span className="text-[9px] text-slate-600 font-mono flex items-center gap-1">
+              <History className="w-2.5 h-2.5" /> {workflow.totalVersions} version{workflow.totalVersions !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           <button
