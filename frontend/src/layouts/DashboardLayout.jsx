@@ -15,11 +15,11 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
       <Navbar onToggleMobileMenu={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <Sidebar isMobileOpen={isMobileMenuOpen} onCloseMobile={closeMobileMenu} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-950">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-950 custom-scrollbar pb-16">
           <Outlet />
         </main>
       </div>
