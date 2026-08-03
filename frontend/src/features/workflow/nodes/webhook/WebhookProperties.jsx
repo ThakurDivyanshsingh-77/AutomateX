@@ -12,7 +12,8 @@ export const WebhookProperties = ({ node, onUpdateNodeData }) => {
   const headerName = config.headerName || 'x-webhook-secret';
   const customPath = config.path || node.id || 'user-signup';
 
-  const baseUrl = `${window.location.protocol}//${window.location.hostname}:5000/api/v1/webhooks/${customPath}`;
+  const apiBase = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
+  const baseUrl = `${apiBase}/webhooks/${customPath}`;
 
   const updateConfig = (field, value) => {
     const nextConfig = { ...config, [field]: value };

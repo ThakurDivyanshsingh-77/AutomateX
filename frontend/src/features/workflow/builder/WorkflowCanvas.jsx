@@ -79,7 +79,8 @@ const BuilderInner = () => {
 
   const handleCopyWebhookUrl = () => {
     const token = workflow?.webhookToken || id;
-    const url = `${window.location.origin.replace(':5173', ':5000')}/api/v1/webhooks/${token}`;
+    const apiBase = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
+    const url = `${apiBase}/webhooks/${token}`;
     navigator.clipboard.writeText(url);
     toast.success('Public Webhook URL copied!');
   };
