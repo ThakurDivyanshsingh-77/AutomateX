@@ -46,6 +46,7 @@ export const credentialService = {
         name: credentialName,
         userId,
         frontendUrl: window.location.origin,
+      });
       const backendHost = (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost'))
         ? 'https://automatex-a839.onrender.com'
         : (import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000');
