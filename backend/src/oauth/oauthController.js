@@ -51,7 +51,7 @@ export const handleGoogleCallback = asyncHandler(async (req, res) => {
     }
   }
 
-  const frontendUrl = decodedState?.frontendUrl || process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = decodedState?.frontendUrl || process.env.FRONTEND_URL || 'http://localhost:3000';
 
   // User denied consent
   if (error) {
