@@ -239,44 +239,75 @@ export const ExecutionDetailsDrawer = ({ execution, onClose, onReplay }) => {
                         setSelectedNodeId(step.nodeId);
                         setActiveTab('data');
                       }}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                      className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
                         isSelected
                           ? 'bg-indigo-950/30 border-indigo-500/50 shadow-md shadow-indigo-500/5'
                           : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-6 h-6 rounded-full font-mono text-[10px] font-bold flex items-center justify-center ${
-                            isSuccess
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : isFailed
-                              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                              : 'bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {idx + 1}
-                        </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-6 h-6 rounded-full font-mono text-[10px] font-bold flex items-center justify-center ${
+                              isSuccess
+                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                : isFailed
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {idx + 1}
+                          </div>
 
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-slate-200">
-                              {step.nodeName || step.nodeId}
-                            </span>
-                            <span className="text-[10px] font-mono text-slate-500 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800">
-                              {step.nodeType}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-slate-200">
+                                {step.nodeName || step.nodeId}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800">
+                                {step.nodeType}
+                              </span>
+                              {step.status === 'recovered' && (
+                                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                  RECOVERED
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              {new Date(step.timestamp || step.startedAt || Date.now()).toLocaleTimeString()}
                             </span>
                           </div>
-                          <span className="text-[10px] text-slate-500 font-mono">
-                            {new Date(step.timestamp || step.startedAt || Date.now()).toLocaleTimeString()}
-                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-mono text-slate-400">{step.duration || 0}ms</span>
+                          <ChevronRight className="w-4 h-4 text-slate-600" />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] font-mono text-slate-400">{step.duration || 0}ms</span>
-                        <ChevronRight className="w-4 h-4 text-slate-600" />
-                      </div>
+                      {/* Phase 11: Retry Attempt Timeline */}
+                      {Array.isArray(step.retryAttempts) && step.retryAttempts.length > 0 && (
+                        <div className="pt-2 border-t border-slate-800/60 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+                          <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Attempts:</span>
+                          {step.retryAttempts.map((attempt, aIdx) => (
+                            <div
+                              key={aIdx}
+                              className={`px-2 py-0.5 rounded text-[9px] font-mono flex items-center gap-1 border ${
+                                attempt.status === 'success' || attempt.status === 'recovered'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  : attempt.status === 'timeout'
+                                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                  : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                              }`}
+                              title={attempt.error ? `Attempt #${attempt.attemptNumber}: ${attempt.error}` : `Attempt #${attempt.attemptNumber} succeeded`}
+                            >
+                              <span>#{attempt.attemptNumber}</span>
+                              <span className="opacity-70 font-semibold">{attempt.durationMs}ms</span>
+                              {attempt.status === 'timeout' && <span className="font-bold">⏰</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

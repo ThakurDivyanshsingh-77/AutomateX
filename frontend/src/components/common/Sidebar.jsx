@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, User, GitFork, Activity, ShieldCheck, Layers, Settings, Lock } from 'lucide-react';
+import { LayoutDashboard, User, GitFork, Activity, ShieldCheck, Layers, Settings, Lock, AlertOctagon } from 'lucide-react';
 
 export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const activeNavItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Workflows', path: '/workflows', icon: GitFork },
     { name: 'Execution History', path: '/executions', icon: Activity },
+    { name: 'Reliability Engine', path: '/reliability', icon: AlertOctagon },
     { name: 'Credentials Vault', path: '/credentials', icon: ShieldCheck },
     { name: 'Templates', path: '/templates', icon: Layers },
     { name: 'User Profile', path: '/profile', icon: User },

@@ -8,6 +8,7 @@ export const RetryConfigFields = ({ config = {}, onChange }) => {
   const retryDelay = config.retryDelay !== undefined ? config.retryDelay : 1000;
   const retryStrategy = config.retryStrategy || 'fixed';
   const continueOnError = Boolean(config.continueOnError);
+  const timeoutMs = config.timeoutMs !== undefined ? config.timeoutMs : 0;
 
   return (
     <div className="border border-slate-800 rounded-xl bg-slate-950/60 overflow-hidden text-xs font-sans">
@@ -63,21 +64,38 @@ export const RetryConfigFields = ({ config = {}, onChange }) => {
             </div>
           </div>
 
-          {/* Retry Strategy */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Retry Backoff Strategy
-            </label>
-            <select
-              value={retryStrategy}
-              onChange={(e) => onChange('retryStrategy', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-indigo-500 cursor-pointer"
-            >
-              <option value="fixed">Fixed Delay (Constant interval)</option>
-              <option value="immediate">Immediate (No delay)</option>
-              <option value="exponential">Exponential Backoff (1s, 2s, 4s...)</option>
-              <option value="linear">Linear Backoff (1s, 2s, 3s...)</option>
-            </select>
+          {/* Retry Strategy & Timeout */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Backoff Strategy
+              </label>
+              <select
+                value={retryStrategy}
+                onChange={(e) => onChange('retryStrategy', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                <option value="fixed">Fixed Delay</option>
+                <option value="immediate">Immediate</option>
+                <option value="exponential">Exponential</option>
+                <option value="linear">Linear</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Timeout (ms)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                placeholder="0 = Disabled"
+                value={timeoutMs}
+                onChange={(e) => onChange('timeoutMs', parseInt(e.target.value, 10) || 0)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-indigo-500"
+              />
+            </div>
           </div>
 
           {/* Continue On Error */}

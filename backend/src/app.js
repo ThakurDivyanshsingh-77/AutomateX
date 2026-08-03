@@ -8,6 +8,7 @@ import credentialRoutes from './routes/credentialRoutes.js';
 import pluginRoutes from './routes/pluginRoutes.js';
 import templateRoutes from './routes/templateRoutes.js';
 import oauthRoutes from './routes/oauthRoutes.js';
+import reliabilityRoutes from './routes/reliabilityRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/v1/credentials', credentialRoutes);
 app.use('/api/v1/plugins', pluginRoutes);
 app.use('/api/v1/templates', templateRoutes);
 app.use('/api/v1/oauth', oauthRoutes);
+app.use('/api/v1/reliability', reliabilityRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

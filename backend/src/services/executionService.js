@@ -2,6 +2,8 @@ import { Workflow } from '../models/Workflow.js';
 import { Execution } from '../models/Execution.js';
 import { ExecutionStep } from '../models/ExecutionStep.js';
 import { WorkflowEngine } from '../engine/WorkflowEngine.js';
+import { DeadLetterQueue } from './DeadLetterQueue.js';
+import { NotificationManager } from './NotificationManager.js';
 import mongoose from 'mongoose';
 
 // Fallback in-memory execution store for DB offline mode
@@ -77,6 +79,28 @@ export const executionService = {
         executionRecord.finishedAt = finishedAt;
 
         await executionRecord.save();
+
+        // Phase 11: Enqueue to DLQ + notify if execution permanently failed
+        if (engineResult.status === 'failed' && engineResult.error) {
+          const failedNodeId = engineResult.error?.nodeId || null;
+          const failedLog = (engineResult.logs || []).find(l => l.nodeId === failedNodeId);
+          const totalRetries = (failedLog?.retryAttempts || []).length;
+
+          await DeadLetterQueue.enqueue(executionRecord, {
+            failedNodeId,
+            failedNodeType: failedLog?.nodeType || null,
+            error: new Error(engineResult.error.message || 'Workflow execution failed'),
+            retryCount: totalRetries,
+          }).catch(e => console.error('[DLQ]: enqueue error:', e.message));
+
+          await NotificationManager.notifyFailure(executionRecord, {
+            error: new Error(engineResult.error.message || 'Workflow execution failed'),
+            failedNodeId,
+            failedNodeType: failedLog?.nodeType || null,
+            retriesAttempted: totalRetries,
+          }).catch(e => console.error('[NotificationManager]: notify error:', e.message));
+        }
+
         return executionRecord;
       } else {
         executionRecord.status = engineResult.status;
@@ -94,6 +118,10 @@ export const executionService = {
         executionRecord.error = { message: err.message, stack: err.stack };
         executionRecord.finishedAt = new Date();
         await executionRecord.save();
+
+        // Phase 11: DLQ + notification for hard crash
+        await DeadLetterQueue.enqueue(executionRecord, { error: err }).catch(() => {});
+        await NotificationManager.notifyFailure(executionRecord, { error: err }).catch(() => {});
       }
       throw err;
     }

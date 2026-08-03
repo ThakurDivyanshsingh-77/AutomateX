@@ -21,6 +21,7 @@ import { WorkflowCanvas } from './features/workflow/builder/WorkflowCanvas';
 import { Credentials } from './features/credentials/pages/Credentials';
 import { Templates } from './features/templates/pages/Templates';
 import { Executions } from './features/executions/pages/Executions';
+import { ReliabilityDashboard } from './features/reliability/pages/ReliabilityDashboard';
 
 export function App() {
   return (
@@ -59,6 +60,9 @@ export function App() {
 
             {/* Phase 9 Workflow History & Execution Logging System Route */}
             <Route path="/executions" element={<Executions />} />
+
+            {/* Phase 11 Reliability Engine & Dead Letter Queue Route */}
+            <Route path="/reliability" element={<ReliabilityDashboard />} />
 
             {/* Phase 7 Integrations Vault & Marketplace Routes */}
             <Route path="/credentials" element={<Credentials />} />
