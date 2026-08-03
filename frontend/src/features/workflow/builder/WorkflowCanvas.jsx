@@ -134,10 +134,13 @@ const BuilderInner = () => {
       const type = event.dataTransfer.getData('application/reactflow');
       if (!type) return;
 
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+      const rawPos = screenToFlowPosition
+        ? screenToFlowPosition({ x: event.clientX, y: event.clientY })
+        : { x: 250, y: 150 };
+
+      const position = (rawPos && typeof rawPos.x === 'number' && typeof rawPos.y === 'number' && !Number.isNaN(rawPos.x) && !Number.isNaN(rawPos.y))
+        ? rawPos
+        : { x: 250, y: 150 };
 
       addNode(type, position);
     },

@@ -29,8 +29,17 @@ export const useWorkflow = (workflowId) => {
         if (isMounted) {
           setWorkflow(wfData);
           const def = wfData.definition || {};
-          setNodes(def.nodes || []);
-          setEdges(def.edges || []);
+          const rawNodes = Array.isArray(def.nodes) ? def.nodes : [];
+          const sanitizedNodes = rawNodes
+            .filter(Boolean)
+            .map((node, index) => ({
+              ...node,
+              position: (node && node.position && typeof node.position.x === 'number' && typeof node.position.y === 'number')
+                ? node.position
+                : { x: 150 + (index * 60), y: 150 + (index * 60) },
+            }));
+          setNodes(sanitizedNodes);
+          setEdges(Array.isArray(def.edges) ? def.edges.filter(Boolean) : []);
           if (def.viewport) setViewport(def.viewport);
           setSaveStatus('saved');
         }

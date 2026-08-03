@@ -103,8 +103,18 @@ export const BuilderPage = () => {
       setWorkflow(data);
       setWorkflowName(data.name || 'Untitled Workflow');
       setWorkflowDesc(data.description || '');
-      if (data.nodes && data.nodes.length > 0) setNodes(data.nodes);
-      if (data.edges) setEdges(data.edges);
+      if (data.nodes && Array.isArray(data.nodes)) {
+        const sanitized = data.nodes
+          .filter(Boolean)
+          .map((node, idx) => ({
+            ...node,
+            position: (node && node.position && typeof node.position.x === 'number' && typeof node.position.y === 'number')
+              ? node.position
+              : { x: 150 + (idx * 60), y: 150 + (idx * 60) },
+          }));
+        setNodes(sanitized);
+      }
+      if (data.edges && Array.isArray(data.edges)) setEdges(data.edges.filter(Boolean));
     } catch (err) {
       console.error('Error loading workflow:', err);
     }
@@ -128,9 +138,12 @@ export const BuilderPage = () => {
       if (!type) return;
 
       const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+      const rawX = event.clientX - reactFlowBounds.left - 100;
+      const rawY = event.clientY - reactFlowBounds.top - 30;
+
       const position = {
-        x: event.clientX - reactFlowBounds.left - 100,
-        y: event.clientY - reactFlowBounds.top - 30,
+        x: Number.isNaN(rawX) ? 200 : rawX,
+        y: Number.isNaN(rawY) ? 200 : rawY,
       };
 
       const meta = NODE_REGISTRY[type] || { label: type };

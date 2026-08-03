@@ -16,10 +16,14 @@ export const useNodeOperations = (setNodes, setEdges, setSelectedNodeId) => {
         || registryEntry.label
         || type;
 
+      const validPosition = (position && typeof position.x === 'number' && typeof position.y === 'number')
+        ? position
+        : { x: 250, y: 150 };
+
       const newNode = {
         id: `node_${type}_${Date.now()}`,
         type,
-        position,
+        position: validPosition,
         data: {
           label: defaultLabel,
           config: { ...defaultConfig },
