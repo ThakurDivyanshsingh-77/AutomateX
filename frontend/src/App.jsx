@@ -20,6 +20,7 @@ import { WorkflowCanvas } from './features/workflow/builder/WorkflowCanvas';
 
 import { Credentials } from './features/credentials/pages/Credentials';
 import { Templates } from './features/templates/pages/Templates';
+import { Executions } from './features/executions/pages/Executions';
 
 export function App() {
   return (
@@ -55,6 +56,9 @@ export function App() {
             <Route path="/workflows" element={<Workflows />} />
             <Route path="/workflows/create" element={<CreateWorkflow />} />
             <Route path="/workflows/edit/:id" element={<EditWorkflow />} />
+
+            {/* Phase 9 Workflow History & Execution Logging System Route */}
+            <Route path="/executions" element={<Executions />} />
 
             {/* Phase 7 Integrations Vault & Marketplace Routes */}
             <Route path="/credentials" element={<Credentials />} />

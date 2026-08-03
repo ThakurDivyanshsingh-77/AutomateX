@@ -1,11 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, User, GitFork, Settings, Lock } from 'lucide-react';
+import { LayoutDashboard, User, GitFork, Activity, ShieldCheck, Layers, Settings, Lock } from 'lucide-react';
 
 export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   const activeNavItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Workflows', path: '/workflows', icon: GitFork },
+    { name: 'Execution History', path: '/executions', icon: Activity },
+    { name: 'Credentials Vault', path: '/credentials', icon: ShieldCheck },
+    { name: 'Templates', path: '/templates', icon: Layers },
     { name: 'User Profile', path: '/profile', icon: User },
   ];
 
@@ -75,7 +78,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
           <Lock className="w-3.5 h-3.5 text-indigo-400" /> Platform Status
         </div>
         <p className="text-[10px] leading-relaxed">
-          Phase 2 Workflow Management Active. Visual Builder in Phase 3.
+          Phase 9 Execution History & Logging Active.
         </p>
       </div>
     </div>

@@ -16,15 +16,29 @@ export const runWorkflowExecution = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get execution history with search & filters
+// @desc    Get execution statistics summary (Total, Success, Failed, Running, Avg Duration, Success Rate)
+// @route   GET /api/v1/executions/stats
+// @access  Private (JWT)
+export const getExecutionStats = asyncHandler(async (req, res) => {
+  const stats = await executionService.getExecutionStats(req.user._id);
+  return res.status(200).json({
+    success: true,
+    stats,
+  });
+});
+
+// @desc    Get user execution history with pagination, search & filters
 // @route   GET /api/v1/executions
 // @access  Private (JWT)
 export const getUserExecutions = asyncHandler(async (req, res) => {
-  const executions = await ExecutionDebuggerService.searchExecutions(req.user._id, req.query);
+  const result = await executionService.getUserExecutions(req.user._id, req.query);
   return res.status(200).json({
     success: true,
-    count: executions.length,
-    data: executions,
+    count: result.executions?.length || 0,
+    total: result.total,
+    page: result.page,
+    pages: result.pages,
+    data: result.executions,
   });
 });
 
@@ -58,7 +72,11 @@ export const getExecutionDebugSnapshot = asyncHandler(async (req, res) => {
 export const replayExecution = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const result = await ExecutionReplay.replay(id);
-  return res.status(200).json(result);
+  return res.status(200).json({
+    success: true,
+    message: 'Workflow execution replayed successfully',
+    ...result,
+  });
 });
 
 // @desc    Delete execution history record

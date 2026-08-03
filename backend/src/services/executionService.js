@@ -1,5 +1,6 @@
 import { Workflow } from '../models/Workflow.js';
 import { Execution } from '../models/Execution.js';
+import { ExecutionStep } from '../models/ExecutionStep.js';
 import { WorkflowEngine } from '../engine/WorkflowEngine.js';
 import mongoose from 'mongoose';
 
@@ -17,7 +18,9 @@ export const executionService = {
 
       executionRecord = await Execution.create({
         workflow: workflow._id,
+        workflowName: workflow.name || 'Untitled Workflow',
         owner: ownerId,
+        triggerType: 'manual',
         status: 'running',
         startedAt: new Date(),
       });
@@ -46,7 +49,9 @@ export const executionService = {
       executionRecord = {
         _id: 'exec_' + Date.now(),
         workflow: workflowId,
+        workflowName: workflow.name,
         owner: ownerId,
+        triggerType: 'manual',
         status: 'running',
         startedAt: new Date(),
         logs: [],
@@ -55,7 +60,6 @@ export const executionService = {
     }
 
     try {
-      // Invoke Standalone Execution Engine
       const engineResult = await WorkflowEngine.run(
         workflow.definition,
         executionRecord._id.toString()
@@ -95,20 +99,153 @@ export const executionService = {
     }
   },
 
-  getUserExecutions: async (ownerId) => {
+  getUserExecutions: async (ownerId, query = {}) => {
     if (mongoose.connection.readyState === 1) {
-      return await Execution.find({ owner: ownerId })
+      const page = parseInt(query.page || 1, 10);
+      const limit = parseInt(query.limit || 20, 10);
+      const skip = (page - 1) * limit;
+
+      const filter = { owner: ownerId };
+
+      if (query.status && query.status !== 'all') {
+        filter.status = query.status;
+      }
+      if (query.triggerType && query.triggerType !== 'all') {
+        filter.triggerType = query.triggerType;
+      }
+      if (query.workflowId) {
+        filter.workflow = query.workflowId;
+      }
+      if (query.search) {
+        const regex = new RegExp(query.search, 'i');
+        filter.$or = [
+          { workflowName: regex },
+          { triggerType: regex },
+          { status: regex },
+        ];
+      }
+
+      // Date Range Filters
+      if (query.dateFilter) {
+        const now = new Date();
+        if (query.dateFilter === 'today') {
+          const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+          filter.createdAt = { $gte: startOfToday };
+        } else if (query.dateFilter === 'yesterday') {
+          const startOfYesterday = new Date(now.setDate(now.getDate() - 1));
+          startOfYesterday.setHours(0, 0, 0, 0);
+          const endOfYesterday = new Date(startOfYesterday);
+          endOfYesterday.setHours(23, 59, 59, 999);
+          filter.createdAt = { $gte: startOfYesterday, $lte: endOfYesterday };
+        } else if (query.dateFilter === '7d') {
+          const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
+          filter.createdAt = { $gte: sevenDaysAgo };
+        }
+      }
+
+      const total = await Execution.countDocuments(filter);
+      const executions = await Execution.find(filter)
         .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
         .populate('workflow', 'name status');
+
+      return {
+        executions,
+        total,
+        page,
+        pages: Math.ceil(total / limit) || 1,
+      };
     }
-    return inMemoryExecutions;
+
+    return {
+      executions: inMemoryExecutions,
+      total: inMemoryExecutions.length,
+      page: 1,
+      pages: 1,
+    };
   },
 
   getExecutionById: async (ownerId, executionId) => {
     if (mongoose.connection.readyState === 1) {
-      return await Execution.findOne({ _id: executionId, owner: ownerId }).populate('workflow', 'name status');
+      const execution = await Execution.findOne({ _id: executionId, owner: ownerId })
+        .populate('workflow', 'name status definition')
+        .populate('steps');
+
+      if (!execution) return null;
+
+      // If execution has no populated steps in DB, query ExecutionStep directly
+      const steps = await ExecutionStep.find({ executionId }).sort({ startedAt: 1 });
+
+      return {
+        ...execution.toObject(),
+        stepDetails: steps.length > 0 ? steps : (execution.logs || []),
+      };
     }
     return inMemoryExecutions.find((e) => e._id === executionId) || null;
+  },
+
+  getExecutionStats: async (ownerId) => {
+    if (mongoose.connection.readyState === 1) {
+      const ownerObjectId = new mongoose.Types.ObjectId(ownerId);
+
+      const stats = await Execution.aggregate([
+        { $match: { owner: ownerObjectId } },
+        {
+          $group: {
+            _id: null,
+            totalExecutions: { $sum: 1 },
+            successful: {
+              $sum: { $cond: [{ $in: ['$status', ['success', 'completed']] }, 1, 0] },
+            },
+            failed: {
+              $sum: { $cond: [{ $eq: ['$status', 'failed'] }, 1, 0] },
+            },
+            running: {
+              $sum: { $cond: [{ $in: ['$status', ['running', 'pending', 'queued']] }, 1, 0] },
+            },
+            totalDuration: { $sum: '$duration' },
+          },
+        },
+      ]);
+
+      if (!stats || stats.length === 0) {
+        return {
+          totalExecutions: 0,
+          successful: 0,
+          failed: 0,
+          running: 0,
+          averageDuration: 0,
+          successRate: 0,
+        };
+      }
+
+      const res = stats[0];
+      const total = res.totalExecutions || 0;
+      const successful = res.successful || 0;
+      const failed = res.failed || 0;
+      const running = res.running || 0;
+      const avgDuration = total > 0 ? Math.round(res.totalDuration / total) : 0;
+      const successRate = total > 0 ? Math.round((successful / total) * 100) : 0;
+
+      return {
+        totalExecutions: total,
+        successful,
+        failed,
+        running,
+        averageDuration: avgDuration,
+        successRate,
+      };
+    }
+
+    return {
+      totalExecutions: inMemoryExecutions.length,
+      successful: inMemoryExecutions.filter((e) => e.status === 'success').length,
+      failed: inMemoryExecutions.filter((e) => e.status === 'failed').length,
+      running: inMemoryExecutions.filter((e) => e.status === 'running').length,
+      averageDuration: 500,
+      successRate: 100,
+    };
   },
 
   getWorkflowExecutions: async (ownerId, workflowId) => {

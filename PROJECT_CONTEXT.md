@@ -57,7 +57,7 @@ The **Workflow Automation Platform** is a scalable, modular, production-ready Sa
 - **Backend Debugger Subsystem** (`backend/src/debugger/`): `ExecutionSnapshot.js`, `ExecutionInspector.js`, `ExecutionMetrics.js`, `ExecutionReplay.js`, and `ExecutionDebuggerService.js`.
 - **Frontend Debugger Package** (`frontend/src/components/debugger/`): `ExecutionDebugger.jsx`, `ExecutionTimeline.jsx`, `ExecutionInspector.jsx`, `NodeInspector.jsx`, `ExpressionInspector.jsx`, `PerformancePanel.jsx`, and `ExecutionReplay.jsx`.
 
-### **Phase 9 Complete — Error Handling & Retry Engine** — ✅ COMPLETED
+### Phase 9 Complete — Error Handling & Retry Engine — ✅ COMPLETED
 - **Backend Retry Package** (`backend/src/engine/retry/`):
   - [RetryPolicy.js](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/backend/src/engine/retry/RetryPolicy.js): Strategy delay calculator supporting `Immediate` (0ms), `Fixed`, `Exponential Backoff` ($1\text{s}, 2\text{s}, 4\text{s}...$), and `Linear Backoff` ($1\text{s}, 2\text{s}, 3\text{s}...$).
   - [RetryEngine.js](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/backend/src/engine/retry/RetryEngine.js): Wraps node execution with automatic retry attempts, records attempt history, and flags `recovered` status on success after retries.
@@ -67,6 +67,16 @@ The **Workflow Automation Platform** is a scalable, modular, production-ready Sa
   - [RetryConfigFields.jsx](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/frontend/src/features/workflow/nodes/properties/fields/RetryConfigFields.jsx): Config section in `AutoForm.jsx` allowing users to configure Retry Attempts ($0-10$), Delay (ms), Strategy (Fixed/Immediate/Exponential/Linear), and Continue On Error checkbox.
   - [TryCatchNode.jsx](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/frontend/src/features/workflow/nodes/tryCatch/TryCatchNode.jsx): Try/Catch canvas node with `TRY` (green) and `CATCH` (red) handles.
 - **Unit Test Suite**: Passed 13/13 unit tests in `RetryEngine.test.js`.
+
+### Phase 9.2 Complete — Workflow History & Execution Logging System — ✅ COMPLETED
+- **Backend History Subsystem**:
+  - `ExecutionStep.js` & `Execution.js` Mongoose models with compound indexes on `(owner, createdAt)`, `(owner, status)`, and `(workflow, createdAt)`.
+  - `ExecutionLogger.js` structured logger service for atomic step-level and run-level logging.
+  - `executionController.js` & `executionRoutes.js` APIs: `GET /api/v1/executions/stats` (metrics: Total, Success Rate, Failed Runs, Avg Duration), `GET /api/v1/executions` (paginated search, status/trigger/date filters), `GET /api/v1/executions/:id`, `POST /api/v1/executions/:id/replay`, `DELETE /api/v1/executions/:id`.
+- **Frontend History Dashboard** (`/executions`):
+  - `Executions.jsx`: Dark SaaS UI dashboard with 5 metric summary cards, search & filter toolbar (Status, Trigger, Date range), paginated execution table, log replay button, and JSON export.
+  - `ExecutionDetailsDrawer.jsx`: Slide-over inspector drawer with 3 tabs: **Timeline Trace**, **Node Input & Output Explorer** (with error stack trace viewer), and **Raw Log Payload** (with one-click JSON/CSV download).
+  - Navigation: Registered `/executions` route in `App.jsx` and added **Execution History** link to `Sidebar.jsx`.
 
 ---
 

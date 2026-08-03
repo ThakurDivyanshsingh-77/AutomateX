@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getUserExecutions,
+  getExecutionStats,
   getExecutionById,
   getExecutionDebugSnapshot,
   replayExecution,
@@ -14,6 +15,7 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/', getUserExecutions);
+router.get('/stats', getExecutionStats);
 router.get('/:id', getExecutionById);
 router.get('/:id/debug', getExecutionDebugSnapshot);
 router.post('/:id/replay', replayExecution);

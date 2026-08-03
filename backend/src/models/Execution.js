@@ -4,7 +4,7 @@ const executionLogSchema = new mongoose.Schema({
   nodeId: { type: String, required: true },
   nodeName: { type: String, default: '' },
   nodeType: { type: String, required: true },
-  status: { type: String, enum: ['success', 'failed', 'skipped'], required: true },
+  status: { type: String, enum: ['pending', 'waiting', 'running', 'completed', 'success', 'failed', 'skipped'], required: true },
   duration: { type: Number, default: 0 },
   input: { type: Object, default: {} },
   output: { type: Object, default: {} },
@@ -20,15 +20,29 @@ const executionSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    workflowName: {
+      type: String,
+      default: 'Untitled Workflow',
+      index: true,
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
       index: true,
     },
+    triggerType: {
+      type: String,
+      default: 'manual',
+      index: true,
+    },
+    triggerPayload: {
+      type: Object,
+      default: {},
+    },
     status: {
       type: String,
-      enum: ['pending', 'queued', 'running', 'success', 'failed', 'cancelled'],
+      enum: ['pending', 'queued', 'running', 'success', 'completed', 'failed', 'cancelled', 'timeout'],
       default: 'pending',
       index: true,
     },
@@ -48,6 +62,12 @@ const executionSchema = new mongoose.Schema(
       default: 0,
     },
     logs: [executionLogSchema],
+    steps: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ExecutionStep',
+      },
+    ],
     error: {
       message: { type: String },
       stack: { type: String },
@@ -62,5 +82,9 @@ const executionSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+executionSchema.index({ owner: 1, createdAt: -1 });
+executionSchema.index({ owner: 1, status: 1 });
+executionSchema.index({ workflow: 1, createdAt: -1 });
 
 export const Execution = mongoose.model('Execution', executionSchema);
