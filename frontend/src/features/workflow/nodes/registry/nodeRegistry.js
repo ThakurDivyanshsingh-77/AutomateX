@@ -7,6 +7,7 @@ import { gmailDefinition } from '../definitions/gmailDefinition';
 import { conditionManifest, validateConditionNode } from '../condition';
 import { webhookManifest } from '../webhook';
 import { tryCatchManifest } from '../tryCatch';
+import { cronManifest } from '../cron/cronManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -23,6 +24,7 @@ export const NODE_TYPES = {
   CONDITION: 'condition',
   WEBHOOK: 'webhook',
   TRY_CATCH: 'tryCatch',
+  CRON: 'cron',
 };
 
 // Central Registry of Node Definitions
@@ -36,6 +38,7 @@ export const nodeDefinitions = {
   [NODE_TYPES.CONDITION]: conditionManifest,
   [NODE_TYPES.WEBHOOK]: webhookManifest,
   [NODE_TYPES.TRY_CATCH]: tryCatchManifest,
+  [NODE_TYPES.CRON]: cronManifest,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;
@@ -50,6 +53,7 @@ export const nodeValidators = {
   [NODE_TYPES.GMAIL]: gmailValidator,
   [NODE_TYPES.CONDITION]: validateConditionNode,
   [NODE_TYPES.WEBHOOK]: () => ({ isValid: true, errors: [] }),
+  [NODE_TYPES.CRON]: cronManifest.validate,
 };
 
 // Helper: Get definition by node type

@@ -21,8 +21,9 @@ import { LogNode } from '../nodes/LogNode';
 import { EndNode } from '../nodes/EndNode';
 import { GmailNode } from '../nodes/GmailNode';
 import { ConditionNode } from '../nodes/condition';
-import { WebhookNode } from '../nodes/webhook';
-import { TryCatchNode } from '../nodes/tryCatch';
+import { WebhookNode } from '../nodes/webhook/WebhookNode';
+import { TryCatchNode } from '../nodes/tryCatch/TryCatchNode';
+import { CronNode } from '../nodes/cron/CronNode';
 
 import { NodeToolbar } from './NodeToolbar';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -53,6 +54,7 @@ const nodeTypes = {
   [NODE_TYPES.CONDITION]: ConditionNode,
   [NODE_TYPES.WEBHOOK]: WebhookNode,
   [NODE_TYPES.TRY_CATCH]: TryCatchNode,
+  [NODE_TYPES.CRON]: CronNode,
 };
 
 const BuilderInner = () => {
