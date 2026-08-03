@@ -1,11 +1,19 @@
 import { getValueByPath } from './expression/helpers.js';
 
 export class ExecutionContext {
-  constructor(initialPayload = {}, executionId = null) {
-    // Handle parameter ordering flexibility
-    if (typeof initialPayload === 'string' && !executionId) {
-      executionId = initialPayload;
-      initialPayload = {};
+  constructor(arg1 = {}, arg2 = null) {
+    let initialPayload = {};
+    let executionId = null;
+
+    if (typeof arg1 === 'string') {
+      executionId = arg1;
+      initialPayload = typeof arg2 === 'object' && arg2 !== null ? arg2 : {};
+    } else if (typeof arg2 === 'string') {
+      initialPayload = typeof arg1 === 'object' && arg1 !== null ? arg1 : {};
+      executionId = arg2;
+    } else {
+      initialPayload = typeof arg1 === 'object' && arg1 !== null ? arg1 : {};
+      executionId = typeof arg2 === 'string' ? arg2 : null;
     }
 
     this.executionId = executionId;
