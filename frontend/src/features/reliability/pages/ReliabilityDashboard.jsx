@@ -46,13 +46,9 @@ export const ReliabilityDashboard = () => {
   const [retryingId, setRetryingId] = useState(null);
   const [resumingId, setResumingId] = useState(null);
 
-  // Dead Letter Queue state
-  const [dlqItems, setDlqItems] = useState([]);
-  const [loadingDlq, setLoadingDlq] = useState(true);
-  const [dlqPage, setDlqPage] = useState(1);
-  const [dlqPages, setDlqPages] = useState(1);
-  const [replayingDlqId, setReplayingDlqId] = useState(null);
-  const [deletingDlqId, setDeletingDlqId] = useState(null);
+  // Cron Scheduler state
+  const [cronStatus, setCronStatus] = useState({ running: false, registeredJobsCount: 0, jobs: [] });
+  const [loadingCron, setLoadingCron] = useState(false);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
@@ -102,17 +98,33 @@ export const ReliabilityDashboard = () => {
     }
   }, [dlqPage]);
 
+  // Fetch Cron status
+  const fetchCronStatus = useCallback(async () => {
+    setLoadingCron(true);
+    try {
+      const res = await reliabilityService.getCronStatus();
+      setCronStatus(res);
+    } catch (err) {
+      toast.error('Failed to load Cron Scheduler status');
+    } finally {
+      setLoadingCron(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
+    fetchCronStatus();
+  }, [fetchStats, fetchCronStatus]);
 
   useEffect(() => {
     if (activeTab === 'failures') {
       fetchFailures();
     } else if (activeTab === 'dlq') {
       fetchDlq();
+    } else if (activeTab === 'cron') {
+      fetchCronStatus();
     }
-  }, [activeTab, fetchFailures, fetchDlq]);
+  }, [activeTab, fetchFailures, fetchDlq, fetchCronStatus]);
 
   // Handlers for retry & resume
   const handleRetryExecution = async (id) => {
@@ -306,6 +318,22 @@ export const ReliabilityDashboard = () => {
           {stats.deadLetter > 0 && (
             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-rose-500 text-white">
               {stats.deadLetter}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('cron')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+            activeTab === 'cron'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+          }`}
+        >
+          <Clock className="w-4 h-4" /> Cron Scheduler
+          {cronStatus.registeredJobsCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500 text-white">
+              {cronStatus.registeredJobsCount} Active
             </span>
           )}
         </button>
@@ -550,8 +578,105 @@ export const ReliabilityDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* TAB 3: Cron Scheduler */}
+      {activeTab === 'cron' && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-emerald-300">Production Cron Scheduler</h4>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                    cronStatus.running ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400'
+                  }`}>
+                    {cronStatus.running ? 'RUNNING' : 'STOPPED'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                  Automatically triggers published workflows based on cron schedules. Survives server restarts and provides overlap protection.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={async () => {
+                try {
+                  await reliabilityService.reloadCronJobs();
+                  toast.success('Cron jobs reloaded!');
+                  fetchCronStatus();
+                } catch (e) {
+                  toast.error('Reload failed');
+                }
+              }}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-colors flex-shrink-0"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Reload Schedules
+            </button>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            {loadingCron ? (
+              <div className="py-16 flex flex-col items-center justify-center text-slate-500 text-xs gap-2">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
+                Loading Cron Jobs...
+              </div>
+            ) : !cronStatus.jobs || cronStatus.jobs.length === 0 ? (
+              <div className="py-16 flex flex-col items-center justify-center text-slate-500 text-xs gap-2">
+                <Clock className="w-10 h-10 text-slate-700" />
+                <span className="font-semibold text-slate-300">No active Cron Jobs</span>
+                <span className="text-slate-500">Publish a workflow with a Cron Trigger node to activate scheduling.</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead className="bg-slate-950 border-b border-slate-800 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                    <tr>
+                      <th className="p-3.5 pl-5">Workflow</th>
+                      <th className="p-3.5">Cron Syntax</th>
+                      <th className="p-3.5">Human Schedule</th>
+                      <th className="p-3.5">Timezone</th>
+                      <th className="p-3.5">Next Execution</th>
+                      <th className="p-3.5 pr-5 text-right">Run Count</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {cronStatus.jobs.map((job) => (
+                      <tr key={job.workflowId} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="p-3.5 pl-5">
+                          <div className="font-bold text-white text-xs">{job.workflowName}</div>
+                          <div className="text-[10px] text-slate-500 font-mono">ID: {job.workflowId}</div>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            {job.cronExpression}
+                          </span>
+                        </td>
+                        <td className="p-3.5 font-medium text-slate-200">
+                          {job.humanReadable}
+                        </td>
+                        <td className="p-3.5 font-mono text-slate-400 text-xs">
+                          {job.timezone}
+                        </td>
+                        <td className="p-3.5 text-[11px] text-emerald-400 font-mono">
+                          {job.nextRun ? new Date(job.nextRun).toLocaleString() : 'Pending'}
+                        </td>
+                        <td className="p-3.5 pr-5 text-right font-mono font-bold text-slate-300">
+                          {job.runCount || 0}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
 
 export default ReliabilityDashboard;

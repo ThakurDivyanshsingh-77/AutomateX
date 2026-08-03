@@ -1,6 +1,7 @@
 import { VersionManager } from './VersionManager.js';
 import { WorkflowVersion } from '../models/WorkflowVersion.js';
 import { Workflow } from '../models/Workflow.js';
+import { CronScheduler } from '../runtime/scheduler/CronScheduler.js';
 
 /**
  * PublishManager — Orchestrates the publish flow.
@@ -10,6 +11,7 @@ import { Workflow } from '../models/Workflow.js';
  * - Subsequent publishes correctly increment semver
  * - The live Workflow.definition is always the published snapshot
  * - Execution engine always resolves the published version
+ * - CronScheduler automatically registers published workflows
  */
 export class PublishManager {
   /**
@@ -29,9 +31,11 @@ export class PublishManager {
 
     const activeDefinition = definition || workflow.definition;
 
+    let result;
+
     // First publish: no currentVersion exists
     if (!workflow.publishedVersion) {
-      const result = await VersionManager.createInitialVersion(workflowId, ownerId, activeDefinition, {
+      result = await VersionManager.createInitialVersion(workflowId, ownerId, activeDefinition, {
         title: title || 'Initial Release',
         description,
         changeSummary: changeSummary.length > 0 ? changeSummary : ['Initial release'],
@@ -41,18 +45,22 @@ export class PublishManager {
       await Workflow.findByIdAndUpdate(workflowId, {
         $set: { definition: activeDefinition, status: 'published' },
       });
-
-      return result;
+    } else {
+      // Subsequent publish: increment version
+      result = await VersionManager.publish(workflowId, ownerId, {
+        definition: activeDefinition,
+        changeSummary,
+        bump,
+        title,
+        description,
+      });
     }
 
-    // Subsequent publish: increment version
-    const result = await VersionManager.publish(workflowId, ownerId, {
-      definition: activeDefinition,
-      changeSummary,
-      bump,
-      title,
-      description,
-    });
+    // Phase 13: Register Cron Schedule automatically
+    const updatedWorkflow = await Workflow.findById(workflowId).lean();
+    if (updatedWorkflow) {
+      CronScheduler.registerWorkflow(updatedWorkflow);
+    }
 
     return result;
   }

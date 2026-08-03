@@ -1,4 +1,5 @@
 import { Workflow } from '../models/Workflow.js';
+import { CronScheduler } from '../runtime/scheduler/CronScheduler.js';
 
 export const workflowService = {
   createWorkflow: async (ownerId, data) => {
@@ -88,12 +89,23 @@ export const workflowService = {
     if (updateData.definition !== undefined) workflow.definition = updateData.definition;
 
     const updated = await workflow.save();
+
+    // Phase 13: Update Cron Schedule accordingly
+    if (updated.status === 'published') {
+      CronScheduler.registerWorkflow(updated.toObject());
+    } else {
+      CronScheduler.unregisterWorkflow(workflowId);
+    }
+
     return updated;
   },
 
   deleteWorkflow: async (ownerId, workflowId) => {
     const workflow = await Workflow.findOne({ _id: workflowId, owner: ownerId });
     if (!workflow) return false;
+
+    // Phase 13: Unregister Cron schedule immediately
+    CronScheduler.unregisterWorkflow(workflowId);
 
     await workflow.deleteOne();
     return true;
@@ -122,6 +134,14 @@ export const workflowService = {
 
     workflow.status = workflow.status === 'published' ? 'draft' : 'published';
     const updated = await workflow.save();
+
+    // Phase 13: Register or Unregister Cron Schedule
+    if (updated.status === 'published') {
+      CronScheduler.registerWorkflow(updated.toObject());
+    } else {
+      CronScheduler.unregisterWorkflow(workflowId);
+    }
+
     return updated;
   },
 
@@ -131,6 +151,10 @@ export const workflowService = {
 
     workflow.status = 'archived';
     const updated = await workflow.save();
+
+    // Phase 13: Unregister Cron schedule
+    CronScheduler.unregisterWorkflow(workflowId);
+
     return updated;
   },
 };

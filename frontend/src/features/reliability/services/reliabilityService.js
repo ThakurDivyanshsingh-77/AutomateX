@@ -10,6 +10,22 @@ export const reliabilityService = {
   },
 
   /**
+   * Get Cron Scheduler health & registered jobs status
+   */
+  getCronStatus: async () => {
+    const res = await api.get('/runtime/cron/status');
+    return res.data;
+  },
+
+  /**
+   * Manually reload Cron Scheduler jobs
+   */
+  reloadCronJobs: async () => {
+    const res = await api.post('/runtime/cron/reload');
+    return res.data;
+  },
+
+  /**
    * Get failed executions
    */
   getFailedExecutions: async ({ page = 1, limit = 15, search = '' } = {}) => {

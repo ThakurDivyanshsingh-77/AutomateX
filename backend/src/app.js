@@ -10,6 +10,7 @@ import templateRoutes from './routes/templateRoutes.js';
 import oauthRoutes from './routes/oauthRoutes.js';
 import reliabilityRoutes from './routes/reliabilityRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import cronRoutes from './routes/cronRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/v1/templates', templateRoutes);
 app.use('/api/v1/oauth', oauthRoutes);
 app.use('/api/v1/reliability', reliabilityRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/runtime/cron', cronRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

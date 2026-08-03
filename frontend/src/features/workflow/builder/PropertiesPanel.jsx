@@ -4,6 +4,7 @@ import { AutoForm } from '../nodes/properties/AutoForm';
 import { GmailProperties } from '../nodes/properties/GmailProperties';
 import { ConditionProperties } from '../nodes/condition/ConditionProperties';
 import { WebhookProperties } from '../nodes/webhook/WebhookProperties';
+import { CronProperties } from '../nodes/cron/CronProperties';
 import { X, Trash2, Settings2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 
@@ -45,6 +46,7 @@ export const PropertiesPanel = ({
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
+  const isCronNode = selectedNode.type === 'cron';
 
   return (
     <aside className="w-80 bg-slate-900 border-l border-slate-800 flex flex-col h-full select-none shadow-2xl">
@@ -126,6 +128,11 @@ export const PropertiesPanel = ({
               node={selectedNode}
               onUpdateNodeData={onUpdateNodeData}
               workflowId={workflowId}
+            />
+          ) : isCronNode ? (
+            <CronProperties
+              node={selectedNode}
+              onUpdateNodeData={onUpdateNodeData}
             />
           ) : (
             <AutoForm

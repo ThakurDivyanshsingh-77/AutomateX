@@ -113,6 +113,18 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `AIAssistantDrawer.jsx`: Floating drawer in visual canvas builder with 4 AI modes (**Generate**, **Explain**, **Optimize**, **Auto-Fix**).
   - `WorkflowCanvas.jsx` & `Sidebar.jsx`: Added **AI Assistant** button (Sparkles icon) to canvas header and **AI Builder** link to navigation sidebar.
 
+### **Phase 13 Complete — Production Cron Scheduler (Enterprise Grade)** — ✅ COMPLETED
+- **Production Cron Scheduler Service** ([CronScheduler.js](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/backend/src/runtime/scheduler/CronScheduler.js)): Background scheduling engine powered by `node-cron` & `cron-parser`. Key capabilities:
+  - Automatic DB published workflow scanning and job registration on server boot (`server.js`).
+  - Dynamic publish/unpublish/update/delete hooks (`PublishManager.js` & `workflowService.js`).
+  - Overlap protection (prevents concurrent execution if previous run is still active).
+  - Timezone support (`Asia/Kolkata`, `America/New_York`, `UTC`, etc.).
+  - Execution routing through `RuntimeManager` → Queue → Worker → History (tagged as `triggerType: 'cron'`).
+- **REST Status API**: `GET /api/v1/runtime/cron/status` & `POST /api/v1/runtime/cron/reload`.
+- **Frontend UI & Node Properties**:
+  - `CronProperties.jsx`: Cron Node property inspector with presets (`Every 5m`, `Every 20m`, `Daily at 9 AM`), custom syntax input, timezone selector, enable/disable toggle, and human-readable preview text powered by `cronstrue`.
+  - `ReliabilityDashboard.jsx`: Added **Cron Scheduler** status card and active jobs inspection table tab.
+
 ---
 
 ## 🛠️ Complete Tech Stack

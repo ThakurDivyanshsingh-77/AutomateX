@@ -1,4 +1,4 @@
-import { ManualTriggerExecutor, WebhookTriggerExecutor } from '../executors/TriggerExecutors.js';
+import { ManualTriggerExecutor, WebhookTriggerExecutor, ScheduleTriggerExecutor } from '../executors/TriggerExecutors.js';
 import { HttpExecutor } from '../executors/HttpExecutor.js';
 import { DelayExecutor } from '../executors/DelayExecutor.js';
 import { LogExecutor } from '../executors/LogExecutor.js';
@@ -11,6 +11,8 @@ export class ExecutorRegistry {
   static executors = new Map([
     ['start', new ManualTriggerExecutor()],
     ['webhook', new WebhookTriggerExecutor()],
+    ['cron', new ScheduleTriggerExecutor()],
+    ['schedule', new ScheduleTriggerExecutor()],
     ['http', new HttpExecutor()],
     ['delay', new DelayExecutor()],
     ['log', new LogExecutor()],
