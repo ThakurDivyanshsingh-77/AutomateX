@@ -12,7 +12,9 @@ export const WebhookProperties = ({ node, onUpdateNodeData }) => {
   const headerName = config.headerName || 'x-webhook-secret';
   const customPath = config.path || node.id || 'user-signup';
 
-  const apiBase = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api/v1`;
+  const apiBase = (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost'))
+    ? 'https://automatex-a839.onrender.com/api/v1'
+    : (import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api/v1`);
   const baseUrl = `${apiBase}/webhooks/${customPath}`;
 
   const updateConfig = (field, value) => {

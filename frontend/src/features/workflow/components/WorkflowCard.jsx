@@ -32,7 +32,10 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
   const handleCopyWebhookUrl = (e) => {
     e.stopPropagation();
     const token = workflow.webhookToken || workflow._id;
-    const url = `${window.location.origin.replace(':5173', ':5000')}/api/v1/webhooks/${token}`;
+    const apiBase = (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost'))
+      ? 'https://automatex-a839.onrender.com/api/v1'
+      : (import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api/v1`);
+    const url = `${apiBase}/webhooks/${token}`;
     navigator.clipboard.writeText(url);
     toast.success('Webhook URL copied to clipboard!');
   };
