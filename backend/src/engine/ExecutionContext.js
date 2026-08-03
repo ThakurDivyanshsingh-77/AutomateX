@@ -1,8 +1,28 @@
+import { getValueByPath } from './expression/helpers.js';
+
 export class ExecutionContext {
-  constructor(initialPayload = {}) {
-    this.initialPayload = initialPayload;
+  constructor(initialPayload = {}, executionId = null) {
+    // Handle parameter ordering flexibility
+    if (typeof initialPayload === 'string' && !executionId) {
+      executionId = initialPayload;
+      initialPayload = {};
+    }
+
+    this.executionId = executionId;
+    this.initialPayload = initialPayload || {};
     this.nodeOutputs = new Map();
     this.lastNodeId = null;
+
+    // Normalize trigger event payload: handle both raw req payload and formattedEvent ({ data: { body: ... } })
+    const payloadData = (this.initialPayload && typeof this.initialPayload === 'object' && this.initialPayload.data)
+      ? { ...this.initialPayload.data, ...this.initialPayload }
+      : (typeof this.initialPayload === 'object' ? { ...this.initialPayload } : {});
+
+    this.currentData = payloadData;
+    if (!this.currentData.trigger) {
+      this.currentData.trigger = payloadData.body ? payloadData : { body: payloadData };
+    }
+    this.variables = {};
   }
 
   setNodeOutput(nodeId, data) {
@@ -49,6 +69,12 @@ export class ExecutionContext {
     if (this.nodeOutputs.has(nodeId)) {
       const output = this.nodeOutputs.get(nodeId);
       return restPath ? this.resolvePath(output, restPath) : output;
+    }
+
+    // Check currentData (trigger payload, body, headers, query)
+    if (this.currentData) {
+      const res = getValueByPath(this.currentData, pathStr);
+      if (res !== undefined) return res;
     }
 
     // Try resolving directly against last output

@@ -31,27 +31,31 @@ export class ExecutionWorker {
       throw new Error(`Workflow definition missing for execution ${executionId}`);
     }
 
+    const initialPayload = triggerEvent || jobData.triggerPayload || {};
     const startTime = Date.now();
 
     try {
       // Execute engine with 30s Timeout Cap and 3 Max Retries
       const engineResult = await TimeoutManager.runWithTimeout(
         RetryManager.executeWithRetry(async (attempt) => {
-          return await WorkflowEngine.run(definition, executionId);
+          return await WorkflowEngine.run(definition, executionId, initialPayload);
         })
       );
 
       const durationMs = Date.now() - startTime;
 
-      if (mongoose.connection.readyState === 1 && execution) {
-        execution.status = engineResult.status;
-        execution.duration = durationMs;
-        execution.nodesExecuted = engineResult.nodesExecuted;
-        execution.logs = engineResult.logs;
-        execution.output = engineResult.output;
-        execution.error = engineResult.error;
-        execution.finishedAt = new Date();
-        await execution.save();
+      if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(executionId)) {
+        await Execution.findByIdAndUpdate(executionId, {
+          $set: {
+            status: engineResult.status,
+            duration: durationMs,
+            nodesExecuted: engineResult.nodesExecuted,
+            logs: engineResult.logs,
+            output: engineResult.output,
+            error: engineResult.error,
+            finishedAt: new Date(),
+          },
+        });
       }
 
       console.log(`[ExecutionWorker]: Completed job ${executionId} in ${durationMs}ms - Status: ${engineResult.status}`);
@@ -60,12 +64,15 @@ export class ExecutionWorker {
       const durationMs = Date.now() - startTime;
       console.error(`[ExecutionWorker]: Job ${executionId} failed: ${err.message}`);
 
-      if (mongoose.connection.readyState === 1 && execution) {
-        execution.status = 'failed';
-        execution.duration = durationMs;
-        execution.error = { message: err.message, stack: err.stack };
-        execution.finishedAt = new Date();
-        await execution.save();
+      if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(executionId)) {
+        await Execution.findByIdAndUpdate(executionId, {
+          $set: {
+            status: 'failed',
+            duration: durationMs,
+            error: { message: err.message, stack: err.stack },
+            finishedAt: new Date(),
+          },
+        });
       }
 
       throw err;

@@ -51,7 +51,8 @@ export class GmailPlugin {
    */
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
-    const { credential: credentialId, operation = 'sendEmail' } = config;
+    const credentialId = config.credential || config.credentialId;
+    const operation = config.operation || 'sendEmail';
     const executionId = context?.executionId || 'unknown';
 
     // ── 1. Validate credential ID ──────────────────────────────────────────

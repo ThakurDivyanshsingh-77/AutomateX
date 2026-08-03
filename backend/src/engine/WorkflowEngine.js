@@ -8,7 +8,7 @@ import { ExpressionEngine } from './expression/ExpressionEngine.js';
 import { RetryEngine } from './retry/RetryEngine.js';
 
 export class WorkflowEngine {
-  static async run(workflowDefinition, executionId = `exec_${Date.now()}`) {
+  static async run(workflowDefinition, executionId = `exec_${Date.now()}`, initialData = {}) {
     const startTime = Date.now();
 
     // 1. Parse JSON definition
@@ -24,7 +24,7 @@ export class WorkflowEngine {
     const adjacencyList = GraphBuilder.buildAdjacencyList(parsedWorkflow.nodes, parsedWorkflow.edges);
 
     // 4. Initialize Execution RAM Context
-    const context = new ExecutionContext(executionId);
+    const context = new ExecutionContext(executionId, initialData);
 
     let currentNode = validation.startNode;
     let nodesExecutedCount = 0;
@@ -52,7 +52,7 @@ export class WorkflowEngine {
       const durationMs = Date.now() - stepStartTime;
 
       if (retryResult.success) {
-        const stepOutput = retryResult.result?.output || {};
+        const stepOutput = retryResult.result?.output !== undefined ? retryResult.result.output : (retryResult.result || {});
 
         // Store step log and node outputs (by nodeId AND by nodeType)
         context.setNodeOutput(currentNode.id, stepOutput);

@@ -8,7 +8,9 @@ import { ExpressionEngine } from '../expression/ExpressionEngine.js';
 export class ConditionExecutor extends BaseExecutor {
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
-    const { left: rawLeft, operator = 'equals', right: rawRight } = config;
+    const rawLeft = (config.left !== undefined && config.left !== '') ? config.left : (config.field ?? config.left ?? '');
+    const rawRight = (config.right !== undefined && config.right !== '') ? config.right : (config.value ?? config.right ?? '');
+    const operator = config.operator || 'equals';
 
     const leftVal = ExpressionEngine.resolve(rawLeft, context);
     const rightVal = ExpressionEngine.resolve(rawRight, context);
@@ -54,6 +56,7 @@ export class ConditionExecutor extends BaseExecutor {
         break;
 
       case 'isEmpty':
+      case 'is_empty':
         result =
           leftVal === null ||
           leftVal === undefined ||
@@ -63,6 +66,7 @@ export class ConditionExecutor extends BaseExecutor {
         break;
 
       case 'isNotEmpty':
+      case 'is_not_empty':
         result = !(
           leftVal === null ||
           leftVal === undefined ||

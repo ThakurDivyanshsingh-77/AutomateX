@@ -15,7 +15,7 @@ export class WorkflowParser {
         id: node.id,
         type: node.type,
         label: node.data?.label || node.type,
-        config: node.data?.config || {},
+        config: node.config || node.data?.config || {},
         position: node.position || { x: 0, y: 0 },
       });
     });
