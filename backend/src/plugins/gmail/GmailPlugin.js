@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { credentialService } from '../../credentials/credentialService.js';
 import { googleOAuthClient } from '../../oauth/GoogleOAuthClient.js';
+import { ExpressionEngine } from '../../engine/expression/ExpressionEngine.js';
 
 /**
  * Build a proper RFC 2822 MIME email message and base64url encode it.
@@ -34,7 +35,6 @@ function buildRawEmail({ to, cc, bcc, subject, body, bodyType = 'plain' }) {
 /**
  * RealGmailExecutor
  *
- * Replaces GmailMockExecutor.
  * Uses Google OAuth2 + gmail.users.messages.send() to send real emails.
  * Supports: To, CC, BCC, Subject, HTML/Plain body.
  * Handles: token auto-refresh, 401, 403, quota, invalid recipient.
@@ -101,7 +101,7 @@ export class GmailPlugin {
     // ── 4. Route to correct operation ──────────────────────────────────────
     switch (operation) {
       case 'sendEmail':
-        return await this._sendEmail(auth, config, executionId);
+        return await this._sendEmail(auth, config, executionId, context);
       case 'readEmail':
         return await this._readEmails(auth, config, executionId);
       case 'searchEmails':
@@ -112,12 +112,31 @@ export class GmailPlugin {
   }
 
   // ── Send Email ────────────────────────────────────────────────────────────
-  async _sendEmail(auth, config, executionId) {
-    const { to, cc, bcc, subject, body, bodyType = 'plain' } = config;
+  async _sendEmail(auth, config, executionId, context) {
+    let { to, cc, bcc, subject, body, bodyType = 'plain' } = config;
+
+    // Dynamically resolve expressions if present
+    if (context) {
+      if (typeof to === 'string' && to.includes('{{')) to = ExpressionEngine.resolve(to, context);
+      if (typeof cc === 'string' && cc.includes('{{')) cc = ExpressionEngine.resolve(cc, context);
+      if (typeof bcc === 'string' && bcc.includes('{{')) bcc = ExpressionEngine.resolve(bcc, context);
+      if (typeof subject === 'string' && subject.includes('{{')) subject = ExpressionEngine.resolve(subject, context);
+      if (typeof body === 'string' && body.includes('{{')) body = ExpressionEngine.resolve(body, context);
+    }
 
     if (!to) throw new GmailExecutorError('Recipient email address (To) is required.', 'MISSING_RECIPIENT');
     if (!subject) throw new GmailExecutorError('Email subject is required.', 'MISSING_SUBJECT');
     if (!body) throw new GmailExecutorError('Email body is required.', 'MISSING_BODY');
+
+    // Logging required by verification pipeline
+    console.log('Resolved recipient:', to);
+    console.log('Resolved subject:', subject);
+    console.log('Resolved body:', body);
+    console.log('Before calling gmail.users.messages.send():', {
+      to,
+      subject,
+      body,
+    });
 
     const rawEmail = buildRawEmail({ to, cc, bcc, subject, body, bodyType });
 
@@ -145,6 +164,7 @@ export class GmailPlugin {
       status: 'SENT',
       recipient: to,
       subject,
+      body,
       sentAt: new Date().toISOString(),
       executionId,
       logs: [
