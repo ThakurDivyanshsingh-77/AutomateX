@@ -46,8 +46,10 @@ export const credentialService = {
         name: credentialName,
         userId,
         frontendUrl: window.location.origin,
-      });
-      const oauthUrl = `${import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'}/api/v1/oauth/google?${params}`;
+      const backendHost = (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost'))
+        ? 'https://automatex-a839.onrender.com'
+        : (import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000');
+      const oauthUrl = `${backendHost}/api/v1/oauth/google?${params}`;
 
       // Open popup centered on screen
       const width = 500;
