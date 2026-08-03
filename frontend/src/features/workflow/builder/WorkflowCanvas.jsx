@@ -278,6 +278,7 @@ const BuilderInner = () => {
           onClose={() => setSelectedNodeId(null)}
           onUpdateNodeData={updateNodeData}
           onDeleteNode={deleteNode}
+          workflowId={id}
         />
 
         {/* Execution Run Logs Slide-Over Drawer */}

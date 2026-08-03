@@ -12,6 +12,7 @@ export const PropertiesPanel = ({
   onClose,
   onUpdateNodeData,
   onDeleteNode,
+  workflowId,
 }) => {
   if (!selectedNode) return null;
 
@@ -124,6 +125,7 @@ export const PropertiesPanel = ({
             <WebhookProperties
               node={selectedNode}
               onUpdateNodeData={onUpdateNodeData}
+              workflowId={workflowId}
             />
           ) : (
             <AutoForm

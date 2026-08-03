@@ -6,9 +6,9 @@ import mongoose from 'mongoose';
 
 export class WebhookService {
   /**
-   * Process incoming Webhook HTTP Request
+   * Process incoming Webhook HTTP Request or Test Webhook Payload
    * @param {object} req - Express request
-   * @param {string} identifier - token, workflowId, or custom path slug
+   * @param {string} identifier - workflowId (_id), webhookToken, or customPath slug
    */
   static async processRequest(req, identifier) {
     // 1. Rate Limiting Check
@@ -27,24 +27,28 @@ export class WebhookService {
       throw err;
     }
 
-    // 3. Find Workflow in DB
+    // 3. Load Workflow document from MongoDB
     let workflow = null;
     if (mongoose.connection.readyState === 1) {
+      const isObjectId = mongoose.Types.ObjectId.isValid(identifier);
       workflow = await Workflow.findOne({
         $or: [
+          { _id: isObjectId ? identifier : null },
           { webhookToken: identifier },
           { customPath: identifier },
-          { _id: mongoose.Types.ObjectId.isValid(identifier) ? identifier : null },
-        ],
+          { 'definition.nodes.data.config.path': identifier },
+        ].filter(Boolean),
       });
     }
 
-    // Fallback mock workflow if DB not ready
-    if (!workflow) {
+    // Fallback mock workflow ONLY for offline unit test runner (when DB is not connected)
+    if (!workflow && mongoose.connection.readyState !== 1) {
+      const mockWorkflowId = new mongoose.Types.ObjectId();
+      const mockOwnerId = new mongoose.Types.ObjectId();
       workflow = {
-        _id: identifier,
+        _id: mockWorkflowId,
         name: 'Webhook Trigger Workflow',
-        owner: 'usr_demo_123',
+        owner: mockOwnerId,
         definition: {
           nodes: [
             {
@@ -73,9 +77,17 @@ export class WebhookService {
       };
     }
 
+    // 4. Validate Workflow exists
     if (!workflow) {
-      const err = new Error(`Webhook target "${identifier}" not found`);
+      const err = new Error(`Webhook target workflow "${identifier}" not found`);
       err.statusCode = 404;
+      throw err;
+    }
+
+    // 5. Validate Workflow owner ID exists
+    if (!workflow.owner) {
+      const err = new Error('Workflow owner ID is missing or invalid');
+      err.statusCode = 400;
       throw err;
     }
 
@@ -84,7 +96,7 @@ export class WebhookService {
     const webhookNode = nodes.find((n) => n.type === 'webhook' || n.type === 'start') || nodes[0];
     const nodeConfig = webhookNode?.data?.config || {};
 
-    // 4. Validate HTTP Method
+    // 6. Validate HTTP Method
     const methodCheck = WebhookValidator.validateMethod(req.method, nodeConfig.method);
     if (!methodCheck.valid) {
       const err = new Error(methodCheck.message);
@@ -92,7 +104,7 @@ export class WebhookService {
       throw err;
     }
 
-    // 5. Validate Authentication
+    // 7. Validate Authentication
     const authCheck = WebhookAuth.validate(req, nodeConfig);
     if (!authCheck.authorized) {
       const err = new Error(authCheck.message);
@@ -100,26 +112,26 @@ export class WebhookService {
       throw err;
     }
 
-    // 6. Build Trigger Payload & Context
+    // 8. Build Trigger Payload & Context
     const triggerData = {
       trigger: {
         body: req.body || {},
         headers: req.headers || {},
         query: req.query || {},
         method: req.method,
-        ip: req.ip || req.socket.remoteAddress || '127.0.0.1',
+        ip: req.ip || req.socket?.remoteAddress || '127.0.0.1',
         timestamp: new Date().toISOString(),
       },
     };
 
-    // 7. Dispatch to Queue / RuntimeManager
+    // 9. Dispatch to RuntimeManager with real workflow._id and workflow.owner
     const result = await RuntimeManager.triggerExecution('webhook', workflow, triggerData);
 
     return {
       success: true,
       message: 'Webhook received and queued for execution',
       executionId: result.executionId,
-      workflowId: workflow._id,
+      workflowId: workflow._id.toString(),
       queued: true,
       triggerPayload: triggerData.trigger,
     };

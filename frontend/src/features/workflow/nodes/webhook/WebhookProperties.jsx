@@ -4,7 +4,7 @@ import { WebhookTester } from './WebhookTester';
 import { ExpressionInput } from '../../../../components/expression/ExpressionInput';
 import { HelpCircle } from 'lucide-react';
 
-export const WebhookProperties = ({ node, onUpdateNodeData }) => {
+export const WebhookProperties = ({ node, onUpdateNodeData, workflowId }) => {
   const config = node?.data?.config || {};
   const method = config.method || 'ANY';
   const authType = config.authType || 'none';
@@ -97,7 +97,7 @@ export const WebhookProperties = ({ node, onUpdateNodeData }) => {
       )}
 
       {/* Webhook Tester Section */}
-      <WebhookTester identifier={customPath} />
+      <WebhookTester identifier={workflowId || customPath} />
 
       {/* Information Banner */}
       <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[10px] text-slate-500 space-y-1">
