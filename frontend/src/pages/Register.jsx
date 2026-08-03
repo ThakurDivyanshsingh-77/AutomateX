@@ -50,6 +50,7 @@ export const Register = () => {
               label="Full Name"
               placeholder="Divyansh Kumar"
               icon={User}
+              autoComplete="name"
               error={errors.name?.message}
               {...register('name', {
                 required: 'Full name is required',
@@ -69,6 +70,7 @@ export const Register = () => {
               type="email"
               placeholder="engineer@company.com"
               icon={Mail}
+              autoComplete="email"
               error={errors.email?.message}
               {...register('email', {
                 required: 'Email address is required',
@@ -84,6 +86,7 @@ export const Register = () => {
               type="password"
               placeholder="At least 8 characters"
               icon={Lock}
+              autoComplete="new-password"
               error={errors.password?.message}
               {...register('password', {
                 required: 'Password is required',
@@ -99,6 +102,7 @@ export const Register = () => {
               type="password"
               placeholder="Repeat your password"
               icon={Lock}
+              autoComplete="new-password"
               error={errors.confirmPassword?.message}
               {...register('confirmPassword', {
                 required: 'Please confirm your password',

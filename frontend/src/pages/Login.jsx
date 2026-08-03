@@ -47,6 +47,7 @@ export const Login = () => {
               type="email"
               placeholder="engineer@company.com"
               icon={Mail}
+              autoComplete="username"
               error={errors.email?.message}
               {...register('email', {
                 required: 'Email address is required',
@@ -71,6 +72,7 @@ export const Login = () => {
                 type="password"
                 placeholder="••••••••"
                 icon={Lock}
+                autoComplete="current-password"
                 error={errors.password?.message}
                 {...register('password', {
                   required: 'Password is required',
