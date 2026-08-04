@@ -151,7 +151,17 @@ export class PdfGeneratorExecutor extends BaseExecutor {
     vars.timestamp = Date.now();
     vars.generatedDate = new Date().toLocaleString('en-IN');
 
-    vars.gmail = context?.gmail || context?.readEmail || context?.searchEmails || vars.gmail || {};
+    const gmailData = context?.gmail || context?.readEmail || context?.searchEmails || vars.gmail || {};
+    vars.gmail = gmailData;
+
+    // Expose root-level convenience aliases so both {{#each gmail.messages}} AND {{#each messages}} AND {{count}} work
+    if (gmailData && typeof gmailData === 'object') {
+      if (Array.isArray(gmailData.messages)) {
+        vars.messages = gmailData.messages;
+        vars.count = gmailData.count !== undefined ? gmailData.count : gmailData.messages.length;
+      }
+    }
+
     vars.mongodb = context?.mongodb || context?.mongoFind || context?.mongoInsertOne || vars.mongodb || {};
     vars.http = context?.http || context?.httpRequest || vars.http || {};
     vars.workflow = {

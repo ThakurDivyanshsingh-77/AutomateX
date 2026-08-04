@@ -250,18 +250,57 @@ export class GmailPlugin {
     };
   }
 
-  // ── Enrich Message Stubs with Full Email Metadata ────────────────────────
+  // ── Enrich Message Stubs with Full Email Metadata (Batched + Retrying) ────
   async _enrichMessages(gmail, messageStubs) {
     if (!Array.isArray(messageStubs) || messageStubs.length === 0) return [];
 
-    const enrichedMessages = await Promise.all(
-      messageStubs.map(async (stub) => {
-        try {
-          const detailRes = await gmail.users.messages.get({
-            userId: 'me',
-            id: stub.id,
-            format: 'full',
-          });
+    const enrichedMessages = [];
+    const chunkSize = 5; // Batch 5 requests at a time to prevent Gmail API 429 rate limits
+
+    for (let i = 0; i < messageStubs.length; i += chunkSize) {
+      const chunk = messageStubs.slice(i, i + chunkSize);
+
+      const chunkResults = await Promise.all(
+        chunk.map(async (stub) => {
+          let attempts = 0;
+          let detailRes = null;
+
+          while (attempts < 3) {
+            try {
+              attempts++;
+              detailRes = await gmail.users.messages.get({
+                userId: 'me',
+                id: stub.id,
+                format: 'full',
+              });
+              break;
+            } catch (err) {
+              const status = err?.response?.status || err?.code;
+              if ((status === 429 || status === 403) && attempts < 3) {
+                await new Promise((r) => setTimeout(r, 250 * attempts));
+              } else {
+                console.warn(`[GmailPlugin] Could not fetch details for message ${stub.id} (attempt ${attempts}): ${err.message}`);
+                break;
+              }
+            }
+          }
+
+          if (!detailRes || !detailRes.data) {
+            return {
+              id: stub.id,
+              threadId: stub.threadId,
+              from: stub.from || '',
+              to: stub.to || '',
+              subject: stub.subject || '(No Subject)',
+              date: stub.date || '',
+              snippet: stub.snippet || '',
+              labelIds: stub.labelIds || [],
+              hasAttachments: false,
+              attachments: [],
+              bodyText: '',
+              bodyHtml: '',
+            };
+          }
 
           const msg = detailRes.data;
           const headers = msg.payload?.headers || [];
@@ -271,10 +310,22 @@ export class GmailPlugin {
             return h ? h.value : '';
           };
 
-          const from = getHeader('From');
-          const to = getHeader('To');
-          const subject = getHeader('Subject');
-          const date = getHeader('Date');
+          const from = getHeader('From') || getHeader('Sender') || '';
+          const to = getHeader('To') || '';
+          const subject = getHeader('Subject') || '(No Subject)';
+
+          let date = getHeader('Date');
+          if (!date && msg.internalDate) {
+            try {
+              date = new Date(Number(msg.internalDate)).toLocaleString('en-US', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              });
+            } catch {
+              date = '';
+            }
+          }
+
           const cc = getHeader('Cc');
           const bcc = getHeader('Bcc');
 
@@ -282,14 +333,24 @@ export class GmailPlugin {
           let bodyHtml = '';
           const attachments = [];
 
-          // Helper function to recursively parse mime parts
+          // Recursive helper to parse MIME parts with base64url normalization
           const parsePart = (part) => {
             if (!part) return;
 
-            if (part.mimeType === 'text/plain' && part.body?.data) {
-              bodyText += Buffer.from(part.body.data, 'base64').toString('utf8');
-            } else if (part.mimeType === 'text/html' && part.body?.data) {
-              bodyHtml += Buffer.from(part.body.data, 'base64').toString('utf8');
+            let dataStr = '';
+            if (part.body?.data) {
+              const normalizedBase64 = part.body.data.replace(/-/g, '+').replace(/_/g, '/');
+              try {
+                dataStr = Buffer.from(normalizedBase64, 'base64').toString('utf8');
+              } catch {
+                dataStr = '';
+              }
+            }
+
+            if (part.mimeType === 'text/plain' && dataStr) {
+              bodyText += dataStr;
+            } else if (part.mimeType === 'text/html' && dataStr) {
+              bodyHtml += dataStr;
             }
 
             if (part.filename && part.filename.length > 0) {
@@ -308,7 +369,11 @@ export class GmailPlugin {
 
           if (msg.payload) {
             if (msg.payload.body?.data) {
-              const bodyStr = Buffer.from(msg.payload.body.data, 'base64').toString('utf8');
+              const normalizedBase64 = msg.payload.body.data.replace(/-/g, '+').replace(/_/g, '/');
+              let bodyStr = '';
+              try {
+                bodyStr = Buffer.from(normalizedBase64, 'base64').toString('utf8');
+              } catch {}
               if (msg.payload.mimeType === 'text/html') {
                 bodyHtml = bodyStr;
               } else {
@@ -320,6 +385,8 @@ export class GmailPlugin {
             }
           }
 
+          const snippet = msg.snippet || bodyText.substring(0, 120).replace(/\s+/g, ' ') || '';
+
           return {
             id: msg.id,
             threadId: msg.threadId,
@@ -329,32 +396,18 @@ export class GmailPlugin {
             date,
             cc,
             bcc,
-            snippet: msg.snippet || '',
+            snippet,
             labelIds: msg.labelIds || [],
             hasAttachments: attachments.length > 0,
             attachments,
             bodyText: bodyText.trim(),
             bodyHtml: bodyHtml.trim(),
           };
-        } catch (err) {
-          console.warn(`[GmailPlugin] Could not fetch details for message ${stub.id}: ${err.message}`);
-          return {
-            id: stub.id,
-            threadId: stub.threadId,
-            from: '',
-            to: '',
-            subject: '(Failed to fetch email details)',
-            date: '',
-            snippet: '',
-            labelIds: [],
-            hasAttachments: false,
-            attachments: [],
-            bodyText: '',
-            bodyHtml: '',
-          };
-        }
-      })
-    );
+        })
+      );
+
+      enrichedMessages.push(...chunkResults);
+    }
 
     return enrichedMessages;
   }
