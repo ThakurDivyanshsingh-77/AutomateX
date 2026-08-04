@@ -114,18 +114,18 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Mapping Inspector & Auto Validation**: Dedicated inspector tab listing all active bindings (`Source ──► Destination ──► Transformation`), evaluated outputs, validation status, and single-click clear action. Flags unknown variables with warning tooltips (`"Variable no longer exists"`).
 - **Mapping Persistence**: Mappings persist directly inside `node.data.config`, surviving workflow saving, versioning, export/import, and publication.
 
-### **Phase 14 Complete — Universal Database Framework (Enterprise Database Nodes)** — ✅ COMPLETED
+### **Phase 14 & 14.1 Complete — Universal Database Framework & Import Mismatch Fix** — ✅ COMPLETED
 - **Pluggable Database Core Architecture** (`backend/src/engine/database/`):
   - `DatabaseProvider.js`: Abstract base interface (`connect`, `disconnect`, `find`, `findOne`, `insert`, `insertMany`, `update`, `delete`, `aggregate`, `execute`, `validate`, `healthCheck`).
-  - `MongoProvider.js`: MongoDB driver supporting document find, insert, update, delete, aggregation pipelines, and index inspections.
+  - `MongoProvider.js` & `MongoConnectionPool.js`: MongoDB driver & connection pool supporting document find, insert, update, delete, aggregation pipelines, latency tracking, and version detection.
   - `MySQLProvider.js`: MySQL driver enforcing parameterized queries (`?`), connection pooling, SELECT/INSERT/UPDATE/DELETE, and transactions.
   - `PostgresProvider.js`: PostgreSQL driver enforcing parameterized queries (`$1, $2`), JSONB columns, SELECT/INSERT/UPDATE/DELETE, and transactions.
   - `DatabaseRegistry.js`: Singleton registry managing drivers (`mongodb`, `mysql`, `postgres`).
   - `DatabaseCredentialManager.js`: Resolves and decrypts AES-256 encrypted database vault credentials.
   - `DatabaseValidator.js`: Validates queries and flags un-parameterized SQL injection risks (`${...}`).
-  - `DatabaseExecutor.js`: Executor registered in `ExecutorRegistry.js` for executing database workflow nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`). Passed 17/17 automated unit tests in `test_phase14_database.js`.
-- **Database REST API Subsystem** (`backend/src/controllers/databaseController.js` & `databaseRoutes.js`): Mounted under `/api/v1/database` (`/providers`, `/connections`, `/test`, `/query`).
-- **Visual Palette Nodes & Variable Engine**: `databaseManifest.js` registering `mongodb`, `mysql`, `postgres`, and `databaseQuery` under `Database` palette category. Auto-registers outputs (`documents`, `rows`, `count`, `affectedRows`, `insertedId`, `executionTime`) in `VariableEngine.js`.
+  - `DatabaseExecutor.js`: Executor registered in `ExecutorRegistry.js` for executing database workflow nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`).
+- **Database REST API Subsystem** (`backend/src/controllers/databaseController.js` & `databaseRoutes.js`): Mounted under `/api/v1/database` (`/providers`, `/connections`, `/test`, `/mongodb/test`, `/mongodb/status`, `/query`).
+- **Import/Export Resolution**: Resolved `SyntaxError` in `backend/src/middleware/authMiddleware.js` by exporting `protect` and providing named `authenticate` alias. Updated `databaseRoutes.js` to use `protect`. Verified 100% clean ESM app launch.
 
 ---
 
@@ -134,7 +134,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 ### **Backend (`/backend`)**
 - **Runtime**: Node.js (ES Modules `"type": "module"`)
 - **Framework**: Express.js
-- **Database Engine Framework**: `DatabaseProvider`, `MongoProvider`, `MySQLProvider`, `PostgresProvider`, `DatabaseRegistry`, `DatabaseCredentialManager`, `DatabaseValidator`, `DatabaseExecutor`
+- **Database Engine Framework**: `DatabaseProvider`, `MongoProvider`, `MongoConnectionPool`, `MySQLProvider`, `PostgresProvider`, `DatabaseRegistry`, `DatabaseCredentialManager`, `DatabaseValidator`, `DatabaseExecutor`
 - **Database ORM & Drivers**: MongoDB & Mongoose ORM
 - **Security & Vault**: `bcryptjs`, `jsonwebtoken`, `crypto` (AES-256-CBC Encryption)
 - **AI Engine & Intent Classifier**: `IntentClassifier` (5 intent categories, 70% confidence threshold), Groq API (`gsk_...` key, `llama-3.3-70b-versatile`), xAI Grok API (`grok-2-latest`), `HeuristicWorkflowGenerator` offline engine
@@ -162,7 +162,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Routing**: `react-router-dom` v6
 - **State & Context**: React Context API (`AuthContext.jsx`) + custom hooks (`useWorkflow.js`, `useNodeOperations.js`)
 - **API Interceptor**: Centralized Axios client (`api.js`) with Bearer token injector and `401 Unauthorized` redirect handler.
-- **Forms & Validation**: `react-hook-form` + custom `AutoForm`, `GmailProperties`, `ConditionProperties`, `WebhookProperties`
+- **Forms & Validation**: `react-hook-form` + custom `AutoForm`, `GmailProperties`, `ConditionProperties`, `WebhookProperties`, `MongoDBConnectionProperties`
 - **Notifications**: `react-hot-toast`
 - **Styling**: Tailwind CSS v3 (Linear / Vercel modern SaaS dark theme)
 - **Icons**: Lucide React (`lucide-react`)

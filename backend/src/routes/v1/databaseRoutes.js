@@ -7,11 +7,11 @@ import {
   getMongoStatus,
   executeDatabaseQuery,
 } from '../../controllers/databaseController.js';
-import { authenticate } from '../../middleware/authMiddleware.js';
+import { protect } from '../../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(protect);
 
 router.get('/providers', getDatabaseProviders);
 router.get('/connections', getDatabaseConnections);
