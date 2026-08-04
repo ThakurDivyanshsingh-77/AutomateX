@@ -122,6 +122,18 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Backend Execution Engine**: `DatabaseExecutor.js` registered in `ExecutorRegistry.js`, mapping all 7 node types to official MongoDB driver calls.
 - **Automated Test Suite**: Passed **14/14** automated unit and workflow execution tests in `test_phase14_2_mongo_crud.js`, including the demo pipeline (`Start ──► MongoDB Insert One ──► MongoDB Find One ──► Log ──► End`).
 
+### **Phase 15.1 Complete — PDF Generator Node & Production Puppeteer Engine** — ✅ COMPLETED
+- **Backend PDF Generation Subsystem**:
+  - `PdfService.js`: Production PDF generation service powered by Handlebars HTML templating & Puppeteer headless Chrome renderer. Supports 9 templates (`blank`, `invoice`, `certificate`, `report`, `receipt`, `offer_letter`, `salary_slip`, `resume`, `custom`), dynamic QR code embedding, page margins, custom header/footer HTML, and base64 output.
+  - `PdfGeneratorExecutor.js`: Execution handler resolving Mustache variables (`{{trigger.body.orderId}}`, `{{now}}`), invoking `PdfService`, and returning Gmail-ready `attachment` payload objects. Registered in `ExecutorRegistry.js`.
+  - `.puppeteerrc.cjs` & Render Deployment Fix: Redirected Puppeteer cache directory to `backend/.cache/puppeteer` inside project root to ensure Chromium/Chrome binaries persist across Render deployment steps.
+- **Frontend PDF Generator Node**:
+  - `pdfGeneratorManifest.js`: Defined under **Output** category with purple theme (`#8b5cf6`), default inputs/outputs, and client-side validator.
+  - `PdfGeneratorProperties.jsx`: Multi-tab drawer properties panel (Template selector, live preview iframe, filename expression editor, custom CSS, header/footer configuration, margin bounds).
+  - `PdfGeneratorNode.jsx`: Custom React Flow canvas node registered in `nodeTypes` in `WorkflowCanvas.jsx`.
+  - Registered in `nodeRegistry.js` under `NODE_TYPES.PDF_GENERATOR` (`pdfGenerator`).
+- **Automated Test Suite**: Passed **29/29** automated tests in `test_phase15_1_pdf_generator.js`.
+
 ---
 
 ## 🛠️ Complete Tech Stack
@@ -131,11 +143,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Framework**: Express.js
 - **Database Engine Framework**: `DatabaseProvider`, `MongoProvider` (with in-memory fallback), `MongoConnectionPool`, `MySQLProvider`, `PostgresProvider`, `DatabaseRegistry`, `DatabaseCredentialManager`, `DatabaseValidator`, `DatabaseExecutor`
 - **Database ORM & Drivers**: MongoDB & Mongoose ORM
-- **Executors & Plugins**: `ExecutorRegistry` (`start`, `http`, `delay`, `log`, `end`, `gmail`, `condition`, `webhook`, `tryCatch`, `mongodb`, `mysql`, `postgres`, `databaseQuery`, `mongoInsertOne`, `mongoFind`, `mongoFindOne`, `mongoUpdateOne`, `mongoDeleteOne`, `mongoCount`, `mongoAggregate`), `ConditionExecutor`, `GmailPlugin`, `PluginRegistry`, `ConnectorClient`
+- **PDF Generation Engine**: Handlebars.js templating, Puppeteer headless Chrome, QRCode generator, `.puppeteerrc.cjs` cache management
+- **Executors & Plugins**: `ExecutorRegistry` (`start`, `http`, `delay`, `log`, `end`, `gmail`, `condition`, `webhook`, `tryCatch`, `mongodb`, `mysql`, `postgres`, `databaseQuery`, `mongoInsertOne`, `mongoFind`, `mongoFindOne`, `mongoUpdateOne`, `mongoDeleteOne`, `mongoCount`, `mongoAggregate`, `pdfGenerator`), `PdfGeneratorExecutor`, `ConditionExecutor`, `GmailPlugin`, `PluginRegistry`, `ConnectorClient`
 - **Engine & Runtime**: Standalone Graph Engine, Adjacency List Traversal, Dual-Branch Handle Router, `RuntimeEventBus`, `RuntimeManager`, `ExecutionWorker`, `RetryManager`, `TimeoutManager`, `CronScheduler`
 
 ### **Frontend (`/frontend`)**
 - **Framework**: React 18 (Vite, port 3000)
 - **Visual Canvas Engine**: `@xyflow/react` v12
-- **Custom Nodes & Properties**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`, `Database` nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`, `mongoInsertOne`, `mongoFind`, `mongoFindOne`, `mongoUpdateOne`, `mongoDeleteOne`, `mongoCount`, `mongoAggregate`)
-- **Node Palette**: Categorized Node Palette under **Database** category with Lucide React icons
+- **Custom Nodes & Properties**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`, `PdfGeneratorNode`, `Database` nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`, `mongoInsertOne`, `mongoFind`, `mongoFindOne`, `mongoUpdateOne`, `mongoDeleteOne`, `mongoCount`, `mongoAggregate`)
+- **Node Palette**: Categorized Node Palette under **Output** and **Database** categories with Lucide React icons
+
