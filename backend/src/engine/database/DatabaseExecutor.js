@@ -102,7 +102,8 @@ export class DatabaseExecutor {
           case 'deleteone':
             result = await provider.delete(target, query);
             outputs = {
-              deletedCount: result.deletedCount || result.modifiedCount || 1,
+              deletedCount: typeof result.deletedCount === 'number' ? result.deletedCount : 0,
+              acknowledged: result.acknowledged !== undefined ? result.acknowledged : true,
               executionTime: Date.now() - startTime,
               rawResponse: result,
             };

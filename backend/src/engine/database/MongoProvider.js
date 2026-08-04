@@ -44,12 +44,30 @@ export class MongoProvider extends DatabaseProvider {
     }
   }
 
+  /**
+   * Automatically converts 24-hex string _id fields to Mongoose ObjectId
+   */
+  sanitizeFilter(filter) {
+    if (!filter || typeof filter !== 'object') return filter;
+    const sanitized = { ...filter };
+    if (sanitized._id) {
+      if (typeof sanitized._id === 'string' && sanitized._id.match(/^[0-9a-fA-F]{24}$/)) {
+        sanitized._id = new mongoose.Types.ObjectId(sanitized._id);
+      } else if (typeof sanitized._id === 'object' && sanitized._id.$in && Array.isArray(sanitized._id.$in)) {
+        sanitized._id.$in = sanitized._id.$in.map((id) => (typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/) ? new mongoose.Types.ObjectId(id) : id));
+      }
+    }
+    return sanitized;
+  }
+
   async find(collectionName, query = {}, options = {}) {
     const startTime = Date.now();
     const db = mongoose.connection.db;
+    const sanitizedQuery = this.sanitizeFilter(query);
+
     if (db) {
       const col = db.collection(collectionName);
-      const cursor = col.find(query);
+      const cursor = col.find(sanitizedQuery);
       if (options.limit) cursor.limit(options.limit);
       if (options.sort) cursor.sort(options.sort);
 
@@ -64,7 +82,7 @@ export class MongoProvider extends DatabaseProvider {
     // In-memory fallback for testing
     const store = MongoProvider.inMemoryStore.get(collectionName) || [];
     let filtered = store.filter((doc) => {
-      return Object.entries(query).every(([k, v]) => doc[k] === v);
+      return Object.entries(query).every(([k, v]) => String(doc[k]) === String(v));
     });
 
     if (filtered.length === 0 && store.length > 0 && Object.keys(query).length === 0) {
@@ -142,10 +160,12 @@ export class MongoProvider extends DatabaseProvider {
   async update(collectionName, filter = {}, updateDoc = {}, options = {}) {
     const startTime = Date.now();
     const db = mongoose.connection.db;
+    const sanitizedFilter = this.sanitizeFilter(filter);
+
     if (db) {
       const col = db.collection(collectionName);
       const updatePayload = updateDoc.$set ? updateDoc : { $set: updateDoc };
-      const res = await col.updateMany(filter, updatePayload, options);
+      const res = await col.updateMany(sanitizedFilter, updatePayload, options);
 
       return {
         matchedCount: res.matchedCount,
@@ -162,19 +182,64 @@ export class MongoProvider extends DatabaseProvider {
   }
 
   async delete(collectionName, filter = {}) {
+    return this.deleteOne(collectionName, filter);
+  }
+
+  async deleteOne(collectionName, filter = {}) {
     const startTime = Date.now();
     const db = mongoose.connection.db;
+    const sanitizedFilter = this.sanitizeFilter(filter);
+
+    console.log("=== MONGO DELETE ONE EXECUTION ===");
+    console.log("Database:", this.dbName);
+    console.log("Collection:", collectionName);
+    console.log("Filter Payload:", JSON.stringify(filter));
+    console.log("Sanitized Filter:", JSON.stringify(sanitizedFilter));
+
     if (db) {
       const col = db.collection(collectionName);
-      const res = await col.deleteMany(filter);
-      return {
+      console.log(`Executing: await collection.deleteOne(${JSON.stringify(sanitizedFilter)})`);
+      const res = await col.deleteOne(sanitizedFilter);
+
+      console.log("MongoDB Driver Raw Response:", {
+        acknowledged: res.acknowledged,
         deletedCount: res.deletedCount,
+      });
+
+      // Post-delete verification: immediately check if document still exists
+      const checkDoc = await col.findOne(sanitizedFilter);
+      if (checkDoc) {
+        console.error("Delete failed: Document still exists in database after deleteOne call.");
+      } else {
+        console.log("Delete succeeded: Document no longer exists in database (findOne returned null).");
+      }
+
+      return {
+        acknowledged: Boolean(res.acknowledged),
+        deletedCount: typeof res.deletedCount === 'number' ? res.deletedCount : 0,
+        documentExistsPostDelete: Boolean(checkDoc),
         executionTime: Date.now() - startTime,
+        rawResponse: res,
       };
     }
 
+    // In-memory store fallback for offline testing
+    const store = MongoProvider.inMemoryStore.get(collectionName) || [];
+    const idx = store.findIndex((doc) => {
+      return Object.entries(filter).every(([k, v]) => String(doc[k]) === String(v));
+    });
+
+    let deletedCount = 0;
+    if (idx !== -1) {
+      store.splice(idx, 1);
+      deletedCount = 1;
+    }
+
+    console.log("In-Memory Store Delete Result: deletedCount =", deletedCount);
     return {
-      deletedCount: 1,
+      acknowledged: true,
+      deletedCount,
+      documentExistsPostDelete: false,
       executionTime: Date.now() - startTime,
     };
   }
