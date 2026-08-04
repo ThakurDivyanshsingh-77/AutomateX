@@ -98,7 +98,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `NotificationManager.js`: Dispatches structured failure alerts to console logs and outbound webhooks.
   - `reliabilityController.js` & `reliabilityRoutes.js`: Mounted at `/api/v1/reliability`.
 - **Frontend Reliability Dashboard** (`/reliability`):
-  - `ReliabilityDashboard.jsx`: Dedicated dashboard page with metrics summary cards, failed execution table with **Retry** and **Resume** buttons, and a **Dead Letter Queue** tab with replay capabilities.
+  - `ReliabilityDashboard.jsx`: Fixed DLQ state declarations (`dlqPage`, `dlqItems`, `dlqPages`, `replayingDlqId`, `deletingDlqId`), resolving `ReferenceError: dlqPage is not defined`. Dedicated dashboard page with metrics summary cards, failed execution table with **Retry** and **Resume** buttons, and a **Dead Letter Queue** tab with replay capabilities.
   - `RetryConfigFields.jsx`: Added **Timeout (ms)** input field to node properties.
   - `ExecutionDetailsDrawer.jsx`: Visualizes per-attempt retry duration, status, and timeout badges in execution timeline.
 

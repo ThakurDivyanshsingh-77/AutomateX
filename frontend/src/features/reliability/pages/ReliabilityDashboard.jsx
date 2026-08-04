@@ -24,7 +24,7 @@ import { reliabilityService } from '../services/reliabilityService';
 import toast from 'react-hot-toast';
 
 export const ReliabilityDashboard = () => {
-  const [activeTab, setActiveTab] = useState('failures'); // 'failures' | 'dlq'
+  const [activeTab, setActiveTab] = useState('failures'); // 'failures' | 'dlq' | 'cron'
   const [stats, setStats] = useState({
     total: 0,
     running: 0,
@@ -45,6 +45,14 @@ export const ReliabilityDashboard = () => {
   const [failurePages, setFailurePages] = useState(1);
   const [retryingId, setRetryingId] = useState(null);
   const [resumingId, setResumingId] = useState(null);
+
+  // Dead Letter Queue state
+  const [dlqItems, setDlqItems] = useState([]);
+  const [loadingDlq, setLoadingDlq] = useState(true);
+  const [dlqPage, setDlqPage] = useState(1);
+  const [dlqPages, setDlqPages] = useState(1);
+  const [replayingDlqId, setReplayingDlqId] = useState(null);
+  const [deletingDlqId, setDeletingDlqId] = useState(null);
 
   // Cron Scheduler state
   const [cronStatus, setCronStatus] = useState({ running: false, registeredJobsCount: 0, jobs: [] });
@@ -544,7 +552,7 @@ export const ReliabilityDashboard = () => {
                             item.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                             'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
                           }`}>
-                            {item.status.toUpperCase()}
+                            {item.status ? item.status.toUpperCase() : 'QUEUED'}
                           </span>
                         </td>
                         <td className="p-3.5 pr-5 text-right">
@@ -677,6 +685,5 @@ export const ReliabilityDashboard = () => {
     </div>
   );
 };
-
 
 export default ReliabilityDashboard;
