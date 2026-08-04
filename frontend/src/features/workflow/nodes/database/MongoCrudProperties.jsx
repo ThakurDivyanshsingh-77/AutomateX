@@ -22,16 +22,27 @@ export const MongoCrudProperties = ({ node, nodeType, nodeData, onUpdateNodeConf
   const fetchMongoCredentials = async () => {
     setLoadingCreds(true);
     try {
+      console.log('=== FETCHING MONGO CREDENTIALS FOR DROPDOWN ===');
       const list = await credentialService.getCredentialsByService('mongodb');
-      setCredentials(list);
-    } catch {
-      // fallback
+      console.log('Available credentials:', list);
+
+      // Normalize credential objects for dropdown
+      const normalized = list.map((cred) => ({
+        id: cred._id || cred.id,
+        name: cred.name || 'MongoDB Connection',
+        service: cred.service || cred.type || 'mongodb',
+        maskedValue: cred.maskedValue || '••••••••',
+      }));
+      setCredentials(normalized);
+    } catch (err) {
+      console.error('Failed to fetch MongoDB credentials for dropdown:', err);
     } finally {
       setLoadingCreds(false);
     }
   };
 
   const handleConfigChange = (key, value) => {
+    console.log(`[MongoCrudProperties]: Updating config key "${key}" =`, value);
     const nextConfig = { ...config, [key]: value };
     if (onUpdateNodeConfig) {
       onUpdateNodeConfig(nextConfig);
@@ -107,7 +118,7 @@ export const MongoCrudProperties = ({ node, nodeType, nodeData, onUpdateNodeConf
         >
           <option value="">-- Select Saved MongoDB Credential --</option>
           {credentials.map((cred) => (
-            <option key={cred._id} value={cred._id}>
+            <option key={cred.id} value={cred.id}>
               {cred.name} ({cred.maskedValue})
             </option>
           ))}
