@@ -5,9 +5,9 @@ import { ExpressionEngine } from '../../engine/expression/ExpressionEngine.js';
 
 /**
  * Build a proper RFC 2822 MIME email message and base64url encode it.
- * Supports To, CC, BCC, Subject, plain text and HTML body.
+ * Supports To, CC, BCC, Subject, plain text/HTML body, and PDF/file attachments.
  */
-function buildRawEmail({ to, cc, bcc, subject, body, bodyType = 'plain' }) {
+function buildRawEmail({ to, cc, bcc, subject, body, bodyType = 'plain', attachments = [] }) {
   const lines = [];
 
   lines.push(`To: ${to}`);
@@ -15,12 +15,51 @@ function buildRawEmail({ to, cc, bcc, subject, body, bodyType = 'plain' }) {
   if (bcc) lines.push(`Bcc: ${bcc}`);
   lines.push(`Subject: ${subject}`);
 
-  const mimeType = bodyType === 'html' ? 'text/html' : 'text/plain';
-  lines.push(`MIME-Version: 1.0`);
-  lines.push(`Content-Type: ${mimeType}; charset="UTF-8"`);
-  lines.push(`Content-Transfer-Encoding: 7bit`);
-  lines.push('');   // Blank line separates headers from body
-  lines.push(body);
+  const activeAttachments = (Array.isArray(attachments) ? attachments : [attachments]).filter(Boolean);
+
+  if (activeAttachments.length > 0) {
+    const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    lines.push(`MIME-Version: 1.0`);
+    lines.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
+    lines.push('');
+
+    // Message Body Part
+    lines.push(`--${boundary}`);
+    const mimeType = bodyType === 'html' ? 'text/html' : 'text/plain';
+    lines.push(`Content-Type: ${mimeType}; charset="UTF-8"`);
+    lines.push(`Content-Transfer-Encoding: 7bit`);
+    lines.push('');
+    lines.push(body);
+    lines.push('');
+
+    // Attachment Parts
+    activeAttachments.forEach((att) => {
+      const filename = att.filename || att.fileName || 'attachment.pdf';
+      const contentType = att.contentType || att.mimeType || 'application/pdf';
+      const rawContent = att.content || att.base64 || (typeof att === 'string' ? att : '');
+
+      if (!rawContent) return;
+
+      lines.push(`--${boundary}`);
+      lines.push(`Content-Type: ${contentType}; name="${filename}"`);
+      lines.push(`Content-Description: ${filename}`);
+      lines.push(`Content-Disposition: attachment; filename="${filename}"`);
+      lines.push(`Content-Transfer-Encoding: base64`);
+      lines.push('');
+      lines.push(rawContent.replace(/(.{76})/g, '$1\r\n'));
+      lines.push('');
+    });
+
+    lines.push(`--${boundary}--`);
+  } else {
+    // Simple email without attachments
+    const mimeType = bodyType === 'html' ? 'text/html' : 'text/plain';
+    lines.push(`MIME-Version: 1.0`);
+    lines.push(`Content-Type: ${mimeType}; charset="UTF-8"`);
+    lines.push(`Content-Transfer-Encoding: 7bit`);
+    lines.push('');
+    lines.push(body);
+  }
 
   const rawMessage = lines.join('\r\n');
 
@@ -124,6 +163,39 @@ export class GmailPlugin {
       if (typeof body === 'string' && body.includes('{{')) body = ExpressionEngine.resolve(body, context);
     }
 
+    // ── Resolve & Auto-Detect Attachments ──────────────────────────────────────
+    const attachments = [];
+    if (config.attachment) {
+      let resolvedAtt = config.attachment;
+      if (typeof resolvedAtt === 'string' && resolvedAtt.includes('{{') && context) {
+        resolvedAtt = ExpressionEngine.resolve(resolvedAtt, context);
+      }
+      if (resolvedAtt) {
+        if (typeof resolvedAtt === 'object') {
+          attachments.push(resolvedAtt);
+        } else if (typeof resolvedAtt === 'string') {
+          attachments.push({
+            filename: 'document.pdf',
+            content: resolvedAtt,
+            encoding: 'base64',
+            contentType: 'application/pdf',
+          });
+        }
+      }
+    }
+
+    // Auto-detect upstream attachment object if no explicit attachment configured
+    if (attachments.length === 0 && context) {
+      Object.values(context).forEach((nodeOutput) => {
+        if (nodeOutput && typeof nodeOutput === 'object') {
+          const att = nodeOutput.attachment || nodeOutput.output?.attachment;
+          if (att && typeof att === 'object' && (att.content || att.base64)) {
+            attachments.push(att);
+          }
+        }
+      });
+    }
+
     if (!to) throw new GmailExecutorError('Recipient email address (To) is required.', 'MISSING_RECIPIENT');
     if (!subject) throw new GmailExecutorError('Email subject is required.', 'MISSING_SUBJECT');
     if (!body) throw new GmailExecutorError('Email body is required.', 'MISSING_BODY');
@@ -132,13 +204,15 @@ export class GmailPlugin {
     console.log('Resolved recipient:', to);
     console.log('Resolved subject:', subject);
     console.log('Resolved body:', body);
+    console.log('Resolved attachments count:', attachments.length);
     console.log('Before calling gmail.users.messages.send():', {
       to,
       subject,
       body,
+      attachmentsCount: attachments.length,
     });
 
-    const rawEmail = buildRawEmail({ to, cc, bcc, subject, body, bodyType });
+    const rawEmail = buildRawEmail({ to, cc, bcc, subject, body, bodyType, attachments });
 
     const gmail = google.gmail({ version: 'v1', auth });
 

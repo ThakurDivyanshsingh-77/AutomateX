@@ -21,9 +21,12 @@ const TEMPLATES = [
 
 const PAGE_SIZES = ['A4', 'A3', 'Letter', 'Legal'];
 const OUTPUT_MODES = [
-  { value: 'base64', label: 'Base64 String' },
-  { value: 'binary', label: 'Binary Buffer' },
-  { value: 'url',    label: 'Download URL' },
+  { value: 'attachment',  label: 'Attachment Output (for Gmail)' },
+  { value: 'base64',      label: 'Base64 String' },
+  { value: 'binary',      label: 'Binary Buffer' },
+  { value: 'downloadUrl', label: 'Download URL' },
+  { value: 'storage',     label: 'Save to Local Storage' },
+  { value: 'all',         label: 'All Outputs (Expose Everything)' },
 ];
 
 const DEFAULT_CONTENT = {
@@ -240,11 +243,13 @@ export const PdfGeneratorProperties = ({ node, onUpdateNodeData }) => {
 
             {/* Info box */}
             <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[11px] space-y-1">
-              <div className="font-bold flex items-center gap-1"><Zap className="w-3 h-3" /> Execution Output</div>
-              <p className="text-[10px] opacity-80 font-mono">
-                {`{ success, fileName, mimeType, size, base64, attachment }`}
+              <div className="font-bold flex items-center gap-1"><Zap className="w-3 h-3" /> Execution Output Exposed</div>
+              <p className="text-[10px] opacity-90 font-mono">
+                {`{ success, fileName, mimeType, size, base64, attachment, downloadUrl }`}
               </p>
-              <p className="text-[10px] opacity-70">The <code>attachment</code> object is ready for Gmail "Attach PDF" action.</p>
+              <p className="text-[10px] opacity-70">
+                Supports Attachment (Gmail), Base64, Binary, Download URL, and Storage outputs. The <code>attachment</code> object is automatically recognized by Gmail node.
+              </p>
             </div>
           </>
         )}

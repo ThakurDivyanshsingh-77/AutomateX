@@ -64,29 +64,36 @@ export class PdfGeneratorExecutor extends BaseExecutor {
       fileName: resolvedFileName,
     });
 
-    // 6. Determine output mode
-    const outputMode = (config.outputMode || 'base64').toLowerCase();
+    // 6. Build complete execution output payload
+    const downloadUrl = `data:application/pdf;base64,${result.base64}`;
 
-    const outputs = {
-      success: true,
-      fileName: resolvedFileName,
-      mimeType: result.mimeType,
-      size: result.size,
-      executionTime: result.executionTime,
-      templateUsed: result.templateUsed,
-    };
-
-    if (outputMode === 'base64' || outputMode === 'all') {
-      outputs.base64 = result.base64;
-    }
-
-    // For Gmail attachment compatibility — produce attachment object
-    outputs.attachment = {
+    const attachment = {
       filename: resolvedFileName,
       content: result.base64,
       encoding: 'base64',
       contentType: 'application/pdf',
+      size: result.size,
     };
+
+    const outputs = {
+      success: true,
+      fileName: resolvedFileName,
+      mimeType: result.mimeType || 'application/pdf',
+      size: result.size,
+      base64: result.base64,
+      attachment,
+      downloadUrl,
+      executionTime: result.executionTime,
+      templateUsed: result.templateUsed,
+    };
+
+    const outputMode = (config.outputMode || 'base64').toLowerCase();
+
+    if (outputMode === 'binary') {
+      outputs.binary = result.buffer;
+    } else if (outputMode === 'storage' || outputMode === 'save_storage') {
+      outputs.storagePath = `test_pdfs/${resolvedFileName}`;
+    }
 
     console.log(`[PdfGeneratorExecutor] PDF generated: ${resolvedFileName} (${result.size} bytes) in ${result.executionTime}ms`);
 

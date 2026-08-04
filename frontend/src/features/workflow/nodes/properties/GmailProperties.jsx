@@ -346,6 +346,31 @@ export const GmailProperties = ({ node, onUpdateNodeData }) => {
               rows={5}
             />
           </div>
+
+          {/* ── Section: Attachment ────────────────────────────────────────── */}
+          <div className="space-y-2 border-t border-slate-800 pt-3">
+            <div className="flex items-center justify-between">
+              <FieldLabel>Attachment (PDF / File)</FieldLabel>
+              <button
+                type="button"
+                onClick={() => {
+                  updateConfig('attachment', '{{pdfGenerator.attachment}}');
+                  toast.success('Attached {{pdfGenerator.attachment}} with 1 click!');
+                }}
+                className="text-[10px] text-violet-400 hover:text-violet-300 font-semibold flex items-center gap-1 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/20 transition-colors"
+              >
+                📄 Attach PDF (1-Click)
+              </button>
+            </div>
+            <TextInput
+              value={config.attachment}
+              onChange={(v) => updateConfig('attachment', v)}
+              placeholder="{{pdfGenerator.attachment}} or {{pdfGenerator.base64}}"
+            />
+            <p className="text-[10px] text-slate-500 font-mono">
+              Automatically attaches PDF output from PDF Generator node.
+            </p>
+          </div>
         </>
       )}
 
