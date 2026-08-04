@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; }
+  .page { padding: 40px; max-width: 480px; margin: 0 auto; }
+  .receipt-header { text-align: center; padding-bottom: 20px; border-bottom: 2px dashed #e2e8f0; margin-bottom: 20px; }
+  .receipt-header .badge { display: inline-block; background: {{brandColor}}; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .receipt-header .company { font-size: 20px; font-weight: 800; color: {{brandColor}}; }
+  .receipt-header .tagline { font-size: 11px; color: #64748b; margin-top: 4px; }
+  .receipt-meta { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 20px; }
+  .items-list { width: 100%; }
+  .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+  .item-name { color: #334155; }
+  .item-amt { font-weight: 700; color: #1e293b; }
+  .totals { margin-top: 16px; }
+  .total-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: #64748b; }
+  .total-row.grand { font-size: 16px; font-weight: 800; color: {{brandColor}}; padding-top: 10px; border-top: 2px solid {{brandColor}}; margin-top: 6px; }
+  .payment-info { margin-top: 20px; padding: 14px; background: #f8fafc; border-radius: 10px; font-size: 11px; color: #475569; line-height: 1.8; }
+  .payment-info .label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 4px; }
+  .thank-you { text-align: center; margin-top: 24px; font-size: 13px; font-weight: 700; color: {{brandColor}}; }
+  .receipt-footer { text-align: center; margin-top: 8px; font-size: 10px; color: #94a3b8; border-top: 2px dashed #e2e8f0; padding-top: 14px; }
+  .qr-center { text-align: center; margin-top: 16px; }
+  .qr-center img { width: 72px; height: 72px; }
+  .qr-center p { font-size: 9px; color: #94a3b8; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="receipt-header">
+      {{#if logoUrl}}<img src="{{logoUrl}}" style="height:40px;margin-bottom:8px;" /><br/>{{/if}}
+      <div class="badge">Receipt</div>
+      <div class="company">{{companyName}}</div>
+      <div class="tagline">{{companyAddress}}</div>
+    </div>
+    <div class="receipt-meta">
+      <span><strong>Receipt #</strong> {{receiptNumber}}</span>
+      <span><strong>Date:</strong> {{receiptDate}}</span>
+    </div>
+    <div class="items-list">
+      {{#each items}}
+      <div class="item-row"><span class="item-name">{{description}}</span><span class="item-amt">{{amount}}</span></div>
+      {{else}}
+      <div class="item-row"><span class="item-name">{{itemDescription}}</span><span class="item-amt">{{itemAmount}}</span></div>
+      {{/each}}
+    </div>
+    <div class="totals">
+      <div class="total-row"><span>Subtotal</span><span>{{subtotal}}</span></div>
+      <div class="total-row"><span>Tax</span><span>{{tax}}</span></div>
+      <div class="total-row grand"><span>Total Paid</span><span>{{totalPaid}}</span></div>
+    </div>
+    <div class="payment-info">
+      <div class="label">Payment Details</div>
+      Method: {{paymentMethod}}<br/>
+      Transaction ID: {{transactionId}}<br/>
+      Status: <strong style="color:{{brandColor}}">{{paymentStatus}}</strong>
+    </div>
+    {{#if qrCodeBase64}}<div class="qr-center"><img src="data:image/png;base64,{{qrCodeBase64}}" alt="QR"/><p>Scan to verify</p></div>{{/if}}
+    <div class="thank-you">Thank you for your payment!</div>
+    <div class="receipt-footer">{{companyName}} • {{companyEmail}} • {{companyWebsite}}</div>
+  </div>
+</body>
+</html>

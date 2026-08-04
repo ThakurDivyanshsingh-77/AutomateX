@@ -11,6 +11,7 @@ import { DataMapperPanel } from '../components/DataMapperPanel';
 
 import { MongoCrudProperties } from '../nodes/database/MongoCrudProperties';
 import { MongoDBConnectionProperties } from '../nodes/database/MongoDBConnectionProperties';
+import { PdfGeneratorProperties } from '../nodes/pdf/PdfGeneratorProperties';
 
 export const PropertiesPanel = ({
   selectedNode,
@@ -57,6 +58,7 @@ export const PropertiesPanel = ({
   const isCronNode = selectedNode.type === 'cron';
   const isMongoCrudNode = selectedNode.type.startsWith('mongo') && selectedNode.type !== 'mongodb';
   const isMongoConnNode = selectedNode.type === 'mongodb';
+  const isPdfNode = selectedNode.type === 'pdfGenerator';
 
   return (
     <>
@@ -164,6 +166,11 @@ export const PropertiesPanel = ({
               <MongoDBConnectionProperties
                 nodeData={selectedNode.data}
                 onUpdateNodeConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isPdfNode ? (
+              <PdfGeneratorProperties
+                node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
               />
             ) : (
               <AutoForm

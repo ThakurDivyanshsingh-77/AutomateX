@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #1e293b; background: #fff; }
+  .page { padding: 48px; }
+  {{#if watermark}}.watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 80px; font-weight: 900; color: rgba(0,0,0,0.05); pointer-events: none; z-index: 9999; white-space: nowrap; }{{/if}}
+  .report-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 3px solid {{brandColor}}; margin-bottom: 24px; }
+  .report-title { font-size: 26px; font-weight: 800; color: {{brandColor}}; }
+  .report-subtitle { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .report-meta { text-align: right; font-size: 11px; color: #64748b; line-height: 1.8; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: {{brandColor}}; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; margin-bottom: 12px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card { background: linear-gradient(135deg, {{brandColor}}15, {{brandColor}}05); border: 1px solid {{brandColor}}30; border-radius: 10px; padding: 16px; text-align: center; }
+  .kpi-value { font-size: 24px; font-weight: 800; color: {{brandColor}}; }
+  .kpi-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table thead tr { background: {{brandColor}}; color: #fff; }
+  .data-table thead th { padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 700; }
+  .data-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .data-table tbody td { padding: 8px 12px; font-size: 11px; border-bottom: 1px solid #e2e8f0; }
+  .notes-box { background: #f8fafc; border-left: 4px solid {{brandColor}}; padding: 12px 16px; border-radius: 4px; font-size: 11px; color: #475569; line-height: 1.7; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; }
+</style>
+</head>
+<body>
+  {{#if watermark}}<div class="watermark">{{watermark}}</div>{{/if}}
+  <div class="page">
+    <div class="report-header">
+      <div>
+        {{#if logoUrl}}<img src="{{logoUrl}}" style="height:40px;margin-bottom:8px;" /><br/>{{/if}}
+        <div class="report-title">{{reportTitle}}</div>
+        <div class="report-subtitle">{{reportSubtitle}}</div>
+      </div>
+      <div class="report-meta">
+        <strong>{{companyName}}</strong><br/>
+        Generated: {{generatedDate}}<br/>
+        Period: {{reportPeriod}}<br/>
+        Prepared by: {{preparedBy}}
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="kpi-card"><div class="kpi-value">{{kpi1Value}}</div><div class="kpi-label">{{kpi1Label}}</div></div>
+      <div class="kpi-card"><div class="kpi-value">{{kpi2Value}}</div><div class="kpi-label">{{kpi2Label}}</div></div>
+      <div class="kpi-card"><div class="kpi-value">{{kpi3Value}}</div><div class="kpi-label">{{kpi3Label}}</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">{{tableTitle}}</div>
+      <table class="data-table">
+        <thead><tr>{{#each tableHeaders}}<th>{{this}}</th>{{/each}}</tr></thead>
+        <tbody>
+          {{#each tableRows}}
+          <tr>{{#each this}}<td>{{this}}</td>{{/each}}</tr>
+          {{else}}
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">No data available</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    {{#if notes}}<div class="section"><div class="section-title">Notes & Observations</div><div class="notes-box">{{notes}}</div></div>{{/if}}
+
+    <div class="footer">
+      <span>{{companyName}} — {{reportTitle}}</span>
+      <span>Generated: {{generatedDate}} | Page <span class="pageNumber"></span></span>
+    </div>
+  </div>
+</body>
+</html>

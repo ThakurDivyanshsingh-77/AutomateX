@@ -10,6 +10,7 @@ import { tryCatchManifest } from '../tryCatch';
 import { cronManifest } from '../cron/cronManifest';
 import { databaseManifest } from '../database/databaseManifest';
 import { mongoCrudManifest } from '../database/mongoCrudManifest';
+import { pdfGeneratorManifest } from '../pdf/pdfGeneratorManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -38,6 +39,7 @@ export const NODE_TYPES = {
   MONGO_DELETE_ONE: 'mongoDeleteOne',
   MONGO_COUNT: 'mongoCount',
   MONGO_AGGREGATE: 'mongoAggregate',
+  PDF_GENERATOR: 'pdfGenerator',
 };
 
 const databaseValidator = (nodeData) => {
@@ -72,6 +74,7 @@ export const nodeDefinitions = {
   [NODE_TYPES.MONGO_DELETE_ONE]: mongoCrudManifest.mongoDeleteOne,
   [NODE_TYPES.MONGO_COUNT]: mongoCrudManifest.mongoCount,
   [NODE_TYPES.MONGO_AGGREGATE]: mongoCrudManifest.mongoAggregate,
+  [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;
@@ -98,6 +101,7 @@ export const nodeValidators = {
   [NODE_TYPES.MONGO_DELETE_ONE]: databaseValidator,
   [NODE_TYPES.MONGO_COUNT]: databaseValidator,
   [NODE_TYPES.MONGO_AGGREGATE]: databaseValidator,
+  [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest.validate,
 };
 
 // Helper: Get definition by node type

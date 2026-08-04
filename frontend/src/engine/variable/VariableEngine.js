@@ -174,12 +174,26 @@ export const NODE_SCHEMA_REGISTRY = {
     },
   },
   pdf: {
-    label: 'PDF Generator',
+    label: 'PDF Generator (legacy)',
     icon: 'FileText',
     outputs: {
       pdfBuffer: { type: 'Binary', example: '<Buffer 25 50 44 46...>', description: 'Raw binary PDF buffer' },
       pageCount: { type: 'Number', example: 3, description: 'Total generated pages' },
       filename: { type: 'String', example: 'invoice_101.pdf', description: 'PDF file name' },
+    },
+  },
+  pdfGenerator: {
+    label: 'PDF Generator',
+    icon: 'FileOutput',
+    outputs: {
+      fileName: { type: 'String', example: 'invoice_102.pdf', description: 'Generated PDF filename' },
+      mimeType: { type: 'String', example: 'application/pdf', description: 'MIME type of the PDF file' },
+      size: { type: 'Number', example: 254981, description: 'PDF file size in bytes' },
+      base64: { type: 'String', example: 'JVBERi0x...', description: 'Base64-encoded PDF content for attachment or storage' },
+      executionTime: { type: 'Number', example: 321, description: 'PDF generation time in milliseconds' },
+      'attachment.filename': { type: 'String', example: 'invoice_102.pdf', description: 'Gmail-ready attachment filename' },
+      'attachment.content': { type: 'String', example: 'JVBERi0x...', description: 'Gmail-ready attachment Base64 content' },
+      'attachment.contentType': { type: 'String', example: 'application/pdf', description: 'Gmail attachment MIME type' },
     },
   },
   cron: {

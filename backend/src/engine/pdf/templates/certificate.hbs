@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', 'Times New Roman', serif; color: #1e293b; background: #fff; }
+  .page { padding: 60px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 12px solid {{brandColor}}; position: relative; }
+  {{#if watermark}}.watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 80px; font-weight: 900; color: rgba(0,0,0,0.05); pointer-events: none; z-index: 9999; white-space: nowrap; }{{/if}}
+  .inner-border { position: absolute; inset: 16px; border: 2px solid {{brandColor}}; opacity: 0.3; pointer-events: none; }
+  .cert-header { text-align: center; margin-bottom: 24px; }
+  .cert-header .org { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; color: {{brandColor}}; }
+  .cert-header .logo { max-height: 60px; margin-bottom: 12px; }
+  .cert-title { font-size: 38px; font-weight: 700; text-align: center; color: {{brandColor}}; margin-bottom: 10px; font-style: italic; }
+  .cert-subtitle { font-size: 14px; text-align: center; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 28px; }
+  .cert-body { text-align: center; font-size: 14px; color: #475569; line-height: 2; margin-bottom: 24px; }
+  .recipient { font-size: 32px; font-weight: 700; color: #0f172a; border-bottom: 2px solid {{brandColor}}; padding-bottom: 6px; display: inline-block; margin: 12px 0; }
+  .cert-description { font-size: 13px; color: #64748b; line-height: 1.8; max-width: 500px; text-align: center; margin: 0 auto 28px; }
+  .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin-top: 40px; }
+  .signature-block { text-align: center; flex: 1; }
+  .signature-line { border-top: 1.5px solid #1e293b; margin: 0 auto 6px; width: 160px; }
+  .signature-name { font-size: 12px; font-weight: 700; color: #1e293b; }
+  .signature-title { font-size: 10px; color: #94a3b8; }
+  .cert-date { font-size: 11px; color: #64748b; text-align: center; }
+  .cert-id { font-size: 10px; color: #94a3b8; text-align: center; margin-top: 4px; font-family: monospace; }
+  .qr-block { text-align: center; }
+  .qr-block img { width: 64px; height: 64px; }
+  .qr-block p { font-size: 9px; color: #94a3b8; }
+</style>
+</head>
+<body>
+  {{#if watermark}}<div class="watermark">{{watermark}}</div>{{/if}}
+  <div class="page">
+    <div class="inner-border"></div>
+    <div class="cert-header">
+      {{#if logoUrl}}<img src="{{logoUrl}}" class="logo" alt="Logo" /><br/>{{/if}}
+      <div class="org">{{companyName}}</div>
+    </div>
+    <div class="cert-title">Certificate of {{certificateType}}</div>
+    <div class="cert-subtitle">This is to certify that</div>
+    <div class="cert-body">
+      <div class="recipient">{{recipientName}}</div>
+    </div>
+    <div class="cert-description">
+      {{description}}
+    </div>
+    <div class="cert-footer">
+      <div class="signature-block">
+        {{#if signature1Img}}<img src="{{signature1Img}}" style="height:40px;" />{{/if}}
+        <div class="signature-line"></div>
+        <div class="signature-name">{{authorizedBy}}</div>
+        <div class="signature-title">{{authorizedTitle}}</div>
+      </div>
+      {{#if qrCodeBase64}}
+      <div class="qr-block">
+        <img src="data:image/png;base64,{{qrCodeBase64}}" alt="QR" />
+        <p>Verify</p>
+      </div>
+      {{/if}}
+      <div class="signature-block">
+        <div class="cert-date">{{issueDate}}</div>
+        <div class="signature-line"></div>
+        <div class="signature-name">Date of Issue</div>
+        <div class="cert-id">ID: {{certificateId}}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

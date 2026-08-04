@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 12px; }
+  .page { padding: 48px; display: grid; grid-template-columns: 1fr 2fr; gap: 32px; min-height: 100vh; }
+  /* Left sidebar */
+  .sidebar { background: {{brandColor}}; color: #fff; padding: 28px 20px; border-radius: 10px; }
+  .photo-circle { width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.15); margin: 0 auto 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; }
+  .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+  .name { font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+  .title-tag { font-size: 11px; text-align: center; opacity: 0.8; margin-bottom: 20px; }
+  .sidebar-section { margin-bottom: 20px; }
+  .sidebar-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.7; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 4px; }
+  .contact-item { font-size: 10px; opacity: 0.9; margin-bottom: 5px; }
+  .skill-bar { background: rgba(255,255,255,0.2); border-radius: 99px; height: 5px; margin-top: 4px; margin-bottom: 10px; }
+  .skill-fill { background: #fff; border-radius: 99px; height: 5px; }
+  .skill-name { font-size: 10px; opacity: 0.9; }
+  .lang-item { font-size: 10px; opacity: 0.9; margin-bottom: 4px; }
+  /* Main content */
+  .main {}
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: {{brandColor}}; padding-bottom: 6px; border-bottom: 2px solid {{brandColor}}; margin-bottom: 14px; }
+  .about-text { font-size: 11px; line-height: 1.8; color: #475569; }
+  .experience-item { margin-bottom: 16px; }
+  .exp-company { font-size: 13px; font-weight: 800; color: #1e293b; }
+  .exp-role { font-size: 11px; font-weight: 700; color: {{brandColor}}; }
+  .exp-period { font-size: 10px; color: #94a3b8; margin-bottom: 4px; }
+  .exp-desc { font-size: 11px; color: #475569; line-height: 1.6; }
+  .edu-item { margin-bottom: 14px; }
+  .edu-degree { font-size: 12px; font-weight: 800; color: #1e293b; }
+  .edu-inst { font-size: 11px; color: {{brandColor}}; }
+  .edu-year { font-size: 10px; color: #94a3b8; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="sidebar">
+      <div class="photo-circle">{{#if photoUrl}}<img src="{{photoUrl}}" alt="Photo" />{{else}}{{initials}}{{/if}}</div>
+      <div class="name">{{fullName}}</div>
+      <div class="title-tag">{{jobTitle}}</div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Contact</div>
+        <div class="contact-item">📧 {{email}}</div>
+        <div class="contact-item">📞 {{phone}}</div>
+        <div class="contact-item">📍 {{location}}</div>
+        {{#if website}}<div class="contact-item">🌐 {{website}}</div>{{/if}}
+        {{#if linkedin}}<div class="contact-item">🔗 {{linkedin}}</div>{{/if}}
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Skills</div>
+        {{#each skills}}
+        <div class="skill-name">{{name}}</div>
+        <div class="skill-bar"><div class="skill-fill" style="width:{{level}}%;"></div></div>
+        {{else}}
+        <div class="contact-item">{{skill1}}</div>
+        <div class="contact-item">{{skill2}}</div>
+        <div class="contact-item">{{skill3}}</div>
+        {{/each}}
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Languages</div>
+        {{#each languages}}<div class="lang-item">{{this}}</div>{{else}}<div class="lang-item">{{language1}}</div><div class="lang-item">{{language2}}</div>{{/each}}
+      </div>
+    </div>
+    <div class="main">
+      <div class="section">
+        <div class="section-title">Profile</div>
+        <div class="about-text">{{summary}}</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Work Experience</div>
+        {{#each experiences}}
+        <div class="experience-item">
+          <div class="exp-company">{{company}}</div>
+          <div class="exp-role">{{role}}</div>
+          <div class="exp-period">{{period}}</div>
+          <div class="exp-desc">{{description}}</div>
+        </div>
+        {{else}}
+        <div class="experience-item">
+          <div class="exp-company">{{company1}}</div>
+          <div class="exp-role">{{role1}}</div>
+          <div class="exp-period">{{period1}}</div>
+          <div class="exp-desc">{{desc1}}</div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="section">
+        <div class="section-title">Education</div>
+        {{#each education}}
+        <div class="edu-item">
+          <div class="edu-degree">{{degree}}</div>
+          <div class="edu-inst">{{institution}}</div>
+          <div class="edu-year">{{year}} {{#if grade}}• {{grade}}{{/if}}</div>
+        </div>
+        {{else}}
+        <div class="edu-item">
+          <div class="edu-degree">{{degree1}}</div>
+          <div class="edu-inst">{{institution1}}</div>
+          <div class="edu-year">{{year1}}</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

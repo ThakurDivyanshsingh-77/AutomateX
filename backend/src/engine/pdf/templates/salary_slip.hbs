@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; font-size: 11px; }
+  .page { padding: 32px 40px; }
+  .header { display: flex; justify-content: space-between; align-items: center; background: {{brandColor}}; color: #fff; padding: 20px 24px; border-radius: 10px; margin-bottom: 20px; }
+  .header .title { font-size: 18px; font-weight: 800; }
+  .header .sub { font-size: 11px; opacity: 0.8; margin-top: 4px; }
+  .emp-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 8px; }
+  .emp-field label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
+  .emp-field p { font-size: 12px; font-weight: 700; color: #1e293b; margin-top: 2px; }
+  .section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: {{brandColor}}; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
+  .slip-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  .slip-table thead tr { background: #1e293b; color: #fff; }
+  .slip-table thead th { padding: 8px 10px; text-align: left; font-size: 10px; }
+  .slip-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .slip-table tbody td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; }
+  .slip-table tfoot td { padding: 8px 10px; font-weight: 800; background: {{brandColor}}15; }
+  .net-box { background: {{brandColor}}; color: #fff; text-align: center; padding: 16px; border-radius: 10px; margin-top: 16px; }
+  .net-box .label { font-size: 11px; opacity: 0.85; }
+  .net-box .amount { font-size: 28px; font-weight: 800; margin-top: 4px; }
+  .footer-note { margin-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        {{#if logoUrl}}<img src="{{logoUrl}}" style="height:32px;margin-bottom:6px;" /><br/>{{/if}}
+        <div class="title">Salary Slip</div>
+        <div class="sub">{{monthYear}} • {{companyName}}</div>
+      </div>
+    </div>
+    <div class="emp-info">
+      <div class="emp-field"><label>Employee Name</label><p>{{employeeName}}</p></div>
+      <div class="emp-field"><label>Employee ID</label><p>{{employeeId}}</p></div>
+      <div class="emp-field"><label>Designation</label><p>{{designation}}</p></div>
+      <div class="emp-field"><label>Department</label><p>{{department}}</p></div>
+      <div class="emp-field"><label>Pay Period</label><p>{{monthYear}}</p></div>
+      <div class="emp-field"><label>PAN</label><p>{{panNumber}}</p></div>
+    </div>
+    <div class="section-title">Earnings</div>
+    <table class="slip-table">
+      <thead><tr><th>Component</th><th>Amount</th><th>Component</th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Basic Salary</td><td>{{basicSalary}}</td><td>House Rent Allowance</td><td>{{hra}}</td></tr>
+        <tr><td>Special Allowance</td><td>{{specialAllowance}}</td><td>Transport Allowance</td><td>{{transportAllowance}}</td></tr>
+        <tr><td>Medical Allowance</td><td>{{medicalAllowance}}</td><td>Other Allowances</td><td>{{otherAllowances}}</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">Gross Earnings</td><td>{{grossEarnings}}</td></tr></tfoot>
+    </table>
+    <div class="section-title">Deductions</div>
+    <table class="slip-table">
+      <thead><tr><th>Component</th><th>Amount</th><th>Component</th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Provident Fund</td><td>{{pf}}</td><td>Professional Tax</td><td>{{professionalTax}}</td></tr>
+        <tr><td>Income Tax (TDS)</td><td>{{tds}}</td><td>Other Deductions</td><td>{{otherDeductions}}</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">Total Deductions</td><td>{{totalDeductions}}</td></tr></tfoot>
+    </table>
+    <div class="net-box">
+      <div class="label">Net Salary Payable</div>
+      <div class="amount">{{netSalary}}</div>
+    </div>
+    <div class="footer-note">This is a computer-generated salary slip and does not require a signature. • {{companyName}}</div>
+  </div>
+</body>
+</html>

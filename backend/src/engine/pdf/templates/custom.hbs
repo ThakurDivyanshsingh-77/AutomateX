@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; background: #fff; }
+  .page { padding: 48px; }
+  {{#if watermark}}.watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 80px; font-weight: 900; color: rgba(0,0,0,0.05); pointer-events: none; z-index: 9999; white-space: nowrap; }{{/if}}
+  {{{customCSS}}}
+</style>
+</head>
+<body>
+  {{#if watermark}}<div class="watermark">{{watermark}}</div>{{/if}}
+  <div class="page">
+    {{{content}}}
+  </div>
+</body>
+</html>

@@ -7,6 +7,7 @@ import { GmailExecutor } from '../executors/GmailExecutor.js';
 import { ConditionExecutor } from '../executors/ConditionExecutor.js';
 import { TryCatchExecutor } from '../executors/TryCatchExecutor.js';
 import { DatabaseExecutor } from '../database/DatabaseExecutor.js';
+import { PdfGeneratorExecutor } from '../executors/PdfGeneratorExecutor.js';
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -33,6 +34,7 @@ export class ExecutorRegistry {
     ['mongoDeleteOne', DatabaseExecutor],
     ['mongoCount', DatabaseExecutor],
     ['mongoAggregate', DatabaseExecutor],
+    ['pdfGenerator', new PdfGeneratorExecutor()],
   ]);
 
   static getExecutor(nodeType) {

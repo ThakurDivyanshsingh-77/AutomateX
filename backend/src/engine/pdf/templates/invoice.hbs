@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #1e293b; background: #fff; }
+  .page { padding: 48px; min-height: 100vh; }
+  {{#if watermark}}.watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 80px; font-weight: 900; color: rgba(0,0,0,0.06); pointer-events: none; z-index: 9999; white-space: nowrap; }{{/if}}
+
+  /* Header */
+  .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 24px; border-bottom: 3px solid {{brandColor}}; }
+  .company-block .company-name { font-size: 22px; font-weight: 800; color: {{brandColor}}; }
+  .company-block .company-sub { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.5; }
+  .logo { max-height: 60px; max-width: 160px; }
+  .invoice-meta .badge { display: inline-block; background: {{brandColor}}; color: #fff; font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .invoice-meta table td { padding: 2px 8px; font-size: 11px; color: #475569; }
+  .invoice-meta table td:first-child { font-weight: 700; color: #1e293b; text-align: right; }
+
+  /* Bill To */
+  .billing { display: flex; gap: 48px; margin-bottom: 32px; }
+  .billing-block h4 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 8px; }
+  .billing-block p { font-size: 12px; color: #1e293b; line-height: 1.6; }
+
+  /* Line Items Table */
+  .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  .items-table thead tr { background: {{brandColor}}; color: #fff; }
+  .items-table thead th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .items-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .items-table tbody td { padding: 10px 12px; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+  .items-table tfoot tr { background: #f1f5f9; }
+  .items-table tfoot td { padding: 8px 12px; font-size: 12px; font-weight: 700; }
+
+  /* Totals */
+  .totals { float: right; width: 280px; margin-top: 8px; }
+  .totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+  .totals-row.grand { font-size: 15px; font-weight: 800; color: {{brandColor}}; border-bottom: none; margin-top: 4px; }
+  .clearfix::after { content: ''; display: block; clear: both; }
+
+  /* Notes */
+  .notes { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+  .notes h4 { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; margin-bottom: 6px; }
+  .notes p { font-size: 11px; color: #64748b; line-height: 1.6; }
+
+  /* QR */
+  .qr-section { float: right; text-align: center; margin-top: -10px; }
+  .qr-section img { width: 80px; height: 80px; }
+  .qr-section p { font-size: 9px; color: #94a3b8; margin-top: 4px; }
+</style>
+</head>
+<body>
+  {{#if watermark}}<div class="watermark">{{watermark}}</div>{{/if}}
+  <div class="page">
+    <!-- Header -->
+    <div class="inv-header">
+      <div class="company-block">
+        {{#if logoUrl}}<img src="{{logoUrl}}" class="logo" alt="Logo" /><br/>{{/if}}
+        <div class="company-name">{{companyName}}</div>
+        <div class="company-sub">{{companyAddress}}<br/>{{companyPhone}} | {{companyEmail}}<br/>{{companyWebsite}}</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="badge">Invoice</div>
+        <table>
+          <tr><td>Invoice No.</td><td>{{invoiceNumber}}</td></tr>
+          <tr><td>Date</td><td>{{invoiceDate}}</td></tr>
+          <tr><td>Due Date</td><td>{{dueDate}}</td></tr>
+          <tr><td>Status</td><td>{{status}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Billing Info -->
+    <div class="billing">
+      <div class="billing-block">
+        <h4>Bill To</h4>
+        <p><strong>{{clientName}}</strong><br/>{{clientAddress}}<br/>{{clientEmail}}<br/>{{clientPhone}}</p>
+      </div>
+      {{#if qrCodeBase64}}
+      <div class="qr-section">
+        <img src="data:image/png;base64,{{qrCodeBase64}}" alt="QR Code" />
+        <p>Scan to Pay</p>
+      </div>
+      {{/if}}
+    </div>
+
+    <!-- Line Items -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Item / Description</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each items}}
+        <tr>
+          <td>{{@index_plus_one}}</td>
+          <td>{{description}}</td>
+          <td>{{quantity}}</td>
+          <td>{{unitPrice}}</td>
+          <td>{{amount}}</td>
+        </tr>
+        {{else}}
+        <tr>
+          <td>1</td>
+          <td>{{itemDescription}}</td>
+          <td>{{quantity}}</td>
+          <td>{{unitPrice}}</td>
+          <td>{{totalAmount}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="clearfix">
+      <div class="totals">
+        <div class="totals-row"><span>Subtotal</span><span>{{subtotal}}</span></div>
+        <div class="totals-row"><span>Tax ({{taxRate}}%)</span><span>{{taxAmount}}</span></div>
+        <div class="totals-row"><span>Discount</span><span>{{discount}}</span></div>
+        <div class="totals-row grand"><span>Total Due</span><span>{{totalDue}}</span></div>
+      </div>
+    </div>
+
+    <!-- Notes & Terms -->
+    <div class="notes">
+      <h4>Notes / Terms</h4>
+      <p>{{notes}}</p>
+    </div>
+  </div>
+</body>
+</html>
