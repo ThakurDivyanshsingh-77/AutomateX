@@ -198,11 +198,15 @@ export class PdfService {
     try {
       const page = await browser.newPage();
 
-      // Set content and wait for fonts / images
-      await page.setContent(html, {
-        waitUntil: ['load', 'networkidle0'],
-        timeout: 30000,
-      });
+      // Set content — use domcontentloaded & load to prevent networkidle0 timeouts on cloud servers
+      try {
+        await page.setContent(html, {
+          waitUntil: ['domcontentloaded', 'load'],
+          timeout: 15000,
+        });
+      } catch (navErr) {
+        console.warn(`[PdfService] Page setContent timeout warning (proceeding with render): ${navErr.message}`);
+      }
 
       // PDF options
       const pdfOptions = {
