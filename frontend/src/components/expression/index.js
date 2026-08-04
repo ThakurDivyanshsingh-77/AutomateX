@@ -1,5 +1,6 @@
 export { ExpressionInput } from './ExpressionInput';
-export { VariablePickerModal } from './VariablePickerModal';
-export { VariableTree } from './VariableTree';
-export { VariableSearch } from './VariableSearch';
-export { VariablePreview } from './VariablePreview';
+export { UniversalVariableInput } from './UniversalVariableInput';
+export { VariablePickerDrawer } from './VariablePickerDrawer';
+export { JSONTreeExplorer } from './JSONTreeExplorer';
+export { VariablePreviewModal } from './VariablePreviewModal';
+export { VariableEngine } from '../../engine/variable/VariableEngine';

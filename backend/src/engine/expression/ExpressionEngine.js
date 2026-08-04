@@ -5,7 +5,7 @@ import { isPlainObject } from './helpers.js';
 /**
  * ExpressionEngine
  * Reusable, production-ready Expression Engine for Workflow Execution.
- * Replaces {{ nodeType.property }} placeholders with runtime values from ExecutionContext.
+ * Replaces {{ nodeType.property }} placeholders and function expressions with runtime values.
  */
 export class ExpressionEngine {
   /**
@@ -47,7 +47,7 @@ export class ExpressionEngine {
 
     // Case 1: Standalone single expression (e.g. "{{http.statusCode}}")
     if (tokens.length === 1 && tokens[0].type === 'expression') {
-      const resolved = ExpressionResolver.resolvePath(tokens[0].path, context);
+      const resolved = ExpressionResolver.resolveExpression(tokens[0].path, context);
       return resolved !== undefined ? resolved : '';
     }
 
@@ -57,7 +57,7 @@ export class ExpressionEngine {
       if (token.type === 'literal') {
         resultStr += token.value;
       } else if (token.type === 'expression') {
-        const resolved = ExpressionResolver.resolvePath(token.path, context);
+        const resolved = ExpressionResolver.resolveExpression(token.path, context);
         if (resolved !== undefined && resolved !== null) {
           resultStr += typeof resolved === 'object' ? JSON.stringify(resolved) : String(resolved);
         } else {

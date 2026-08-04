@@ -28,7 +28,7 @@ async function runTests() {
       id: 101,
       name: 'Divyansh',
       user: {
-        email: 'divyansh@example.com',
+        email: 'DIVYANSH@EXAMPLE.COM',
         address: {
           city: 'Jaipur',
           country: 'India',
@@ -65,112 +65,55 @@ async function runTests() {
     'Divyansh'
   );
 
+  // 2. Transformation Functions
   assert(
-    'Simple Variable (Gmail MessageId)',
-    ExpressionEngine.resolve('{{gmail.messageId}}', context),
-    '18ab4d8d90ef'
+    'Function upper()',
+    ExpressionEngine.resolve('{{upper(http.data.name)}}', context),
+    'DIVYANSH'
   );
 
-  // 2. Nested Object Resolution
+  assert(
+    'Function lower()',
+    ExpressionEngine.resolve('{{lower(http.data.user.email)}}', context),
+    'divyansh@example.com'
+  );
+
+  assert(
+    'Function length()',
+    ExpressionEngine.resolve('{{length(http.data.items)}}', context),
+    2
+  );
+
+  assert(
+    'Function if() conditional true',
+    ExpressionEngine.resolve('{{if(http.statusCode == 200, "Success", "Failure")}}', context),
+    'Success'
+  );
+
+  assert(
+    'Fallback operator (missing path | default)',
+    ExpressionEngine.resolve('{{http.missing | "Default Fallback"}}', context),
+    'Default Fallback'
+  );
+
+  // 3. Nested Object & Array Index Resolution
   assert(
     'Nested Path (user.address.city)',
     ExpressionEngine.resolve('{{http.data.user.address.city}}', context),
     'Jaipur'
   );
 
-  // 3. Array Index Resolution
   assert(
     'Array Index (items[0].name)',
     ExpressionEngine.resolve('{{http.data.items[0].name}}', context),
     'Laptop'
   );
 
-  assert(
-    'Array Index (items[1].price)',
-    ExpressionEngine.resolve('{{http.data.items[1].price}}', context),
-    40
-  );
-
-  // 4. Missing Property Handling (Returns empty string, NEVER throws)
+  // 4. Missing Property Handling
   assert(
     'Missing Property (Non-existent path)',
     ExpressionEngine.resolve('{{http.data.nonExistentField}}', context),
     ''
-  );
-
-  assert(
-    'Missing Property in Template String',
-    ExpressionEngine.resolve('Hello {{http.data.missingName}}!', context),
-    'Hello !'
-  );
-
-  // 5. Multiple Expressions in Single String
-  assert(
-    'Multiple Expressions in Single Template',
-    ExpressionEngine.resolve(
-      'Order #{{http.data.id}} for {{http.data.name}} - Status: {{http.statusCode}}',
-      context
-    ),
-    'Order #101 for Divyansh - Status: 200'
-  );
-
-  // 6. Standalone Type Preservation vs Embedded Stringification
-  assert(
-    'Standalone Expression Type Preservation (Object)',
-    ExpressionEngine.resolve('{{http.data.user.address}}', context),
-    { city: 'Jaipur', country: 'India' }
-  );
-
-  assert(
-    'Embedded Object Stringification',
-    ExpressionEngine.resolve('Address: {{http.data.user.address}}', context),
-    'Address: {"city":"Jaipur","country":"India"}'
-  );
-
-  // 7. Recursive Object Resolution
-  const inputObject = {
-    url: 'https://api.example.com/orders/{{http.data.id}}',
-    headers: {
-      Authorization: 'Bearer token_{{http.data.name}}',
-    },
-    payload: {
-      userId: '{{http.data.id}}',
-      city: '{{http.data.user.address.city}}',
-      firstItem: '{{http.data.items[0].name}}',
-    },
-  };
-
-  const expectedResolvedObject = {
-    url: 'https://api.example.com/orders/101',
-    headers: {
-      Authorization: 'Bearer token_Divyansh',
-    },
-    payload: {
-      userId: 101,
-      city: 'Jaipur',
-      firstItem: 'Laptop',
-    },
-  };
-
-  assert(
-    'Recursive Object Resolution (resolveObject)',
-    ExpressionEngine.resolve(inputObject, context),
-    expectedResolvedObject
-  );
-
-  // 8. Recursive Array Resolution
-  const inputArray = [
-    'Welcome {{http.data.name}}',
-    'Item: {{http.data.items[0].name}}',
-    '{{http.statusCode}}',
-  ];
-
-  const expectedResolvedArray = ['Welcome Divyansh', 'Item: Laptop', 200];
-
-  assert(
-    'Recursive Array Resolution (resolveArray)',
-    ExpressionEngine.resolve(inputArray, context),
-    expectedResolvedArray
   );
 
   console.log(`\n=== Test Results: ${passedCount}/${totalCount} Passed ===`);

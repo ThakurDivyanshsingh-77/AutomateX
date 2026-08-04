@@ -39,10 +39,13 @@ import { versionService } from '../services/versionService';
 // Phase 12 — AI Assistant Component
 import { AIAssistantDrawer } from '../components/AIAssistantDrawer';
 
+// Phase 13 — Data Mapper & Variable Engine
+import { DataMapperPanel } from '../components/DataMapperPanel';
+
 import { executionService } from '../services/executionService';
 import { Loader } from '../../../components/ui/Loader';
 import toast from 'react-hot-toast';
-import { ArrowLeft, GitFork, Terminal, Webhook, History, Rocket, Tag, Sparkles } from 'lucide-react';
+import { ArrowLeft, GitFork, Terminal, Webhook, History, Rocket, Tag, Sparkles, Zap } from 'lucide-react';
 
 const nodeTypes = {
   [NODE_TYPES.START]: TriggerNode,
@@ -68,11 +71,14 @@ const BuilderInner = () => {
   // ─── Phase 10: Versioning State ──────────────────────────────────────────────
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
-  const [compareVersions, setCompareVersions] = useState(null); // { versionA, versionB }
+  const [compareVersions, setCompareVersions] = useState(null);
   const [publishingVersion, setPublishingVersion] = useState(false);
 
   // ─── Phase 12: AI State ──────────────────────────────────────────────────────
   const [showAiDrawer, setShowAiDrawer] = useState(false);
+
+  // ─── Phase 13: Data Mapper State ──────────────────────────────────────────────
+  const [showDataMapperModal, setShowDataMapperModal] = useState(false);
 
   const {
     workflow,
@@ -107,7 +113,6 @@ const BuilderInner = () => {
     toast.success('Public Webhook URL copied!');
   };
 
-  // 1. Connection Validation Guard Rules
   const isValidConnection = useCallback(
     (connection) => {
       if (connection.source === connection.target) {
@@ -178,7 +183,6 @@ const BuilderInner = () => {
     setSelectedNodeId(null);
   }, [setSelectedNodeId]);
 
-  // Handle Workflow Execution Run
   const handleRunWorkflow = async () => {
     setIsRunning(true);
     try {
@@ -200,11 +204,9 @@ const BuilderInner = () => {
     }
   };
 
-  // ─── Phase 10: Publish Handler ────────────────────────────────────────────────
   const handlePublish = async ({ bump, title, description, changeSummary }) => {
     setPublishingVersion(true);
     try {
-      // Save first, then publish
       await saveWorkflow(nodes, edges);
       const currentDefinition = { nodes, edges, viewport: { x: 0, y: 0, zoom: 1 } };
 
@@ -222,17 +224,15 @@ const BuilderInner = () => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Publish failed';
       toast.error(msg);
-      throw err; // Let dialog handle state reset
+      throw err;
     } finally {
       setPublishingVersion(false);
     }
   };
 
-  // ─── Phase 10: Restore Handler ────────────────────────────────────────────────
   const handleRestore = async (versionTag) => {
     const res = await versionService.restoreVersion(id, versionTag);
     toast.success(res.message || `Restored to ${versionTag}`);
-    // Reload workflow to pick up restored definition
     window.location.reload();
   };
 
@@ -269,13 +269,11 @@ const BuilderInner = () => {
                 <span className="text-[10px] font-mono text-slate-500 capitalize">
                   {workflow?.status || 'draft'}
                 </span>
-                {/* Version badge */}
                 {currentVersion && (
                   <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-600/15 border border-indigo-500/25 text-indigo-400 flex items-center gap-0.5">
                     <Tag className="w-2.5 h-2.5" /> {currentVersion}
                   </span>
                 )}
-                {/* Draft indicator */}
                 {saveStatus === 'unsaved' && (
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/25 text-amber-400">
                     DRAFT
@@ -287,6 +285,16 @@ const BuilderInner = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Phase 13: Data Mapper Button */}
+          <button
+            onClick={() => setShowDataMapperModal(true)}
+            className="p-1.5 px-3 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-purple-500/30 transition-colors shadow-sm cursor-pointer"
+            title="Open Universal Visual Data Mapper"
+          >
+            <Zap className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20" />
+            Data Mapper
+          </button>
+
           <button
             onClick={handleCopyWebhookUrl}
             className="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-colors"
@@ -295,7 +303,6 @@ const BuilderInner = () => {
             <Webhook className="w-3.5 h-3.5" /> Webhook URL
           </button>
 
-          {/* Phase 10: Version History Button */}
           <button
             onClick={() => setShowVersionHistory(true)}
             className="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-colors"
@@ -305,17 +312,15 @@ const BuilderInner = () => {
             Version History
           </button>
 
-          {/* Phase 12: AI Assistant Button */}
           <button
             onClick={() => setShowAiDrawer(true)}
             className="p-1.5 px-3 bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-indigo-500/30 transition-colors shadow-sm"
-            title="Open AI Assistant (Generate, Explain, Optimize, Auto-Fix)"
+            title="Open AI Assistant"
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/20" />
             AI Assistant
           </button>
 
-          {/* Phase 10: Publish Button */}
           <button
             onClick={() => setShowPublishDialog(true)}
             disabled={publishingVersion}
@@ -384,9 +389,10 @@ const BuilderInner = () => {
           onUpdateNodeData={updateNodeData}
           onDeleteNode={deleteNode}
           workflowId={id}
+          workflowNodes={nodes}
+          executionSnapshot={activeExecution}
         />
 
-        {/* Execution Run Logs Slide-Over Drawer */}
         {activeExecution && (
           <ExecutionLogsDrawer
             execution={activeExecution}
@@ -395,9 +401,7 @@ const BuilderInner = () => {
         )}
       </div>
 
-      {/* ─── Phase 10: Versioning Modals & Panels ─────────────────────── */}
-
-      {/* Version History Slide-Over */}
+      {/* Versioning Modals */}
       {showVersionHistory && (
         <VersionHistoryPanel
           workflowId={id}
@@ -415,7 +419,6 @@ const BuilderInner = () => {
         />
       )}
 
-      {/* Publish Dialog */}
       {showPublishDialog && (
         <PublishDialog
           workflowId={id}
@@ -425,7 +428,6 @@ const BuilderInner = () => {
         />
       )}
 
-      {/* Compare Versions Modal */}
       {compareVersions && (
         <CompareVersionsModal
           workflowId={id}
@@ -435,7 +437,7 @@ const BuilderInner = () => {
         />
       )}
 
-      {/* Phase 12: AI Assistant Drawer */}
+      {/* AI Assistant Drawer */}
       {showAiDrawer && (
         <AIAssistantDrawer
           workflowId={id}
@@ -447,6 +449,25 @@ const BuilderInner = () => {
             saveWorkflow(newNodes, newEdges);
           }}
           onClose={() => setShowAiDrawer(false)}
+        />
+      )}
+
+      {/* Phase 13: Data Mapper Modal */}
+      {showDataMapperModal && (
+        <DataMapperPanel
+          isOpen={showDataMapperModal}
+          onClose={() => setShowDataMapperModal(false)}
+          targetNode={selectedNode || nodes[1] || nodes[0]}
+          workflowNodes={nodes}
+          executionSnapshot={activeExecution}
+          onUpdateTargetNodeConfig={(nodeId, field, val) => {
+            updateNodeData(nodeId, {
+              config: {
+                ...(nodes.find((n) => n.id === nodeId)?.data?.config || {}),
+                [field]: val,
+              },
+            });
+          }}
         />
       )}
     </div>
