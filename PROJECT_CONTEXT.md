@@ -124,15 +124,15 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ### **Phase 15.1 Complete — PDF Generator Node & Production Puppeteer Engine** — ✅ COMPLETED
 - **Backend PDF Generation Subsystem**:
-  - `PdfService.js`: Production PDF generation service powered by Handlebars HTML templating & Puppeteer headless Chrome renderer. Pre-compiles user content templates with Handlebars using structured runtime variables (`{ now, gmail, mongodb, http, workflow, vars }`) before passing compiled HTML into Puppeteer. Unrendered or missing variables resolve to empty strings `""`.
-  - `PdfGeneratorExecutor.js`: Execution handler passing raw Handlebars template content to `PdfService`, populating standard runtime variables (`now`, `gmail`, `mongodb`, `http`, `workflow`, `vars`), and returning full execution payload `{ success, fileName, mimeType, size, base64, attachment, downloadUrl }`.
+  - `PdfService.js`: Production PDF generation service powered by Handlebars HTML templating & Puppeteer headless Chrome renderer. Ensures custom user HTML (`htmlContent`, `customHtml`, `bodyHtml`, `content`) overrides built-in report fallback, pre-compiles templates with Handlebars using structured runtime variables (`{ now, gmail, mongodb, http, workflow, vars }`), and injects debug logging for request inspection.
+  - `PdfGeneratorExecutor.js`: Execution handler passing raw user HTML content (`htmlContent`, `customHtml`, `bodyHtml`, `content`) to `PdfService`, populating standard runtime variables (`now`, `gmail`, `mongodb`, `http`, `workflow`, `vars`), and returning full execution payload `{ success, fileName, mimeType, size, base64, attachment, downloadUrl }`.
   - `GmailPlugin.js`: Upgraded RFC 2822 MIME builder (`buildRawEmail`) to support `multipart/mixed` payloads with base64 PDF attachments. Automatically detects upstream `attachment` objects from PDF Generator nodes.
   - `.puppeteerrc.cjs` & Render Deployment Fix: Redirected Puppeteer cache directory to `backend/.cache/puppeteer` inside project root to ensure Chromium/Chrome binaries persist across Render deployment steps.
 - **Frontend PDF Generator & Live Preview Engine**:
   - `PdfGeneratorProperties.jsx`: Synchronized Live Preview iframe rendering engine with backend Handlebars compiler using sample runtime variables (`gmail`, `mongodb`, `http`, `workflow`, `now`).
   - `pdfGeneratorManifest.js`: Defined under **Output** category with purple theme (`#8b5cf6`), default inputs/outputs, and client-side validator.
   - `GmailProperties.jsx`: Added Attachment input field with 1-click **📄 Attach PDF** shortcut button (`{{pdfGenerator.attachment}}`).
-- **Automated Test Suite**: Passed **34/34** automated unit and integration tests in `test_phase15_1_pdf_generator.js`, including dedicated Handlebars engine unit tests.
+- **Automated Test Suite**: Passed **36/36** automated unit and integration tests in `test_phase15_1_pdf_generator.js`, including dedicated Handlebars compilation and custom HTML override tests.
 
 ---
 
