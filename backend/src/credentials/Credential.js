@@ -15,13 +15,13 @@ const credentialSchema = new mongoose.Schema(
     },
     service: {
       type: String,
-      enum: ['gmail', 'slack', 'discord', 'telegram', 'github', 'openai', 'http', 'custom'],
+      enum: ['mongodb', 'mysql', 'postgres', 'gmail', 'slack', 'discord', 'telegram', 'github', 'openai', 'http', 'custom'],
       required: true,
       index: true,
     },
     authType: {
       type: String,
-      enum: ['apiKey', 'bearerToken', 'basicAuth', 'oauth2'],
+      enum: ['uri', 'apiKey', 'bearerToken', 'basicAuth', 'oauth2', 'custom'],
       required: true,
     },
     encryptedData: {
