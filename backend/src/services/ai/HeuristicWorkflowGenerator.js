@@ -30,7 +30,15 @@ export class HeuristicWorkflowGenerator {
     // ── 1. Determine Trigger Node ─────────────────────────────────────────────
     let triggerNode = null;
 
-    if (text.includes('cron') || text.includes('schedule') || text.includes('every day') || text.includes('every hour') || text.includes('at 9 am')) {
+    if (
+      text.includes('cron') ||
+      text.includes('schedule') ||
+      text.includes('every') ||
+      text.includes('daily') ||
+      text.includes('hourly') ||
+      text.includes('minutes') ||
+      text.includes('at 9 am')
+    ) {
       triggerNode = {
         id: nextId('node'),
         type: 'cron',
@@ -41,7 +49,17 @@ export class HeuristicWorkflowGenerator {
         },
       };
       summarySteps.push('1. Triggers automatically on a scheduled cron timer.');
-    } else if (text.includes('webhook') || text.includes('signup') || text.includes('payment') || text.includes('stripe') || text.includes('lead') || text.includes('form')) {
+    } else if (
+      text.includes('webhook') ||
+      text.includes('signup') ||
+      text.includes('sign up') ||
+      text.includes('payment') ||
+      text.includes('stripe') ||
+      text.includes('lead') ||
+      text.includes('form') ||
+      text.includes('when') ||
+      text.includes('on user')
+    ) {
       triggerNode = {
         id: nextId('node'),
         type: 'webhook',
@@ -169,7 +187,7 @@ export class HeuristicWorkflowGenerator {
 
     // Auto-detect template title
     let title = 'Generated Automation Workflow';
-    if (text.includes('signup')) title = 'User Signup Welcome Sequence';
+    if (text.includes('signup') || text.includes('sign up')) title = 'User Signup Welcome Sequence';
     else if (text.includes('weather')) title = 'Daily Weather Forecast Alert';
     else if (text.includes('payment') || text.includes('stripe')) title = 'Payment Receipt Workflow';
     else if (text.includes('lead')) title = 'CRM Lead Capture & Routing';

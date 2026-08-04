@@ -102,16 +102,10 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `RetryConfigFields.jsx`: Added **Timeout (ms)** input field to node properties.
   - `ExecutionDetailsDrawer.jsx`: Visualizes per-attempt retry duration, status, and timeout badges in execution timeline.
 
-### **Phase 12 Complete — AI Workflow Builder (Natural Language → Workflow)** — ✅ COMPLETED
-- **Grok / Groq AI Integration**:
-  - `GrokClient.js`: Multi-provider LLM API client supporting **Groq API** (`gsk_...` keys using `https://api.groq.com/openai/v1/chat/completions` with `llama-3.3-70b-versatile`), **xAI Grok** (`xai-...` keys with `grok-2-latest`), and **OpenAI**. Uses structured JSON prompt engineering.
-  - `HeuristicWorkflowGenerator.js`: Built-in offline rule-based NLP workflow generator. Parses prompt intents, detects triggers (`webhook`, `cron`, `start`) and actions (`gmail`, `http`, `slack`, `discord`, `telegram`, `delay`, `log`, `condition`), auto-calculates horizontal layout grids.
-  - `AIWorkflowService.js`: High-level orchestrator providing 4 core operations: `generate`, `explain`, `optimize`, and `fix`.
-  - `aiController.js` & `aiRoutes.js`: REST endpoints mounted under `/api/v1/ai`.
-- **Frontend AI Builder Workspaces**:
-  - `AIBuilderPage.jsx`: Dedicated prompt workspace page at `/ai-builder` with natural language textarea, template inspiration pills, live pipeline node preview, step-by-step breakdown, and 1-click canvas launch.
-  - `AIAssistantDrawer.jsx`: Floating drawer in visual canvas builder with 4 AI modes (**Generate**, **Explain**, **Optimize**, **Auto-Fix**).
-  - `WorkflowCanvas.jsx` & `Sidebar.jsx`: Added **AI Assistant** button (Sparkles icon) to canvas header and **AI Builder** link to navigation sidebar.
+### **Phase 12 & AI Intent Validation Complete — AI Workflow Builder & Intent System** — ✅ COMPLETED
+- **AI Intent Classification Subsystem** (`IntentClassifier.js`): Classifies prompts into 5 categories before generating nodes (`automation`, `conversation`, `knowledge`, `physical_action`, `unsupported_automation`). Rejects non-automation requests ("Make me coffee", "Tell me a joke", "Who is Virat Kohli?") with 0 nodes generated and structured guidance messages. Enforces 70% confidence threshold. Passed 12/12 automated unit tests in `test_ai_intent.js`.
+- **Grok / Groq AI Integration**: `GrokClient.js` (Groq API `llama-3.3-70b-versatile`, xAI Grok `grok-2-latest`), `HeuristicWorkflowGenerator.js`, `AIWorkflowService.js` (`generate`, `explain`, `optimize`, `fix`).
+- **Frontend Workspaces**: `AIBuilderPage.jsx` (`/ai-builder`) with rejection alert banner, `AIAssistantDrawer.jsx` in visual builder.
 
 ### **Phase 13, 13.1, 13.2 & 13.3 Complete — Advanced Universal Variable System & Visual Data Mapper** — ✅ COMPLETED
 - **Advanced Developer API** (`VariableEngine.js`): `VariableEngine.evaluate()`, `VariableEngine.executeFunction()`, `VariableEngine.resolve()`, `VariableEngine.search()`, `VariableEngine.validate()`, `VariableEngine.register()`, and `VariableEngine.getMetadata()`. Passed 13/13 automated unit tests in `VariableEngine.test.js`.
@@ -129,7 +123,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Framework**: Express.js
 - **Database**: MongoDB & Mongoose ORM
 - **Security & Vault**: `bcryptjs`, `jsonwebtoken`, `crypto` (AES-256-CBC Encryption)
-- **AI Engine**: Groq API (`gsk_...` key, `llama-3.3-70b-versatile`), xAI Grok API (`grok-2-latest`), `HeuristicWorkflowGenerator` offline fallback engine
+- **AI Engine & Intent Classifier**: `IntentClassifier` (5 intent categories, 70% confidence threshold), Groq API (`gsk_...` key, `llama-3.3-70b-versatile`), xAI Grok API (`grok-2-latest`), `HeuristicWorkflowGenerator` offline engine
 - **Versioning Engine**: `WorkflowVersion` model, `VersionManager`, `VersionComparator` (structured node/edge diff), `PublishManager`
 - **Reliability Engine**: `TimeoutManager`, `RetryEngine`, `ErrorHandler` (7 error categories), `DeadLetterQueue`, `FailureRecovery`, `NotificationManager`
 - **Expression & Variable Engine**: `ExpressionEngine`, `ExpressionParser`, `ExpressionResolver`, `ExpressionFunctions` (16 transformation functions, ternary conditions, fallbacks, system variables)

@@ -1,5 +1,6 @@
 import { GrokClient } from './GrokClient.js';
 import { HeuristicWorkflowGenerator } from './HeuristicWorkflowGenerator.js';
+import { IntentClassifier } from './IntentClassifier.js';
 import { WorkflowParser } from '../../engine/parser/WorkflowParser.js';
 import { GraphValidator } from '../../engine/graph/GraphValidator.js';
 import { Workflow } from '../../models/Workflow.js';
@@ -11,9 +12,26 @@ import mongoose from 'mongoose';
 export class AIWorkflowService {
   /**
    * Generate a workflow graph from a natural language prompt.
-   * Tries Grok AI API first, falls back to Heuristic Generator.
+   * Performs Intent Classification & Confidence Validation first!
    */
   static async generate(prompt, ownerId = null) {
+    // 1. INTENT CLASSIFICATION & CONFIDENCE VALIDATION
+    const classification = IntentClassifier.classify(prompt);
+
+    if (!classification.isAutomation || classification.confidenceScore < 0.70) {
+      return {
+        success: false,
+        isAutomation: false,
+        category: classification.category,
+        confidenceScore: classification.confidenceScore,
+        message: classification.message,
+        summary: classification.message,
+        definition: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
+        warnings: [classification.message],
+      };
+    }
+
+    // 2. WORKFLOW GENERATION (Valid Automation Request)
     let result = null;
     let usedProvider = 'grok';
 
@@ -58,6 +76,7 @@ export class AIWorkflowService {
 
     return {
       success: true,
+      isAutomation: true,
       provider: usedProvider,
       workflow: createdWorkflow,
       name: result.name || 'AI Generated Workflow',

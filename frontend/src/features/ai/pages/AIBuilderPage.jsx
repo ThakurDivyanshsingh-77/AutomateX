@@ -12,7 +12,8 @@ import {
   Layers,
   Code,
   Zap,
-  Bot
+  Bot,
+  Info
 } from 'lucide-react';
 import { aiService } from '../services/aiService';
 import toast from 'react-hot-toast';
@@ -55,7 +56,11 @@ export const AIBuilderPage = () => {
     try {
       const res = await aiService.generateWorkflow(textToUse.trim());
       setResult(res);
-      toast.success(`✨ Workflow "${res.name || 'AI Generated'}" ready!`);
+      if (res.isAutomation && res.success) {
+        toast.success(`✨ Workflow "${res.name || 'AI Generated'}" ready!`);
+      } else {
+        toast.error(res.message || 'No automation workflow detected.');
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'AI Generation failed');
     } finally {
@@ -141,7 +146,7 @@ export const AIBuilderPage = () => {
             {generating ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Grok AI Engine Generating Graph...</span>
+                <span>AI Classifying Intent & Generating Graph...</span>
               </>
             ) : (
               <>
@@ -153,81 +158,88 @@ export const AIBuilderPage = () => {
         </div>
       </div>
 
-      {/* AI Generated Result Preview Card */}
+      {/* AI Generated Result or Rejection Notice */}
       {result && (
-        <div className="bg-slate-900 border border-indigo-500/30 bg-indigo-500/5 rounded-2xl p-6 shadow-2xl space-y-5">
-          {/* Card Header */}
-          <div className="flex items-start justify-between border-b border-indigo-500/20 pb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
-                  {result.provider === 'grok' ? '✨ GROK AI' : '⚡ HEURISTIC AI'}
-                </span>
-                <h3 className="text-sm font-bold text-white">{result.name}</h3>
+        result.isAutomation ? (
+          <div className="bg-slate-900 border border-indigo-500/30 bg-indigo-500/5 rounded-2xl p-6 shadow-2xl space-y-5">
+            {/* Card Header */}
+            <div className="flex items-start justify-between border-b border-indigo-500/20 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
+                    {result.provider === 'grok' ? '✨ GROK AI' : '⚡ HEURISTIC AI'}
+                  </span>
+                  <h3 className="text-sm font-bold text-white">{result.name}</h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">{result.description}</p>
               </div>
-              <p className="text-xs text-slate-400 mt-1">{result.description}</p>
+
+              {result.workflow?._id && (
+                <button
+                  onClick={handleOpenInBuilder}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
+                >
+                  <span>Open in Canvas Builder</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
-            {result.workflow?._id && (
-              <button
-                onClick={handleOpenInBuilder}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
-              >
-                <span>Open in Canvas Builder</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            {/* Generated Node Sequence Pipeline */}
+            <div className="space-y-2">
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Generated Graph Structure ({result.definition?.nodes?.length || 0} Nodes)
+              </h4>
+              <div className="flex items-center gap-2 overflow-x-auto p-3 rounded-xl bg-slate-950 border border-slate-800 custom-scrollbar">
+                {(result.definition?.nodes || []).map((node, i) => (
+                  <React.Fragment key={node.id}>
+                    <div className="px-3 py-2 rounded-lg bg-slate-900 border border-indigo-500/30 text-xs font-semibold text-slate-200 flex items-center gap-2 flex-shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-indigo-600/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold">
+                        {i + 1}
+                      </span>
+                      <span>{node.data?.label || node.type}</span>
+                      <span className="text-[9px] font-mono text-slate-500 px-1 py-0.5 rounded bg-slate-950">
+                        {node.type}
+                      </span>
+                    </div>
+                    {i < result.definition.nodes.length - 1 && (
+                      <span className="text-slate-600 font-mono font-bold flex-shrink-0">→</span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+
+            {/* Explanation Summary */}
+            {result.summary && (
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Bot className="w-3.5 h-3.5 text-indigo-400" /> AI Step-By-Step Breakdown
+                </h4>
+                <pre className="text-xs text-slate-300 font-sans whitespace-pre-wrap leading-relaxed">
+                  {result.summary}
+                </pre>
+              </div>
             )}
           </div>
-
-          {/* Generated Node Sequence Pipeline */}
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Generated Graph Structure ({result.definition?.nodes?.length || 0} Nodes)
-            </h4>
-            <div className="flex items-center gap-2 overflow-x-auto p-3 rounded-xl bg-slate-950 border border-slate-800 custom-scrollbar">
-              {(result.definition?.nodes || []).map((node, i) => (
-                <React.Fragment key={node.id}>
-                  <div className="px-3 py-2 rounded-lg bg-slate-900 border border-indigo-500/30 text-xs font-semibold text-slate-200 flex items-center gap-2 flex-shrink-0">
-                    <span className="w-5 h-5 rounded-full bg-indigo-600/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold">
-                      {i + 1}
-                    </span>
-                    <span>{node.data?.label || node.type}</span>
-                    <span className="text-[9px] font-mono text-slate-500 px-1 py-0.5 rounded bg-slate-950">
-                      {node.type}
-                    </span>
-                  </div>
-                  {i < result.definition.nodes.length - 1 && (
-                    <span className="text-slate-600 font-mono font-bold flex-shrink-0">→</span>
-                  )}
-                </React.Fragment>
-              ))}
+        ) : (
+          /* Rejection Alert Box for Non-Automation Prompts */
+          <div className="bg-slate-900 border border-rose-500/30 bg-rose-500/5 rounded-2xl p-6 shadow-2xl space-y-4 font-sans animate-fadeIn">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex-shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-2 flex-1">
+                <h3 className="text-sm font-bold text-rose-300">
+                  No Automation Workflow Detected
+                </h3>
+                <pre className="text-xs text-slate-300 font-sans whitespace-pre-wrap leading-relaxed">
+                  {result.message}
+                </pre>
+              </div>
             </div>
           </div>
-
-          {/* Explanation Summary */}
-          {result.summary && (
-            <div className="space-y-1.5 p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Bot className="w-3.5 h-3.5 text-indigo-400" /> AI Step-By-Step Breakdown
-              </h4>
-              <pre className="text-xs text-slate-300 font-sans whitespace-pre-wrap leading-relaxed">
-                {result.summary}
-              </pre>
-            </div>
-          )}
-
-          {/* Warnings */}
-          {result.warnings && result.warnings.length > 0 && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5" /> Note / Suggestions
-              </div>
-              {result.warnings.map((w, idx) => (
-                <p key={idx} className="text-[11px] text-amber-300/80">• {w}</p>
-              ))}
-            </div>
-          )}
-        </div>
+        )
       )}
     </div>
   );
