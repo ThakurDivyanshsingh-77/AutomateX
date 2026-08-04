@@ -143,7 +143,7 @@ export class PdfService {
 
     let browser = null;
     try {
-      browser = await puppeteer.launch({
+      const launchOptions = {
         headless: true,
         args: [
           '--no-sandbox',
@@ -151,8 +151,18 @@ export class PdfService {
           '--disable-dev-shm-usage',
           '--disable-gpu',
           '--no-first-run',
+          '--no-zygote',
+          '--single-process',
         ],
-      });
+      };
+
+      if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+        launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+      } else if (process.env.CHROME_PATH) {
+        launchOptions.executablePath = process.env.CHROME_PATH;
+      }
+
+      browser = await puppeteer.launch(launchOptions);
 
       const page = await browser.newPage();
 
