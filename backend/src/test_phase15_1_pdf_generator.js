@@ -208,6 +208,34 @@ async function runTests() {
   fs.writeFileSync(path.join(testOutDir, 'custom_doc.pdf'), Buffer.from(customResult.base64, 'base64'));
   console.log(`   ℹ PDF saved: test_pdfs/custom_doc.pdf`);
 
+  // ─── Test 7.1: Custom htmlContent Override & Handlebars Rendering ─────────
+  console.log('\nTest 7.1: Custom htmlContent Override & Handlebars Rendering...');
+  const htmlContentOverrideResult = await PdfService.generatePdf({
+    template: 'report', // User sends template: report or none, but includes custom htmlContent
+    htmlContent: `
+      <h1>HELLO AUTOMATEX</h1>
+      <p>Total Emails: {{gmail.count}}</p>
+      <ul>
+        {{#each gmail.messages}}
+          <li>{{this.subject}}</li>
+        {{/each}}
+      </ul>
+    `,
+    variables: {
+      now: '04/08/2026',
+      gmail: {
+        count: 2,
+        messages: [{ subject: 'Invoice #101' }, { subject: 'Receipt #102' }],
+      },
+    },
+    config: {},
+    fileName: 'custom_html_override.pdf',
+  });
+  assert('Custom htmlContent override PDF generated', htmlContentOverrideResult.size > 1000);
+  assert('Custom htmlContent output base64 valid', htmlContentOverrideResult.base64.startsWith('JVBERi0x'));
+  fs.writeFileSync(path.join(testOutDir, 'custom_html_override.pdf'), Buffer.from(htmlContentOverrideResult.base64, 'base64'));
+  console.log(`   ℹ PDF saved: test_pdfs/custom_html_override.pdf`);
+
   // ─── Test 8: Watermark Support ────────────────────────────────────────────
   console.log('\nTest 8: Watermark Support...');
   const watermarkResult = await PdfService.generatePdf({

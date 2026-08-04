@@ -65,16 +65,28 @@ export class PdfService {
   /**
    * Build the full HTML string from a template + variables.
    */
-  static async _buildHtml({ template, content, variables, config }) {
-    const templateName = (template || 'blank').toLowerCase().replace(/\s+/g, '_');
+  static async _buildHtml({ template, content, htmlContent, customHtml, bodyHtml, variables = {}, config = {} }) {
+    // Extract raw user HTML content from any possible field name
+    const rawUserHtml = htmlContent || customHtml || bodyHtml || content || config.htmlContent || config.customHtml || config.bodyHtml || config.content || '';
 
-    // If template is 'custom_html' or content already has full HTML tags, use custom
-    const useCustom = templateName === 'custom_html' || templateName === 'custom';
+    // Selected template type calculation
+    let templateName = (template || '').toLowerCase().replace(/\s+/g, '_');
 
-    // For custom mode: use the content directly; for others: merge into template
-    const compiledTemplate = useCustom
-      ? Handlebars.compile(fs.readFileSync(path.join(TEMPLATES_DIR, 'custom.hbs'), 'utf8'))
-      : this._loadTemplate(templateName);
+    if (rawUserHtml && rawUserHtml.trim().length > 0) {
+      if (!template || template === 'report' || template === 'blank' || template === 'custom' || template === 'custom_html') {
+        templateName = 'custom_html';
+      }
+    } else if (!templateName) {
+      templateName = 'report';
+    }
+
+    console.log(`[PdfService] Incoming request config/body:`, JSON.stringify({
+      template: template || 'none',
+      hasCustomHtml: Boolean(rawUserHtml),
+      contentLength: rawUserHtml.length,
+      variablesKeys: Object.keys(variables),
+    }));
+    console.log(`[PdfService] Selected template type: "${templateName}"`);
 
     // Generate QR Code if qrData is present
     let qrCodeBase64 = null;
@@ -96,39 +108,59 @@ export class PdfService {
       watermarkOpacity: config.watermarkOpacity || 0.06,
       generatedDate: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
       customCSS: config.customCSS || '',
-      // QR code
       qrCodeBase64,
-      // Spread ALL resolved workflow variables at root so {{varName}} works
       ...variables,
     };
 
-    // Pre-compile user's raw Handlebars template content using runtimeVariables context
-    let compiledContent = '';
-    if (content) {
+    // Pre-compile user HTML with Handlebars if custom HTML exists
+    let compiledUserContent = '';
+    if (rawUserHtml && rawUserHtml.trim().length > 0) {
+      console.log(`[PdfService] HTML before compilation:\n${rawUserHtml}`);
       try {
-        const contentTemplateFn = Handlebars.compile(content);
-        compiledContent = contentTemplateFn(context);
+        const contentTemplateFn = Handlebars.compile(rawUserHtml);
+        compiledUserContent = contentTemplateFn(context);
+        console.log(`[PdfService] HTML after compilation:\n${compiledUserContent}`);
       } catch (err) {
-        console.warn(`[PdfService] Handlebars compilation error on content: ${err.message}`);
-        compiledContent = content;
+        console.warn(`[PdfService] Handlebars compilation error on custom HTML: ${err.message}`);
+        compiledUserContent = rawUserHtml;
       }
     }
 
-    context.content = compiledContent;
+    // If template is custom or contains full HTML tags, compile directly or wrap in custom container
+    if (templateName === 'custom_html' || templateName === 'custom') {
+      const isFullDoc = compiledUserContent.includes('<html') || compiledUserContent.includes('<!DOCTYPE');
+      if (isFullDoc) {
+        return compiledUserContent;
+      }
+      context.content = compiledUserContent;
+      const customTemplate = Handlebars.compile(fs.readFileSync(path.join(TEMPLATES_DIR, 'custom.hbs'), 'utf8'));
+      return customTemplate(context);
+    }
 
-    return compiledTemplate(context);
+    // If blank template
+    if (templateName === 'blank') {
+      context.content = compiledUserContent;
+      const blankTemplate = this._loadTemplate('blank');
+      return blankTemplate(context);
+    }
+
+    // Built-in templates (invoice, certificate, report, receipt, offer_letter, salary_slip, resume)
+    const builtInTemplate = this._loadTemplate(templateName);
+    context.content = compiledUserContent;
+    return builtInTemplate(context);
   }
 
   /**
    * Generate PDF from HTML using Puppeteer.
    */
-  static async generatePdf({ template, content, variables = {}, config = {}, fileName }) {
+  static async generatePdf({ template, content, htmlContent, customHtml, bodyHtml, variables = {}, config = {}, fileName }) {
     const startTime = Date.now();
 
     console.log(`[PdfService] Generating PDF — Template: "${template}", File: "${fileName}"`);
 
     // Build HTML
-    const html = await this._buildHtml({ template, content, variables, config });
+    const html = await this._buildHtml({ template, content, htmlContent, customHtml, bodyHtml, variables, config });
+    console.log(`[PdfService] HTML passed into page.setContent():\n${html.substring(0, 300)}...`);
 
     // Page settings
     const pageSize = (config.pageSize || 'A4').toUpperCase();

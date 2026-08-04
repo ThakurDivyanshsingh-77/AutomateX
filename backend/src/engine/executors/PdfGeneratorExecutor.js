@@ -22,8 +22,8 @@ export class PdfGeneratorExecutor extends BaseExecutor {
     const rawFileName = config.fileName || 'document_{{now}}.pdf';
     const resolvedFileName = this._resolveVariables(rawFileName, variables);
 
-    // 3. Raw template content (passed unmangled to PdfService for Handlebars compilation)
-    const rawContent = config.content || config.htmlContent || '';
+    // 3. Extract user template content from any possible field name
+    const rawContent = config.htmlContent || config.customHtml || config.bodyHtml || config.content || '';
 
     // 4. Build branding/layout config
     const pdfConfig = {
@@ -48,12 +48,19 @@ export class PdfGeneratorExecutor extends BaseExecutor {
       marginBottom: config.marginBottom || '20mm',
       marginLeft: config.marginLeft || '15mm',
       customCSS: config.customCSS || '',
+      htmlContent: config.htmlContent,
+      customHtml: config.customHtml,
+      bodyHtml: config.bodyHtml,
+      content: config.content,
     };
 
     // 5. Generate PDF with Handlebars compiled content
     const result = await PdfService.generatePdf({
-      template: config.template || 'blank',
+      template: config.template,
       content: rawContent,
+      htmlContent: config.htmlContent,
+      customHtml: config.customHtml,
+      bodyHtml: config.bodyHtml,
       variables,
       config: pdfConfig,
       fileName: resolvedFileName,
