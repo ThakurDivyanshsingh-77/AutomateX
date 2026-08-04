@@ -125,13 +125,14 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 ### **Phase 15.1 Complete — PDF Generator Node & Production Puppeteer Engine** — ✅ COMPLETED
 - **Backend PDF Generation Subsystem**:
   - `PdfService.js`: Production PDF generation service powered by Handlebars HTML templating & Puppeteer headless Chrome renderer. Supports 9 templates (`blank`, `invoice`, `certificate`, `report`, `receipt`, `offer_letter`, `salary_slip`, `resume`, `custom`), dynamic QR code embedding, page margins, custom header/footer HTML, and base64 output.
-  - `PdfGeneratorExecutor.js`: Execution handler resolving Mustache variables (`{{trigger.body.orderId}}`, `{{now}}`), invoking `PdfService`, and returning Gmail-ready `attachment` payload objects. Registered in `ExecutorRegistry.js`.
+  - `PdfGeneratorExecutor.js`: Execution handler resolving Mustache variables (`{{trigger.body.orderId}}`, `{{now}}`), invoking `PdfService`, and returning full execution payload `{ success, fileName, mimeType, size, base64, attachment, downloadUrl }`. Supports 6 output modes (`attachment`, `base64`, `binary`, `downloadUrl`, `storage`, `all`). Registered in `ExecutorRegistry.js`.
+  - `GmailPlugin.js`: Upgraded RFC 2822 MIME builder (`buildRawEmail`) to support `multipart/mixed` payloads with base64 PDF attachments. Automatically detects upstream `attachment` objects from PDF Generator nodes.
   - `.puppeteerrc.cjs` & Render Deployment Fix: Redirected Puppeteer cache directory to `backend/.cache/puppeteer` inside project root to ensure Chromium/Chrome binaries persist across Render deployment steps.
-- **Frontend PDF Generator Node**:
+- **Frontend PDF Generator & Gmail Node Enhancements**:
   - `pdfGeneratorManifest.js`: Defined under **Output** category with purple theme (`#8b5cf6`), default inputs/outputs, and client-side validator.
-  - `PdfGeneratorProperties.jsx`: Multi-tab drawer properties panel (Template selector, live preview iframe, filename expression editor, custom CSS, header/footer configuration, margin bounds).
+  - `PdfGeneratorProperties.jsx`: Multi-tab drawer properties panel with 6 output mode selectors (`Attachment (Gmail)`, `Base64`, `Binary`, `Download URL`, `Local Storage`, `All Outputs`).
+  - `GmailProperties.jsx`: Added Attachment input field with 1-click **📄 Attach PDF** shortcut button (`{{pdfGenerator.attachment}}`).
   - `PdfGeneratorNode.jsx`: Custom React Flow canvas node registered in `nodeTypes` in `WorkflowCanvas.jsx`.
-  - Registered in `nodeRegistry.js` under `NODE_TYPES.PDF_GENERATOR` (`pdfGenerator`).
 - **Automated Test Suite**: Passed **29/29** automated tests in `test_phase15_1_pdf_generator.js`.
 
 ---
