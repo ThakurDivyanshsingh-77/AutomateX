@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { credentialService } from '../../../credentials/credentialService';
+import { credentialService } from '../../../credentials/services/credentialService';
 import api from '../../../../services/api';
 import toast from 'react-hot-toast';
 import { Database, Activity, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';

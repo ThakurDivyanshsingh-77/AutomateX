@@ -9,6 +9,9 @@ import { X, Trash2, Settings2, AlertTriangle, CheckCircle2, Zap } from 'lucide-r
 import { Button } from '../../../components/ui/Button';
 import { DataMapperPanel } from '../components/DataMapperPanel';
 
+import { MongoCrudProperties } from '../nodes/database/MongoCrudProperties';
+import { MongoDBConnectionProperties } from '../nodes/database/MongoDBConnectionProperties';
+
 export const PropertiesPanel = ({
   selectedNode,
   onClose,
@@ -52,6 +55,8 @@ export const PropertiesPanel = ({
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
   const isCronNode = selectedNode.type === 'cron';
+  const isMongoCrudNode = selectedNode.type.startsWith('mongo') && selectedNode.type !== 'mongodb';
+  const isMongoConnNode = selectedNode.type === 'mongodb';
 
   return (
     <>
@@ -149,6 +154,16 @@ export const PropertiesPanel = ({
               <CronProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isMongoCrudNode ? (
+              <MongoCrudProperties
+                node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isMongoConnNode ? (
+              <MongoDBConnectionProperties
+                nodeData={selectedNode.data}
+                onUpdateNodeConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : (
               <AutoForm

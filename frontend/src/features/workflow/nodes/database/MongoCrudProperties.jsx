@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { credentialService } from '../../../credentials/credentialService';
+import { credentialService } from '../../../credentials/services/credentialService';
 import api from '../../../../services/api';
 import toast from 'react-hot-toast';
 import { Database, Activity, CheckCircle2, AlertTriangle, Code, Play, Sparkles } from 'lucide-react';
 import { ExpressionInput } from '../../../../components/expression/ExpressionInput';
 
-export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) => {
-  const config = nodeData?.config || {};
+export const MongoCrudProperties = ({ node, nodeType, nodeData, onUpdateNodeConfig, onUpdateNodeData }) => {
+  const currentNode = node || { data: nodeData };
+  const currentType = nodeType || currentNode?.type || 'mongoInsertOne';
+  const config = currentNode?.data?.config || nodeData?.config || {};
+
   const [credentials, setCredentials] = useState([]);
   const [loadingCreds, setLoadingCreds] = useState(true);
   const [testing, setTesting] = useState(false);
@@ -29,10 +32,12 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
   };
 
   const handleConfigChange = (key, value) => {
-    onUpdateNodeConfig({
-      ...config,
-      [key]: value,
-    });
+    const nextConfig = { ...config, [key]: value };
+    if (onUpdateNodeConfig) {
+      onUpdateNodeConfig(nextConfig);
+    } else if (onUpdateNodeData && currentNode?.id) {
+      onUpdateNodeData(currentNode.id, { config: nextConfig });
+    }
   };
 
   const handleTestRun = async () => {
@@ -81,7 +86,7 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
       <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Database className="w-4 h-4 text-emerald-400" />
-          <span className="font-bold text-white capitalize">{nodeType.replace('mongo', 'MongoDB ')}</span>
+          <span className="font-bold text-white capitalize">{currentType.replace('mongo', 'MongoDB ')}</span>
         </div>
         <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
           MongoDB Driver
@@ -140,7 +145,7 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
       </div>
 
       {/* Dynamic Query / Document / Filter / Pipeline Editor */}
-      {nodeType === 'mongoInsertOne' && (
+      {currentType === 'mongoInsertOne' && (
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold text-slate-300 flex items-center justify-between">
             <span>Document Payload (JSON) *</span>
@@ -156,7 +161,7 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
         </div>
       )}
 
-      {(nodeType === 'mongoFind' || nodeType === 'mongoFindOne' || nodeType === 'mongoCount') && (
+      {(currentType === 'mongoFind' || currentType === 'mongoFindOne' || currentType === 'mongoCount') && (
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold text-slate-300 flex items-center justify-between">
             <span>Query Filter (JSON) *</span>
@@ -172,7 +177,7 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
         </div>
       )}
 
-      {nodeType === 'mongoUpdateOne' && (
+      {currentType === 'mongoUpdateOne' && (
         <>
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-300">Query Filter (JSON) *</label>
@@ -195,7 +200,7 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
         </>
       )}
 
-      {nodeType === 'mongoDeleteOne' && (
+      {currentType === 'mongoDeleteOne' && (
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold text-slate-300">Delete Filter (JSON) *</label>
           <ExpressionInput
@@ -207,7 +212,7 @@ export const MongoCrudProperties = ({ nodeType, nodeData, onUpdateNodeConfig }) 
         </div>
       )}
 
-      {nodeType === 'mongoAggregate' && (
+      {currentType === 'mongoAggregate' && (
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold text-slate-300">Aggregation Pipeline (JSON Array) *</label>
           <ExpressionInput
