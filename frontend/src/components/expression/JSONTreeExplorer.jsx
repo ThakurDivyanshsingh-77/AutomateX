@@ -38,6 +38,8 @@ export const JSONTreeItem = ({
   const isStarred = favorites.includes(item.path);
   const typeStyle = TYPE_COLORS[item.type] || TYPE_COLORS.String;
 
+  const tooltipTitle = `Name: ${item.name}\nPath: {{${item.path}}}\nType: ${item.type}\nSource Node: ${item.sourceNode || 'Output'}\nExample: ${typeof item.example === 'object' ? JSON.stringify(item.example) : String(item.example ?? '')}\nDescription: ${item.description || 'Variable output'}`;
+
   const handleCopyPath = (e) => {
     e.stopPropagation();
     navigator.clipboard.writeText(`{{${item.path}}}`);
@@ -56,6 +58,7 @@ export const JSONTreeItem = ({
       <div
         draggable
         onDragStart={handleDragStart}
+        title={tooltipTitle}
         onClick={() => {
           if (hasChildren) {
             setIsExpanded(!isExpanded);

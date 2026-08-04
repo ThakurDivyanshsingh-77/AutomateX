@@ -113,17 +113,12 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `AIAssistantDrawer.jsx`: Floating drawer in visual canvas builder with 4 AI modes (**Generate**, **Explain**, **Optimize**, **Auto-Fix**).
   - `WorkflowCanvas.jsx` & `Sidebar.jsx`: Added **AI Assistant** button (Sparkles icon) to canvas header and **AI Builder** link to navigation sidebar.
 
-### **Phase 13 Complete — Production Cron Scheduler (Enterprise Grade)** — ✅ COMPLETED
-- **Production Cron Scheduler Service** ([CronScheduler.js](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/backend/src/runtime/scheduler/CronScheduler.js)): Background scheduling engine powered by `node-cron` & `cron-parser`. Key capabilities:
-  - Automatic DB published workflow scanning and job registration on server boot (`server.js`).
-  - Dynamic publish/unpublish/update/delete hooks (`PublishManager.js` & `workflowService.js`).
-  - Overlap protection (prevents concurrent execution if previous run is still active).
-  - Timezone support (`Asia/Kolkata`, `America/New_York`, `UTC`, etc.).
-  - Execution routing through `RuntimeManager` → Queue → Worker → History (tagged as `triggerType: 'cron'`).
-- **REST Status API**: `GET /api/v1/runtime/cron/status` & `POST /api/v1/runtime/cron/reload`.
-- **Frontend UI & Node Properties**:
-  - `CronProperties.jsx`: Cron Node property inspector with presets (`Every 5m`, `Every 20m`, `Daily at 9 AM`), custom syntax input, timezone selector, enable/disable toggle, and human-readable preview text powered by `cronstrue`.
-  - `ReliabilityDashboard.jsx`: Added **Cron Scheduler** status card and active jobs inspection table tab.
+### **Phase 13, 13.1, 13.2 & 13.3 Complete — Advanced Universal Variable System & Visual Data Mapper** — ✅ COMPLETED
+- **Advanced Developer API** (`VariableEngine.js`): `VariableEngine.evaluate()`, `VariableEngine.executeFunction()`, `VariableEngine.resolve()`, `VariableEngine.search()`, `VariableEngine.validate()`, `VariableEngine.register()`, and `VariableEngine.getMetadata()`. Passed 13/13 automated unit tests in `VariableEngine.test.js`.
+- **Tokenized Syntax Highlighter** (`ExpressionSyntaxHighlighter.jsx`): Color codes expression tokens: Variables (purple), Functions (emerald), Strings (amber), Numbers (cyan), Errors (rose).
+- **Visual Data Mapper Interface** (`DataMapperPanel.jsx`): Split-screen drag & drop visual mapping canvas (Left: Source Node Outputs tree vs Right: Target Destination Fields). Connects `Webhook.email ──► Gmail.To`, `Webhook.name ──► Email Body`, `HTTP.temp ──► Slack Message` visually.
+- **Mapping Inspector & Auto Validation**: Dedicated inspector tab listing all active bindings (`Source ──► Destination ──► Transformation`), evaluated outputs, validation status, and single-click clear action. Flags unknown variables with warning tooltips (`"Variable no longer exists"`).
+- **Mapping Persistence**: Mappings persist directly inside `node.data.config`, surviving workflow saving, versioning, export/import, and publication.
 
 ---
 
@@ -137,7 +132,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **AI Engine**: Groq API (`gsk_...` key, `llama-3.3-70b-versatile`), xAI Grok API (`grok-2-latest`), `HeuristicWorkflowGenerator` offline fallback engine
 - **Versioning Engine**: `WorkflowVersion` model, `VersionManager`, `VersionComparator` (structured node/edge diff), `PublishManager`
 - **Reliability Engine**: `TimeoutManager`, `RetryEngine`, `ErrorHandler` (7 error categories), `DeadLetterQueue`, `FailureRecovery`, `NotificationManager`
-- **Expression Engine**: `ExpressionEngine`, `ExpressionParser`, `ExpressionResolver` (nested paths & `items[0]` array syntax)
+- **Expression & Variable Engine**: `ExpressionEngine`, `ExpressionParser`, `ExpressionResolver`, `ExpressionFunctions` (16 transformation functions, ternary conditions, fallbacks, system variables)
 - **Webhook Subsystem**: `WebhookService`, `WebhookAuth`, `WebhookValidator` (100 req/min Rate Limiter), `WebhookReplay`
 - **Execution Debugger**: `ExecutionSnapshot`, `ExecutionInspector`, `ExecutionMetrics`, `ExecutionReplay`, `ExecutionDebuggerService`
 - **Google Integration**: `googleapis` (OAuth2 & Gmail v1 REST API)
@@ -150,8 +145,9 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **AI Workspace**: `AIBuilderPage.jsx` (`/ai-builder`), `AIAssistantDrawer.jsx` (Generate, Explain, Optimize, Auto-Fix)
 - **Versioning UI**: `VersionHistoryPanel.jsx`, `PublishDialog.jsx`, `CompareVersionsModal.jsx`
 - **Reliability UI**: `ReliabilityDashboard.jsx` (`/reliability`), Dead Letter Queue inspector
+- **Variable & Mapping Engine UI**: `DataMapperPanel`, `VariableEngine` (`VariableEngine.test.js`), `UniversalVariableInput`, `VariablePickerDrawer`, `JSONTreeExplorer`, `VariablePreviewModal`, `ExpressionSyntaxHighlighter`
 - **Custom Nodes**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`
-- **Expression Components**: `ExpressionInput`, `VariablePickerModal`, `VariableTree`, `VariableSearch`, `VariablePreview`
+- **Expression Components**: `UniversalVariableInput`, `ExpressionInput`, `VariablePickerDrawer`, `JSONTreeExplorer`, `VariablePreviewModal`, `ExpressionSyntaxHighlighter`
 - **Webhook Components**: `WebhookURL`, `WebhookTester`, `WebhookProperties`
 - **Debugger Components**: `ExecutionDebugger`, `ExecutionTimeline`, `ExecutionInspector`, `NodeInspector`, `ExpressionInspector`, `PerformancePanel`, `ExecutionReplay`
 - **Retry & Timeout Components**: `RetryConfigFields` (Attempts, Delay, Strategy, Timeout ms, Continue On Error), `TryCatchNode`

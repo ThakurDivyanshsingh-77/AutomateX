@@ -1,7 +1,7 @@
 /**
  * VariableEngine.js
  * Universal Variable & Data Mapper Engine for Frontend Visual Builder.
- * Developer API: list(), resolve(), validate(), search(), transform(), addRecent(), toggleFavorite()
+ * Developer API: list(), resolve(), evaluate(), executeFunction(), validate(), search(), register(), getMetadata(), transform(), addRecent(), toggleFavorite()
  */
 
 const STORAGE_KEYS = {
@@ -145,6 +145,64 @@ export const TRANSFORMATION_FUNCTIONS = [
 ];
 
 export class VariableEngine {
+  /**
+   * Developer API: Register custom node output schema dynamically
+   */
+  static register(nodeType, schemaDefinition = {}) {
+    if (!nodeType || typeof nodeType !== 'string') {
+      throw new Error('nodeType must be a non-empty string');
+    }
+    const key = nodeType.toLowerCase();
+    NODE_SCHEMA_REGISTRY[key] = {
+      label: schemaDefinition.label || nodeType,
+      icon: schemaDefinition.icon || 'Box',
+      outputs: schemaDefinition.outputs || {},
+    };
+    return NODE_SCHEMA_REGISTRY[key];
+  }
+
+  /**
+   * Developer API: Execute a transformation function directly
+   */
+  static executeFunction(fnName, args = []) {
+    const fnMap = {
+      upper: (val) => String(val || '').toUpperCase(),
+      lower: (val) => String(val || '').toLowerCase(),
+      trim: (val) => String(val || '').trim(),
+      length: (val) => (val?.length !== undefined ? val.length : String(val || '').length),
+      substring: (val, start, end) => String(val || '').substring(Number(start || 0), end !== undefined ? Number(end) : undefined),
+      replace: (val, search, replace) => String(val || '').replaceAll(String(search || ''), String(replace || '')),
+      split: (val, sep = ',') => String(val || '').split(String(sep)),
+      join: (val, sep = ',') => (Array.isArray(val) ? val.join(String(sep)) : String(val || '')),
+      json: (val) => (typeof val === 'object' ? JSON.stringify(val) : String(val || '')),
+      date: (val) => new Date(val || Date.now()).toISOString(),
+      formatDate: (val, locale = 'en-US') => new Date(val || Date.now()).toLocaleString(locale),
+      base64: (val) => (typeof btoa !== 'undefined' ? btoa(String(val || '')) : Buffer.from(String(val || '')).toString('base64')),
+      urlEncode: (val) => encodeURIComponent(String(val || '')),
+      urlDecode: (val) => decodeURIComponent(String(val || '')),
+      math: (expr) => {
+        try {
+          const sanitized = String(expr).replace(/[^0-9+\-*/%.()\s]/g, '');
+          return Function(`"use strict"; return (${sanitized})`)();
+        } catch {
+          return 0;
+        }
+      },
+      if: (cond, trueVal, falseVal) => (Boolean(cond) && cond !== 'false' && cond !== '0' ? trueVal : falseVal !== undefined ? falseVal : ''),
+    };
+
+    const fn = fnMap[fnName];
+    if (!fn) throw new Error(`Unknown function: ${fnName}`);
+    return fn(...args);
+  }
+
+  /**
+   * Developer API: Evaluate single expression
+   */
+  static evaluate(expr, context = {}) {
+    return this.resolve(`{{${expr}}}`, context);
+  }
+
   // Storage Helpers for Favorites & Recents
   static getFavorites() {
     try {
@@ -190,7 +248,7 @@ export class VariableEngine {
   }
 
   /**
-   * Discovers and structures available variables from active workflow nodes & execution snapshots
+   * Developer API: Discovers and structures available variables
    */
   static list(workflowNodes = [], executionSnapshot = null) {
     const nodesList = [];
@@ -199,21 +257,23 @@ export class VariableEngine {
 
     // 1. Process active Canvas Nodes
     workflowNodes.forEach((node) => {
-      const nodeType = node.type || 'http';
-      const label = node.data?.label || NODE_SCHEMA_REGISTRY[nodeType]?.label || nodeType;
-      const schema = NODE_SCHEMA_REGISTRY[nodeType] || NODE_SCHEMA_REGISTRY.http;
+      const rawType = node.type || 'http';
+      const nodeType = rawType.toLowerCase();
+      const label = node.data?.label || NODE_SCHEMA_REGISTRY[nodeType]?.label || rawType;
+      const schema = NODE_SCHEMA_REGISTRY[nodeType] || NODE_SCHEMA_REGISTRY[rawType] || NODE_SCHEMA_REGISTRY.http;
 
-      // Extract real runtime values if execution snapshot exists
-      const runtimeOutputs = executionSnapshot?.outputs?.[node.id] || executionSnapshot?.outputs?.[nodeType];
+      const runtimeOutputs = executionSnapshot?.outputs?.[node.id] || executionSnapshot?.outputs?.[nodeType] || executionSnapshot?.outputs?.[rawType];
 
       const outputsTree = this.buildOutputTree(
-        nodeType,
-        runtimeOutputs || schema.outputs
+        rawType,
+        runtimeOutputs || schema.outputs,
+        rawType,
+        label
       );
 
       nodesList.push({
         id: node.id,
-        nodeType: nodeType,
+        nodeType: rawType,
         nodeName: label,
         icon: schema.icon,
         status: runtimeOutputs ? 'SUCCESS' : 'IDLE',
@@ -230,18 +290,18 @@ export class VariableEngine {
           nodeName: schema.label,
           icon: schema.icon,
           status: 'TEST_PAYLOAD',
-          outputs: this.buildOutputTree(nodeType, schema.outputs),
+          outputs: this.buildOutputTree(nodeType, schema.outputs, nodeType, schema.label),
         });
       });
     }
 
     // 2. System & Environment Variables
     const systemVars = [
-      { path: '$now', name: 'Current ISO Timestamp', type: 'Date', example: new Date().toISOString() },
-      { path: '$now.timestamp', name: 'Current Epoch Milliseconds', type: 'Number', example: Date.now() },
-      { path: '$execution.id', name: 'Execution ID', type: 'String', example: 'exec_8f9a2b' },
-      { path: '$execution.workflowId', name: 'Workflow ID', type: 'String', example: 'wf_4k2l1m' },
-      { path: '$env.NODE_ENV', name: 'Node Environment', type: 'String', example: 'production' },
+      { path: '$now', name: 'Current ISO Timestamp', type: 'Date', sourceNode: 'System', example: new Date().toISOString() },
+      { path: '$now.timestamp', name: 'Current Epoch Milliseconds', type: 'Number', sourceNode: 'System', example: Date.now() },
+      { path: '$execution.id', name: 'Execution ID', type: 'String', sourceNode: 'System', example: 'exec_8f9a2b' },
+      { path: '$execution.workflowId', name: 'Workflow ID', type: 'String', sourceNode: 'System', example: 'wf_4k2l1m' },
+      { path: '$env.NODE_ENV', name: 'Node Environment', type: 'String', sourceNode: 'System', example: 'production' },
     ];
 
     return {
@@ -254,22 +314,32 @@ export class VariableEngine {
   }
 
   /**
-   * Helper to recursively turn output objects/primitives into structured tree nodes
+   * Helper to recursively turn output objects/primitives into structured tree nodes with full Metadata
    */
-  static buildOutputTree(prefix, data, currentPath = prefix) {
+  static buildOutputTree(prefix, data, currentPath = prefix, sourceNodeName = prefix) {
     if (data === null || data === undefined) {
-      return [{ path: currentPath, name: currentPath.split('.').pop(), type: 'Null', value: null }];
+      return [
+        {
+          path: currentPath,
+          name: currentPath.split('.').pop(),
+          type: 'Null',
+          sourceNode: sourceNodeName,
+          value: null,
+          example: null,
+          description: 'Null value',
+        },
+      ];
     }
 
-    // Direct Schema format with type & example
     if (data.type && (data.example !== undefined || data.description !== undefined)) {
       return [
         {
           path: currentPath,
           name: currentPath.split('.').pop(),
           type: data.type,
+          sourceNode: sourceNodeName,
           example: data.example,
-          description: data.description,
+          description: data.description || `${data.type} property from ${sourceNodeName}`,
         },
       ];
     }
@@ -282,8 +352,10 @@ export class VariableEngine {
           path: itemPath,
           name: `[${idx}]`,
           type: typeof item === 'object' ? (Array.isArray(item) ? 'Array' : 'Object') : this.detectType(item),
+          sourceNode: sourceNodeName,
           value: item,
-          children: typeof item === 'object' ? this.buildOutputTree(prefix, item, itemPath) : undefined,
+          example: item,
+          children: typeof item === 'object' ? this.buildOutputTree(prefix, item, itemPath, sourceNodeName) : undefined,
         });
       });
       return items;
@@ -299,10 +371,11 @@ export class VariableEngine {
           path: itemPath,
           name: key,
           type: isObj ? (Array.isArray(val) ? 'Array' : 'Object') : this.detectType(val),
+          sourceNode: sourceNodeName,
           value: isObj ? undefined : val,
           example: isObj ? undefined : val,
-          description: val?.description,
-          children: isObj ? this.buildOutputTree(prefix, val, itemPath) : undefined,
+          description: val?.description || `${key} property`,
+          children: isObj ? this.buildOutputTree(prefix, val, itemPath, sourceNodeName) : undefined,
         };
       });
     }
@@ -312,6 +385,7 @@ export class VariableEngine {
         path: currentPath,
         name: currentPath.split('.').pop(),
         type: this.detectType(data),
+        sourceNode: sourceNodeName,
         value: data,
         example: data,
       },
@@ -334,7 +408,44 @@ export class VariableEngine {
   }
 
   /**
-   * Search variables by query matching name, path, type, or value
+   * Developer API: Get full metadata for a variable path
+   */
+  static getMetadata(varPath, workflowNodes = []) {
+    if (!varPath) return null;
+    const cleanPath = varPath.replace(/^\{\{\s*/, '').replace(/\s*\}\}$/, '').trim();
+    const data = this.list(workflowNodes);
+
+    for (const node of data.nodes) {
+      const findInTree = (items) => {
+        for (const item of items) {
+          if (item.path === cleanPath) return item;
+          if (item.children) {
+            const found = findInTree(item.children);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      const result = findInTree(node.outputs);
+      if (result) return result;
+    }
+
+    for (const sys of data.system) {
+      if (sys.path === cleanPath) return sys;
+    }
+
+    return {
+      name: cleanPath.split('.').pop(),
+      path: cleanPath,
+      type: 'Unknown',
+      sourceNode: cleanPath.split('.')[0] || 'Unknown',
+      example: 'Unknown',
+      description: 'Custom or unindexed variable path',
+    };
+  }
+
+  /**
+   * Developer API: Search variables by query
    */
   static search(query, nodesList = []) {
     if (!query || !query.trim()) return nodesList;
@@ -377,7 +488,7 @@ export class VariableEngine {
   }
 
   /**
-   * Evaluates inline text expressions with sample/runtime data
+   * Developer API: Resolve template expression with context
    */
   static resolve(template, sampleContext = {}) {
     if (typeof template !== 'string' || !template.includes('{{')) return template;
@@ -386,12 +497,10 @@ export class VariableEngine {
       const trimmed = expr.trim();
       if (!trimmed) return '';
 
-      // Direct mock lookup
       if (sampleContext[trimmed] !== undefined) {
         return sampleContext[trimmed];
       }
 
-      // Check simple functions: upper(x), lower(x), etc.
       const fnMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*\(([\s\S]*)\)$/);
       if (fnMatch) {
         const fnName = fnMatch[1];
@@ -404,13 +513,12 @@ export class VariableEngine {
           case 'trim': return String(resolvedArg).trim();
           case 'length': return resolvedArg?.length || 0;
           case 'json': return typeof resolvedArg === 'object' ? JSON.stringify(resolvedArg) : String(resolvedArg);
-          case 'base64': return btoa(String(resolvedArg));
+          case 'base64': return typeof btoa !== 'undefined' ? btoa(String(resolvedArg)) : Buffer.from(String(resolvedArg)).toString('base64');
           case 'urlEncode': return encodeURIComponent(String(resolvedArg));
           case 'date': return new Date().toISOString();
         }
       }
 
-      // Default sample fallback
       for (const [k, v] of Object.entries(sampleContext)) {
         if (k.endsWith(`.${trimmed}`) || k === trimmed) {
           return String(v);
@@ -421,7 +529,7 @@ export class VariableEngine {
   }
 
   /**
-   * Validate expression string and check for syntax errors or unknown variables
+   * Developer API: Validate variable expression
    */
   static validate(template, sampleContext = {}) {
     if (typeof template !== 'string' || !template.includes('{{')) {
@@ -437,7 +545,9 @@ export class VariableEngine {
       if (expr && !expr.includes('(') && !expr.startsWith('$')) {
         const exists =
           sampleContext[expr] !== undefined ||
-          Object.keys(sampleContext).some((k) => k.endsWith(`.${expr}`) || k.startsWith(expr.split('.')[0]));
+          Object.keys(sampleContext).some(
+            (k) => k === expr || k.endsWith(`.${expr}`) || expr.startsWith(`${k}.`) || k.startsWith(`${expr}.`)
+          );
 
         if (!exists) {
           unknownVars.push(expr);
@@ -452,13 +562,12 @@ export class VariableEngine {
   }
 
   /**
-   * Helper for autocomplete suggestions based on query typed inside {{ ... }}
+   * Helper for autocomplete suggestions based on query
    */
   static getAutocompleteSuggestions(query, nodesList = []) {
     const q = (query || '').toLowerCase().trim();
     const suggestions = [];
 
-    // System variables
     if (q.startsWith('$') || '$'.startsWith(q)) {
       suggestions.push(
         { path: '$now', label: '$now', type: 'Date', description: 'Current timestamp' },
@@ -467,7 +576,6 @@ export class VariableEngine {
       );
     }
 
-    // Node Output paths
     nodesList.forEach((node) => {
       const walkTree = (items) => {
         items.forEach((item) => {
@@ -486,7 +594,6 @@ export class VariableEngine {
       if (node.outputs) walkTree(node.outputs);
     });
 
-    // Functions
     TRANSFORMATION_FUNCTIONS.forEach((fn) => {
       if (!q || fn.name.toLowerCase().includes(q) || fn.syntax.toLowerCase().includes(q)) {
         suggestions.push({
@@ -499,6 +606,6 @@ export class VariableEngine {
       }
     });
 
-    return suggestions.slice(0, 30); // Max 30 suggestions
+    return suggestions.slice(0, 30);
   }
 }
