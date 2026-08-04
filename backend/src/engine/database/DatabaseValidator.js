@@ -7,7 +7,8 @@ export class DatabaseValidator {
    */
   static validate(nodeType, config = {}) {
     const errors = [];
-    const dbType = (nodeType || 'mongodb').toLowerCase();
+    let dbType = (nodeType || 'mongodb').toLowerCase();
+    if (dbType.startsWith('mongo')) dbType = 'mongodb';
 
     if (dbType === 'mongodb') {
       if (!config.collection && !config.target) {

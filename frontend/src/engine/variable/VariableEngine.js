@@ -104,6 +104,66 @@ export const NODE_SCHEMA_REGISTRY = {
       executionTime: { type: 'Number', example: 10, description: 'Execution duration ms' },
     },
   },
+  mongoInsertOne: {
+    label: 'MongoDB Insert One',
+    icon: 'PlusCircle',
+    outputs: {
+      insertedId: { type: 'String', example: '64a1b2c3d4e5f6', description: 'Generated document ObjectId string' },
+      acknowledged: { type: 'Boolean', example: true, description: 'Operation acknowledgement boolean' },
+      executionTime: { type: 'Number', example: 12, description: 'Execution duration ms' },
+    },
+  },
+  mongoFind: {
+    label: 'MongoDB Find',
+    icon: 'Search',
+    outputs: {
+      documents: { type: 'Array', example: [{ _id: '64a1b2c3', name: 'Item 1' }], description: 'Array of matched documents' },
+      count: { type: 'Number', example: 1, description: 'Total matched documents count' },
+      executionTime: { type: 'Number', example: 10, description: 'Execution duration ms' },
+    },
+  },
+  mongoFindOne: {
+    label: 'MongoDB Find One',
+    icon: 'FileText',
+    outputs: {
+      document: { type: 'Object', example: { _id: '64a1b2c3', name: 'Item 1' }, description: 'Matched document object' },
+      executionTime: { type: 'Number', example: 8, description: 'Execution duration ms' },
+    },
+  },
+  mongoUpdateOne: {
+    label: 'MongoDB Update One',
+    icon: 'Edit3',
+    outputs: {
+      matchedCount: { type: 'Number', example: 1, description: 'Number of matched documents' },
+      modifiedCount: { type: 'Number', example: 1, description: 'Number of modified documents' },
+      executionTime: { type: 'Number', example: 14, description: 'Execution duration ms' },
+    },
+  },
+  mongoDeleteOne: {
+    label: 'MongoDB Delete One',
+    icon: 'Trash2',
+    outputs: {
+      deletedCount: { type: 'Number', example: 1, description: 'Number of deleted documents' },
+      executionTime: { type: 'Number', example: 10, description: 'Execution duration ms' },
+    },
+  },
+  mongoCount: {
+    label: 'MongoDB Count',
+    icon: 'Hash',
+    outputs: {
+      count: { type: 'Number', example: 42, description: 'Document count matching filter' },
+      executionTime: { type: 'Number', example: 6, description: 'Execution duration ms' },
+    },
+  },
+  mongoAggregate: {
+    label: 'MongoDB Aggregate',
+    icon: 'Layers',
+    outputs: {
+      results: { type: 'Array', example: [{ _id: 'user1', total: 100 }], description: 'Aggregation result array' },
+      count: { type: 'Number', example: 1, description: 'Number of aggregation output items' },
+      executionTime: { type: 'Number', example: 18, description: 'Execution duration ms' },
+    },
+  },
   groq: {
     label: 'Groq AI Model',
     icon: 'Bot',

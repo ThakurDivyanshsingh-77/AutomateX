@@ -93,39 +93,34 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `TimeoutManager.js`: Enforces per-node timeout bounds using `Promise.race()` and `ExecutionTimeoutError`.
   - `RetryEngine.js`: Updated to wrap node executions in `TimeoutManager.raceWithTimeout(..., config.timeoutMs)` while preserving backoff strategies.
   - `ErrorHandler.js`: Central error classifier supporting 7 error categories (`TIMEOUT`, `NETWORK`, `AUTH`, `RATE_LIMIT`, `SERVER_ERROR`, `CLIENT_ERROR`, `VALIDATION`) with severity ratings and recommendations.
-  - `DeadLetterItem.js` & `DeadLetterQueue.js`: Stores permanently failed executions for inspection and single-click replay.
+  - `DeadLetterItem.js`: Stores permanently failed executions for inspection and single-click replay.
   - `FailureRecovery.js`: Service to inspect failed executions (`getLastSuccessfulNode`) and resume workflows from the point of failure.
   - `NotificationManager.js`: Dispatches structured failure alerts to console logs and outbound webhooks.
   - `reliabilityController.js` & `reliabilityRoutes.js`: Mounted at `/api/v1/reliability`.
 - **Frontend Reliability Dashboard** (`/reliability`):
-  - `ReliabilityDashboard.jsx`: Fixed DLQ state declarations (`dlqPage`, `dlqItems`, `dlqPages`, `replayingDlqId`, `deletingDlqId`), resolving `ReferenceError: dlqPage is not defined`. Dedicated dashboard page with metrics summary cards, failed execution table with **Retry** and **Resume** buttons, and a **Dead Letter Queue** tab with replay capabilities.
-  - `RetryConfigFields.jsx`: Added **Timeout (ms)** input field to node properties.
-  - `ExecutionDetailsDrawer.jsx`: Visualizes per-attempt retry duration, status, and timeout badges in execution timeline.
+  - `ReliabilityDashboard.jsx`: Fixed DLQ state declarations (`dlqPage`, `dlqItems`, `dlqPages`, `replayingDlqId`, `deletingDlqId`), resolving `ReferenceError: dlqPage is not defined`. Dedicated dashboard page with metrics summary cards, failed execution table with **Retry** and **Resume** buttons, and a Dead Letter Queue tab.
 
 ### **Phase 12 & AI Intent Validation Complete — AI Workflow Builder & Intent System** — ✅ COMPLETED
-- **AI Intent Classification Subsystem** (`IntentClassifier.js`): Classifies prompts into 5 categories before generating nodes (`automation`, `conversation`, `knowledge`, `physical_action`, `unsupported_automation`). Rejects non-automation requests ("Make me coffee", "Tell me a joke", "Who is Virat Kohli?") with 0 nodes generated and structured guidance messages. Enforces 70% confidence threshold. Passed 12/12 automated unit tests in `test_ai_intent.js`.
+- **AI Intent Classification Subsystem** (`IntentClassifier.js`): Classifies prompts into 5 categories before generating nodes (`automation`, `conversation`, `knowledge`, `physical_action`, `unsupported_automation`). Rejects non-automation requests ("Make me coffee", "Tell me a joke") with 0 nodes generated and structured guidance messages. Enforces 70% confidence threshold. Passed 12/12 automated unit tests in `test_ai_intent.js`.
 - **Grok / Groq AI Integration**: `GrokClient.js` (Groq API `llama-3.3-70b-versatile`, xAI Grok `grok-2-latest`), `HeuristicWorkflowGenerator.js`, `AIWorkflowService.js` (`generate`, `explain`, `optimize`, `fix`).
-- **Frontend Workspaces**: `AIBuilderPage.jsx` (`/ai-builder`) with rejection alert banner, `AIAssistantDrawer.jsx` in visual builder.
 
 ### **Phase 13, 13.1, 13.2 & 13.3 Complete — Advanced Universal Variable System & Visual Data Mapper** — ✅ COMPLETED
 - **Advanced Developer API** (`VariableEngine.js`): `VariableEngine.evaluate()`, `VariableEngine.executeFunction()`, `VariableEngine.resolve()`, `VariableEngine.search()`, `VariableEngine.validate()`, `VariableEngine.register()`, and `VariableEngine.getMetadata()`. Passed 13/13 automated unit tests in `VariableEngine.test.js`.
-- **Tokenized Syntax Highlighter** (`ExpressionSyntaxHighlighter.jsx`): Color codes expression tokens: Variables (purple), Functions (emerald), Strings (amber), Numbers (cyan), Errors (rose).
 - **Visual Data Mapper Interface** (`DataMapperPanel.jsx`): Split-screen drag & drop visual mapping canvas (Left: Source Node Outputs tree vs Right: Target Destination Fields). Connects `Webhook.email ──► Gmail.To`, `Webhook.name ──► Email Body`, `HTTP.temp ──► Slack Message` visually.
-- **Mapping Inspector & Auto Validation**: Dedicated inspector tab listing all active bindings (`Source ──► Destination ──► Transformation`), evaluated outputs, validation status, and single-click clear action. Flags unknown variables with warning tooltips (`"Variable no longer exists"`).
-- **Mapping Persistence**: Mappings persist directly inside `node.data.config`, surviving workflow saving, versioning, export/import, and publication.
 
-### **Phase 14 & 14.1 Complete — Universal Database Framework & Import Mismatch Fix** — ✅ COMPLETED
-- **Pluggable Database Core Architecture** (`backend/src/engine/database/`):
-  - `DatabaseProvider.js`: Abstract base interface (`connect`, `disconnect`, `find`, `findOne`, `insert`, `insertMany`, `update`, `delete`, `aggregate`, `execute`, `validate`, `healthCheck`).
-  - `MongoProvider.js` & `MongoConnectionPool.js`: MongoDB driver & connection pool supporting document find, insert, update, delete, aggregation pipelines, latency tracking, and version detection.
-  - `MySQLProvider.js`: MySQL driver enforcing parameterized queries (`?`), connection pooling, SELECT/INSERT/UPDATE/DELETE, and transactions.
-  - `PostgresProvider.js`: PostgreSQL driver enforcing parameterized queries (`$1, $2`), JSONB columns, SELECT/INSERT/UPDATE/DELETE, and transactions.
-  - `DatabaseRegistry.js`: Singleton registry managing drivers (`mongodb`, `mysql`, `postgres`).
-  - `DatabaseCredentialManager.js`: Resolves and decrypts AES-256 encrypted database vault credentials.
-  - `DatabaseValidator.js`: Validates queries and flags un-parameterized SQL injection risks (`${...}`).
-  - `DatabaseExecutor.js`: Executor registered in `ExecutorRegistry.js` for executing database workflow nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`).
-- **Database REST API Subsystem** (`backend/src/controllers/databaseController.js` & `databaseRoutes.js`): Mounted under `/api/v1/database` (`/providers`, `/connections`, `/test`, `/mongodb/test`, `/mongodb/status`, `/query`).
-- **Import/Export Resolution**: Resolved `SyntaxError` in `backend/src/middleware/authMiddleware.js` by exporting `protect` and providing named `authenticate` alias. Updated `databaseRoutes.js` to use `protect`. Verified 100% clean ESM app launch.
+### **Phase 14, 14.1 & 14.2 Complete — Universal Database Framework & MongoDB CRUD Nodes** — ✅ COMPLETED
+- **7 MongoDB CRUD Nodes** (`mongoCrudManifest.js` & `MongoCrudProperties.jsx`):
+  1. `MongoDB Insert One` (`mongoInsertOne`) ──► Outputs: `insertedId`, `acknowledged`
+  2. `MongoDB Find` (`mongoFind`) ──► Outputs: `documents[]`, `count`
+  3. `MongoDB Find One` (`mongoFindOne`) ──► Outputs: `document`
+  4. `MongoDB Update One` (`mongoUpdateOne`) ──► Outputs: `matchedCount`, `modifiedCount`
+  5. `MongoDB Delete One` (`mongoDeleteOne`) ──► Outputs: `deletedCount`
+  6. `MongoDB Count` (`mongoCount`) ──► Outputs: `count`
+  7. `MongoDB Aggregate` (`mongoAggregate`) ──► Outputs: `results[]`
+- **Node Palette & Registry**: All 7 nodes registered under a dedicated **Database** category in left Node Palette (`nodeRegistry.js`).
+- **Variable Engine Integration**: Registered output schemas in `VariableEngine.js` (`NODE_SCHEMA_REGISTRY`).
+- **Backend Execution Engine**: `DatabaseExecutor.js` registered in `ExecutorRegistry.js`, mapping all 7 node types to official MongoDB driver calls.
+- **Automated Test Suite**: Passed **14/14** automated unit and workflow execution tests in `test_phase14_2_mongo_crud.js`, including the demo pipeline (`Start ──► MongoDB Insert One ──► MongoDB Find One ──► Log ──► End`).
 
 ---
 
@@ -134,35 +129,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 ### **Backend (`/backend`)**
 - **Runtime**: Node.js (ES Modules `"type": "module"`)
 - **Framework**: Express.js
-- **Database Engine Framework**: `DatabaseProvider`, `MongoProvider`, `MongoConnectionPool`, `MySQLProvider`, `PostgresProvider`, `DatabaseRegistry`, `DatabaseCredentialManager`, `DatabaseValidator`, `DatabaseExecutor`
+- **Database Engine Framework**: `DatabaseProvider`, `MongoProvider` (with in-memory fallback), `MongoConnectionPool`, `MySQLProvider`, `PostgresProvider`, `DatabaseRegistry`, `DatabaseCredentialManager`, `DatabaseValidator`, `DatabaseExecutor`
 - **Database ORM & Drivers**: MongoDB & Mongoose ORM
-- **Security & Vault**: `bcryptjs`, `jsonwebtoken`, `crypto` (AES-256-CBC Encryption)
-- **AI Engine & Intent Classifier**: `IntentClassifier` (5 intent categories, 70% confidence threshold), Groq API (`gsk_...` key, `llama-3.3-70b-versatile`), xAI Grok API (`grok-2-latest`), `HeuristicWorkflowGenerator` offline engine
-- **Versioning Engine**: `WorkflowVersion` model, `VersionManager`, `VersionComparator` (structured node/edge diff), `PublishManager`
-- **Reliability Engine**: `TimeoutManager`, `RetryEngine`, `ErrorHandler` (7 error categories), `DeadLetterQueue`, `FailureRecovery`, `NotificationManager`
-- **Expression & Variable Engine**: `ExpressionEngine`, `ExpressionParser`, `ExpressionResolver`, `ExpressionFunctions` (16 transformation functions, ternary conditions, fallbacks, system variables)
-- **Webhook Subsystem**: `WebhookService`, `WebhookAuth`, `WebhookValidator` (100 req/min Rate Limiter), `WebhookReplay`
-- **Execution Debugger**: `ExecutionSnapshot`, `ExecutionInspector`, `ExecutionMetrics`, `ExecutionReplay`, `ExecutionDebuggerService`
-- **Google Integration**: `googleapis` (OAuth2 & Gmail v1 REST API)
-- **Executors & Plugins**: `ExecutorRegistry` (`start`, `http`, `delay`, `log`, `end`, `gmail`, `condition`, `webhook`, `tryCatch`, `mongodb`, `mysql`, `postgres`, `databaseQuery`), `ConditionExecutor`, `GmailPlugin`, `PluginRegistry`, `ConnectorClient`
-- **Engine & Runtime**: Standalone Graph Engine, Adjacency List Traversal, Dual-Branch Handle Router, `RuntimeEventBus`, `RuntimeManager`, `ExecutionWorker`, `RetryManager`, `TimeoutManager`, `CronScheduler`, Public Webhook Receiver Endpoint
+- **Executors & Plugins**: `ExecutorRegistry` (`start`, `http`, `delay`, `log`, `end`, `gmail`, `condition`, `webhook`, `tryCatch`, `mongodb`, `mysql`, `postgres`, `databaseQuery`, `mongoInsertOne`, `mongoFind`, `mongoFindOne`, `mongoUpdateOne`, `mongoDeleteOne`, `mongoCount`, `mongoAggregate`), `ConditionExecutor`, `GmailPlugin`, `PluginRegistry`, `ConnectorClient`
+- **Engine & Runtime**: Standalone Graph Engine, Adjacency List Traversal, Dual-Branch Handle Router, `RuntimeEventBus`, `RuntimeManager`, `ExecutionWorker`, `RetryManager`, `TimeoutManager`, `CronScheduler`
 
 ### **Frontend (`/frontend`)**
 - **Framework**: React 18 (Vite, port 3000)
 - **Visual Canvas Engine**: `@xyflow/react` v12
-- **AI Workspace**: `AIBuilderPage.jsx` (`/ai-builder`), `AIAssistantDrawer.jsx` (Generate, Explain, Optimize, Auto-Fix)
-- **Versioning UI**: `VersionHistoryPanel.jsx`, `PublishDialog.jsx`, `CompareVersionsModal.jsx`
-- **Reliability UI**: `ReliabilityDashboard.jsx` (`/reliability`), Dead Letter Queue inspector
-- **Variable & Mapping Engine UI**: `DataMapperPanel`, `VariableEngine` (`VariableEngine.test.js`), `UniversalVariableInput`, `VariablePickerDrawer`, `JSONTreeExplorer`, `VariablePreviewModal`, `ExpressionSyntaxHighlighter`
-- **Custom Nodes**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`, `Database` nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`)
-- **Expression Components**: `UniversalVariableInput`, `ExpressionInput`, `VariablePickerDrawer`, `JSONTreeExplorer`, `VariablePreviewModal`, `ExpressionSyntaxHighlighter`
-- **Webhook Components**: `WebhookURL`, `WebhookTester`, `WebhookProperties`
-- **Debugger Components**: `ExecutionDebugger`, `ExecutionTimeline`, `ExecutionInspector`, `NodeInspector`, `ExpressionInspector`, `PerformancePanel`, `ExecutionReplay`
-- **Retry & Timeout Components**: `RetryConfigFields` (Attempts, Delay, Strategy, Timeout ms, Continue On Error), `TryCatchNode`
-- **Routing**: `react-router-dom` v6
-- **State & Context**: React Context API (`AuthContext.jsx`) + custom hooks (`useWorkflow.js`, `useNodeOperations.js`)
-- **API Interceptor**: Centralized Axios client (`api.js`) with Bearer token injector and `401 Unauthorized` redirect handler.
-- **Forms & Validation**: `react-hook-form` + custom `AutoForm`, `GmailProperties`, `ConditionProperties`, `WebhookProperties`, `MongoDBConnectionProperties`
-- **Notifications**: `react-hot-toast`
-- **Styling**: Tailwind CSS v3 (Linear / Vercel modern SaaS dark theme)
-- **Icons**: Lucide React (`lucide-react`)
+- **Custom Nodes & Properties**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`, `Database` nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`, `mongoInsertOne`, `mongoFind`, `mongoFindOne`, `mongoUpdateOne`, `mongoDeleteOne`, `mongoCount`, `mongoAggregate`)
+- **Node Palette**: Categorized Node Palette under **Database** category with Lucide React icons

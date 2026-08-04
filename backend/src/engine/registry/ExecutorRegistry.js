@@ -26,6 +26,13 @@ export class ExecutorRegistry {
     ['postgres', DatabaseExecutor],
     ['databaseQuery', DatabaseExecutor],
     ['database', DatabaseExecutor],
+    ['mongoInsertOne', DatabaseExecutor],
+    ['mongoFind', DatabaseExecutor],
+    ['mongoFindOne', DatabaseExecutor],
+    ['mongoUpdateOne', DatabaseExecutor],
+    ['mongoDeleteOne', DatabaseExecutor],
+    ['mongoCount', DatabaseExecutor],
+    ['mongoAggregate', DatabaseExecutor],
   ]);
 
   static getExecutor(nodeType) {

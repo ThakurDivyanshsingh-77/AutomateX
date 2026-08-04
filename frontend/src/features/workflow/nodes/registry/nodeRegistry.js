@@ -9,6 +9,7 @@ import { webhookManifest } from '../webhook';
 import { tryCatchManifest } from '../tryCatch';
 import { cronManifest } from '../cron/cronManifest';
 import { databaseManifest } from '../database/databaseManifest';
+import { mongoCrudManifest } from '../database/mongoCrudManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -30,6 +31,22 @@ export const NODE_TYPES = {
   MYSQL: 'mysql',
   POSTGRES: 'postgres',
   DATABASE_QUERY: 'databaseQuery',
+  MONGO_INSERT_ONE: 'mongoInsertOne',
+  MONGO_FIND: 'mongoFind',
+  MONGO_FIND_ONE: 'mongoFindOne',
+  MONGO_UPDATE_ONE: 'mongoUpdateOne',
+  MONGO_DELETE_ONE: 'mongoDeleteOne',
+  MONGO_COUNT: 'mongoCount',
+  MONGO_AGGREGATE: 'mongoAggregate',
+};
+
+const databaseValidator = (nodeData) => {
+  const config = nodeData?.config || {};
+  const errors = [];
+  if (!config.credentialId) errors.push('MongoDB Credential is required.');
+  if (!config.database) errors.push('Database name is required.');
+  if (!config.collection) errors.push('Collection name is required.');
+  return { isValid: errors.length === 0, errors };
 };
 
 // Central Registry of Node Definitions
@@ -48,6 +65,13 @@ export const nodeDefinitions = {
   [NODE_TYPES.MYSQL]: databaseManifest.mysql,
   [NODE_TYPES.POSTGRES]: databaseManifest.postgres,
   [NODE_TYPES.DATABASE_QUERY]: databaseManifest.databaseQuery,
+  [NODE_TYPES.MONGO_INSERT_ONE]: mongoCrudManifest.mongoInsertOne,
+  [NODE_TYPES.MONGO_FIND]: mongoCrudManifest.mongoFind,
+  [NODE_TYPES.MONGO_FIND_ONE]: mongoCrudManifest.mongoFindOne,
+  [NODE_TYPES.MONGO_UPDATE_ONE]: mongoCrudManifest.mongoUpdateOne,
+  [NODE_TYPES.MONGO_DELETE_ONE]: mongoCrudManifest.mongoDeleteOne,
+  [NODE_TYPES.MONGO_COUNT]: mongoCrudManifest.mongoCount,
+  [NODE_TYPES.MONGO_AGGREGATE]: mongoCrudManifest.mongoAggregate,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;
@@ -63,10 +87,17 @@ export const nodeValidators = {
   [NODE_TYPES.CONDITION]: validateConditionNode,
   [NODE_TYPES.WEBHOOK]: () => ({ isValid: true, errors: [] }),
   [NODE_TYPES.CRON]: cronManifest.validate,
-  [NODE_TYPES.MONGODB]: () => ({ isValid: true, errors: [] }),
-  [NODE_TYPES.MYSQL]: () => ({ isValid: true, errors: [] }),
-  [NODE_TYPES.POSTGRES]: () => ({ isValid: true, errors: [] }),
-  [NODE_TYPES.DATABASE_QUERY]: () => ({ isValid: true, errors: [] }),
+  [NODE_TYPES.MONGODB]: databaseValidator,
+  [NODE_TYPES.MYSQL]: databaseValidator,
+  [NODE_TYPES.POSTGRES]: databaseValidator,
+  [NODE_TYPES.DATABASE_QUERY]: databaseValidator,
+  [NODE_TYPES.MONGO_INSERT_ONE]: databaseValidator,
+  [NODE_TYPES.MONGO_FIND]: databaseValidator,
+  [NODE_TYPES.MONGO_FIND_ONE]: databaseValidator,
+  [NODE_TYPES.MONGO_UPDATE_ONE]: databaseValidator,
+  [NODE_TYPES.MONGO_DELETE_ONE]: databaseValidator,
+  [NODE_TYPES.MONGO_COUNT]: databaseValidator,
+  [NODE_TYPES.MONGO_AGGREGATE]: databaseValidator,
 };
 
 // Helper: Get definition by node type
