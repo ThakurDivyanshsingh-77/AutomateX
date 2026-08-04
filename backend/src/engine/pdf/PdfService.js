@@ -82,7 +82,7 @@ export class PdfService {
       qrCodeBase64 = await this._generateQRCode(variables.qrData);
     }
 
-    // Merge all context data — spread variables at root so {{name}} works directly
+    // Merge all context data — spread variables at root so {{varName}} works directly
     const context = {
       // Template defaults
       brandColor: config.brandColor || '#6366f1',
@@ -95,14 +95,26 @@ export class PdfService {
       watermark: config.watermark || '',
       watermarkOpacity: config.watermarkOpacity || 0.06,
       generatedDate: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
-      // Custom content (for blank/custom)
-      content: content || '',
       customCSS: config.customCSS || '',
       // QR code
       qrCodeBase64,
       // Spread ALL resolved workflow variables at root so {{varName}} works
       ...variables,
     };
+
+    // Pre-compile user's raw Handlebars template content using runtimeVariables context
+    let compiledContent = '';
+    if (content) {
+      try {
+        const contentTemplateFn = Handlebars.compile(content);
+        compiledContent = contentTemplateFn(context);
+      } catch (err) {
+        console.warn(`[PdfService] Handlebars compilation error on content: ${err.message}`);
+        compiledContent = content;
+      }
+    }
+
+    context.content = compiledContent;
 
     return compiledTemplate(context);
   }

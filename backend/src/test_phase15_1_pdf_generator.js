@@ -41,7 +41,41 @@ async function runTests() {
   });
   assert('Preview HTML is a non-empty string', typeof previewHtml === 'string' && previewHtml.length > 0);
   assert('Preview HTML contains DOCTYPE', previewHtml.includes('<!DOCTYPE html>'));
-  assert('Preview HTML contains content from blank template', previewHtml.includes('Divyansh'));
+  assert('Preview HTML contains content from blank template', previewHtml.includes('Hello Divyansh'));
+
+  // ─── Test 2.1: Handlebars Compilation Engine ──────────────────────────────
+  console.log('\nTest 2.1: Handlebars Compilation Engine ({{now}}, {{gmail.count}}, {{#each gmail.messages}}, missing vars)...');
+  const handlebarsContent = `
+    <h1>Date: {{now}}</h1>
+    <p>Unread Count: {{gmail.count}}</p>
+    <ul>
+      {{#each gmail.messages}}
+        <li>Subject: {{subject}} | From: {{from}}</li>
+      {{/each}}
+    </ul>
+    <p>Missing Var: [{{nonExistentVar}}]</p>
+  `;
+  const handlebarsPreview = await PdfService.generatePreviewHtml({
+    template: 'blank',
+    content: handlebarsContent,
+    variables: {
+      now: '04/08/2026',
+      gmail: {
+        count: 2,
+        messages: [
+          { subject: 'Order Confirmation #1001', from: 'sales@shop.com' },
+          { subject: 'Invoice #1002', from: 'billing@shop.com' },
+        ],
+      },
+    },
+    config: {},
+  });
+
+  assert('Handlebars preview compiles {{now}}', handlebarsPreview.includes('Date: 04/08/2026'));
+  assert('Handlebars preview compiles {{gmail.count}}', handlebarsPreview.includes('Unread Count: 2'));
+  assert('Handlebars preview compiles {{#each gmail.messages}} item 1', handlebarsPreview.includes('Subject: Order Confirmation #1001 | From: sales@shop.com'));
+  assert('Handlebars preview compiles {{#each gmail.messages}} item 2', handlebarsPreview.includes('Subject: Invoice #1002 | From: billing@shop.com'));
+  assert('Handlebars preview renders missing variable as empty string', handlebarsPreview.includes('Missing Var: []'));
 
   // ─── Test 3: Blank PDF Generation ─────────────────────────────────────────
   console.log('\nTest 3: Blank PDF Generation (Puppeteer)...');

@@ -15,20 +15,15 @@ export class PdfGeneratorExecutor extends BaseExecutor {
     console.log(`[PdfGeneratorExecutor] Starting PDF generation for node "${node.id}"`);
     console.log(`[PdfGeneratorExecutor] Template: "${config.template}", FileName: "${config.fileName}"`);
 
-    // 1. Resolve variables in filename
-    const resolvedFileName = this._resolveVariables(
-      config.fileName || 'document_{{now}}.pdf',
-      context
-    );
-
-    // 2. Resolve variables in content / HTML
-    const resolvedContent = this._resolveVariables(
-      config.content || config.htmlContent || '',
-      context
-    );
-
-    // 3. Build variables map from context (all upstream node outputs)
+    // 1. Build runtime variables map from context
     const variables = this._buildVariablesMap(context, config);
+
+    // 2. Resolve filename using variables
+    const rawFileName = config.fileName || 'document_{{now}}.pdf';
+    const resolvedFileName = this._resolveVariables(rawFileName, variables);
+
+    // 3. Raw template content (passed unmangled to PdfService for Handlebars compilation)
+    const rawContent = config.content || config.htmlContent || '';
 
     // 4. Build branding/layout config
     const pdfConfig = {
@@ -55,10 +50,10 @@ export class PdfGeneratorExecutor extends BaseExecutor {
       customCSS: config.customCSS || '',
     };
 
-    // 5. Generate PDF
+    // 5. Generate PDF with Handlebars compiled content
     const result = await PdfService.generatePdf({
       template: config.template || 'blank',
-      content: resolvedContent,
+      content: rawContent,
       variables,
       config: pdfConfig,
       fileName: resolvedFileName,
@@ -132,7 +127,7 @@ export class PdfGeneratorExecutor extends BaseExecutor {
   _buildVariablesMap(context, config) {
     const vars = {};
 
-    // Flatten context outputs from each node
+    // 1. Flatten context outputs from each node
     if (context && typeof context === 'object') {
       Object.entries(context).forEach(([key, value]) => {
         if (value && typeof value === 'object') {
@@ -144,15 +139,24 @@ export class PdfGeneratorExecutor extends BaseExecutor {
       });
     }
 
+    // 2. Standardized runtime variables: now, gmail, mongodb, http, workflow, vars
+    vars.now = new Date().toLocaleDateString('en-IN');
+    vars.timestamp = Date.now();
+    vars.generatedDate = new Date().toLocaleString('en-IN');
+
+    vars.gmail = context?.gmail || context?.readEmail || context?.searchEmails || vars.gmail || {};
+    vars.mongodb = context?.mongodb || context?.mongoFind || context?.mongoInsertOne || vars.mongodb || {};
+    vars.http = context?.http || context?.httpRequest || vars.http || {};
+    vars.workflow = {
+      id: context?.workflowId || 'wf_demo',
+      executionId: context?.executionId || '',
+    };
+    vars.vars = context || {};
+
     // Merge explicit template variables from config
     if (config.templateVariables && typeof config.templateVariables === 'object') {
       Object.assign(vars, config.templateVariables);
     }
-
-    // Common time variables
-    vars.now = new Date().toLocaleDateString('en-IN');
-    vars.timestamp = Date.now();
-    vars.generatedDate = new Date().toLocaleString('en-IN');
 
     return vars;
   }

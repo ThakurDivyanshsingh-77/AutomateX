@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Handlebars from 'handlebars';
 import {
   FileOutput, FileText, Award, BarChart2, ShoppingCart, Briefcase,
   DollarSign, User, Code, File, Monitor, Palette, Settings2, ChevronRight,
@@ -83,9 +84,40 @@ export const PdfGeneratorProperties = ({ node, onUpdateNodeData }) => {
   const buildPreviewHtml = useCallback((cfg) => {
     const content = cfg.content || DEFAULT_CONTENT[cfg.template] || '<p>Select a template to preview.</p>';
     const brandColor = cfg.brandColor || '#6366f1';
-    const resolved = content
-      .replace(/\{\{now\}\}/g, new Date().toLocaleDateString())
-      .replace(/\{\{([^}]+)\}\}/g, (_, k) => `<span style="background:${brandColor}20;color:${brandColor};padding:0 3px;border-radius:3px;font-size:0.85em;">{{${k}}}</span>`);
+
+    const sampleRuntimeVariables = {
+      now: new Date().toLocaleDateString('en-IN'),
+      timestamp: Date.now(),
+      generatedDate: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+      gmail: {
+        count: 3,
+        query: 'is:unread',
+        messages: [
+          { id: 'msg_101', subject: 'Quarterly Invoice #101', from: 'billing@stripe.com' },
+          { id: 'msg_102', subject: 'Payment Receipt #102', from: 'support@paypal.com' },
+          { id: 'msg_103', subject: 'Service Order #103', from: 'sales@aws.com' },
+        ],
+      },
+      mongodb: {
+        document: { name: 'Divyansh Thakur', email: 'divyansh@automatex.io', status: 'ACTIVE' },
+        documents: [{ id: 1, title: 'Document A' }, { id: 2, title: 'Document B' }],
+        count: 2,
+      },
+      http: {
+        status: 200,
+        data: { user: 'Divyansh', plan: 'Enterprise' },
+      },
+      workflow: { id: 'wf_demo_101', executionId: 'exec_77' },
+      vars: {},
+    };
+
+    let compiledContent = '';
+    try {
+      const templateFn = Handlebars.compile(content);
+      compiledContent = templateFn(sampleRuntimeVariables);
+    } catch (err) {
+      compiledContent = `<div style="color:red;font-size:11px;">Handlebars Error: ${err.message}</div>`;
+    }
 
     return `<!DOCTYPE html>
 <html>
@@ -103,7 +135,7 @@ export const PdfGeneratorProperties = ({ node, onUpdateNodeData }) => {
   ${cfg.customCSS || ''}
 </style>
 </head>
-<body>${resolved}</body>
+<body>${compiledContent}</body>
 </html>`;
   }, []);
 
