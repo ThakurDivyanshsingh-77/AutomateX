@@ -49,3 +49,17 @@ export class ExecutorRegistry {
     this.executors.set(nodeType, executorInstance);
   }
 }
+
+try {
+  console.log('[ExecutorRegistry] Initializing backend executor registry...');
+  for (const [nodeType, executor] of ExecutorRegistry.executors.entries()) {
+    if (!executor) {
+      throw new Error(`Executor handler for node type "${nodeType}" is undefined or missing.`);
+    }
+    const name = executor.name || executor.constructor?.name || typeof executor;
+    console.log(`[ExecutorRegistry] Registered node executor: "${nodeType}" -> ${name}`);
+  }
+  console.log(`[ExecutorRegistry] Successfully registered ${ExecutorRegistry.executors.size} node executors.`);
+} catch (err) {
+  console.error('[ExecutorRegistry] Backend executor registration failed:', err);
+}

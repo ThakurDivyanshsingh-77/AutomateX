@@ -7,6 +7,7 @@ import {
   Code,
   GitBranch,
   Terminal,
+  FileOutput,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -21,6 +22,7 @@ export const NODE_TYPES = {
   CODE_TRANSFORM: 'CODE_TRANSFORM',
   CONDITION: 'CONDITION',
   LOG_ACTION: 'LOG_ACTION',
+  PDF_GENERATOR: 'pdfGenerator',
 };
 
 export const NODE_REGISTRY = {
@@ -121,6 +123,23 @@ export const NODE_REGISTRY = {
     badgeColor: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
     defaultConfig: {
       message: 'Step execution completed successfully.',
+    },
+  },
+  [NODE_TYPES.PDF_GENERATOR]: {
+    type: NODE_TYPES.PDF_GENERATOR,
+    category: 'Output',
+    label: 'PDF Generator',
+    description: 'Generate professional PDFs from workflow data. Supports invoices, certificates, reports, receipts, and custom HTML.',
+    icon: FileOutput,
+    color: 'violet',
+    badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    defaultConfig: {
+      template: 'blank',
+      fileName: 'document_{{now}}.pdf',
+      pageSize: 'A4',
+      orientation: 'portrait',
+      outputMode: 'base64',
+      content: '<h1>Hello {{trigger.body.name}}</h1>\n<p>Generated on {{now}}</p>',
     },
   },
 };

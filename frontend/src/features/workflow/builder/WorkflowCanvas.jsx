@@ -24,6 +24,7 @@ import { ConditionNode } from '../nodes/condition';
 import { WebhookNode } from '../nodes/webhook/WebhookNode';
 import { TryCatchNode } from '../nodes/tryCatch/TryCatchNode';
 import { CronNode } from '../nodes/cron/CronNode';
+import { PdfGeneratorNode } from '../nodes/pdf/PdfGeneratorNode';
 
 import { NodeToolbar } from './NodeToolbar';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -58,6 +59,7 @@ const nodeTypes = {
   [NODE_TYPES.WEBHOOK]: WebhookNode,
   [NODE_TYPES.TRY_CATCH]: TryCatchNode,
   [NODE_TYPES.CRON]: CronNode,
+  [NODE_TYPES.PDF_GENERATOR]: PdfGeneratorNode,
 };
 
 const BuilderInner = () => {

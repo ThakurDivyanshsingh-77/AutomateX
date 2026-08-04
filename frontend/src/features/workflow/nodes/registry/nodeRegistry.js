@@ -79,6 +79,19 @@ export const nodeDefinitions = {
 
 export const NODE_REGISTRY = nodeDefinitions;
 
+try {
+  console.log('[NodeRegistry] Initializing node registry during application startup...');
+  Object.entries(nodeDefinitions).forEach(([type, def]) => {
+    if (!def) {
+      throw new Error(`Node definition for type "${type}" is undefined or missing.`);
+    }
+    console.log(`[NodeRegistry] Registered node: "${def.label || type}" (type: ${type}, category: ${def.category || 'N/A'})`);
+  });
+  console.log(`[NodeRegistry] Successfully registered ${Object.keys(nodeDefinitions).length} nodes.`);
+} catch (err) {
+  console.error('[NodeRegistry] Node registration failed during startup:', err);
+}
+
 // Central Registry of Client-side Node Validators
 export const nodeValidators = {
   [NODE_TYPES.START]: () => ({ isValid: true, errors: [] }),
