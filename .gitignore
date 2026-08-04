@@ -5,3 +5,5 @@ coverage
 .vscode
 .DS_Store
 *.log
+.cache
+

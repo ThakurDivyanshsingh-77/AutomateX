@@ -142,28 +142,60 @@ export class PdfService {
       : `<div style="font-size:9px;padding:0 15mm;width:100%;color:#94a3b8;display:flex;justify-content:space-between;"><span>${config.companyName || ''} — ${fileName || ''}</span><span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span><span>${new Date().toLocaleDateString()}</span></div>`;
 
     let browser = null;
+    let launchError = null;
+
+    const launchOptions = {
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+      ],
+    };
+
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    } else if (process.env.CHROME_PATH) {
+      launchOptions.executablePath = process.env.CHROME_PATH;
+    }
+
     try {
-      const launchOptions = {
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-        ],
-      };
-
-      if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-        launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
-      } else if (process.env.CHROME_PATH) {
-        launchOptions.executablePath = process.env.CHROME_PATH;
-      }
-
       browser = await puppeteer.launch(launchOptions);
+    } catch (err) {
+      console.error(`[PdfService] Primary Puppeteer browser launch failed: ${err.message}`);
+      launchError = err;
 
+      // Try system Chrome locations on Linux
+      const fallbackPaths = [
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chrome',
+      ];
+
+      for (const chromePath of fallbackPaths) {
+        if (fs.existsSync(chromePath)) {
+          try {
+            console.log(`[PdfService] Retrying launch with system Chrome at: "${chromePath}"`);
+            browser = await puppeteer.launch({ ...launchOptions, executablePath: chromePath });
+            launchError = null;
+            break;
+          } catch (e) {
+            console.warn(`[PdfService] Launch with ${chromePath} failed: ${e.message}`);
+          }
+        }
+      }
+    }
+
+    if (!browser) {
+      const errorMsg = `Could not launch Chrome/Puppeteer browser on server: ${launchError?.message || 'Unknown error'}. Verify browser installation.`;
+      console.error(`[PdfService] ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+
+    try {
       const page = await browser.newPage();
 
       // Set content and wait for fonts / images
