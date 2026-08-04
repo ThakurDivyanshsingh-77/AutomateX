@@ -91,7 +91,8 @@ export class IntentClassifier {
     ];
     const actionKeywords = [
       'send', 'email', 'gmail', 'notify', 'slack', 'discord', 'telegram', 'post', 'http', 'api', 'request',
-      'log', 'save', 'database', 'mongo', 'insert', 'pdf', 'generate', 'groq', 'ai', 'call', 'fetch', 'fetch weather'
+      'log', 'save', 'database', 'mongo', 'mongodb', 'mysql', 'postgres', 'postgresql', 'sql', 'query', 'table',
+      'collection', 'insert', 'pdf', 'generate', 'groq', 'ai', 'call', 'fetch', 'fetch weather'
     ];
 
     const hasTrigger = triggerKeywords.some((kw) => text.includes(kw));

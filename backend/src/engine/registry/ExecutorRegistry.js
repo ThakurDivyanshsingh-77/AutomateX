@@ -6,6 +6,7 @@ import { EndExecutor } from '../executors/EndExecutor.js';
 import { GmailExecutor } from '../executors/GmailExecutor.js';
 import { ConditionExecutor } from '../executors/ConditionExecutor.js';
 import { TryCatchExecutor } from '../executors/TryCatchExecutor.js';
+import { DatabaseExecutor } from '../database/DatabaseExecutor.js';
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -20,6 +21,11 @@ export class ExecutorRegistry {
     ['gmail', new GmailExecutor()],
     ['condition', new ConditionExecutor()],
     ['tryCatch', new TryCatchExecutor()],
+    ['mongodb', DatabaseExecutor],
+    ['mysql', DatabaseExecutor],
+    ['postgres', DatabaseExecutor],
+    ['databaseQuery', DatabaseExecutor],
+    ['database', DatabaseExecutor],
   ]);
 
   static getExecutor(nodeType) {

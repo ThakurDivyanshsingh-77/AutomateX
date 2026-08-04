@@ -112,7 +112,20 @@ export class HeuristicWorkflowGenerator {
       }
     };
 
-    // ── 2. Action Pattern Matching ────────────────────────────────────────────
+    // Check for MongoDB
+    if (text.includes('mongo') || text.includes('mongodb') || text.includes('save them into mongo')) {
+      addActionNode('mongodb', 'MongoDB Insert', { operation: 'insert', collection: 'users' }, 'Inserts payload document into MongoDB database.');
+    }
+
+    // Check for MySQL / Relational SQL
+    if (text.includes('mysql') || text.includes('sql') || text.includes('database query')) {
+      addActionNode('mysql', 'MySQL Query', { operation: 'select', table: 'users' }, 'Executes SQL query against MySQL database.');
+    }
+
+    // Check for PostgreSQL
+    if (text.includes('postgres') || text.includes('postgresql')) {
+      addActionNode('postgres', 'PostgreSQL Query', { operation: 'select', table: 'users' }, 'Executes query against PostgreSQL database.');
+    }
 
     // Check for HTTP Request
     if (text.includes('fetch') || text.includes('http') || text.includes('api') || text.includes('weather') || text.includes('get data')) {

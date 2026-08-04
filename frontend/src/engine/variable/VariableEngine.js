@@ -70,6 +70,38 @@ export const NODE_SCHEMA_REGISTRY = {
       documents: { type: 'Array', example: [{ _id: '64a1b2c3', name: 'Item 1' }], description: 'Query results array' },
       count: { type: 'Number', example: 1, description: 'Number of returned documents' },
       insertedId: { type: 'String', example: '64a1b2c3d4e5f6', description: 'ID of newly inserted document' },
+      executionTime: { type: 'Number', example: 12, description: 'Execution duration ms' },
+    },
+  },
+  mysql: {
+    label: 'MySQL Database',
+    icon: 'Server',
+    outputs: {
+      rows: { type: 'Array', example: [{ id: 1, name: 'User 1' }], description: 'Returned rows array' },
+      affectedRows: { type: 'Number', example: 1, description: 'Number of affected/modified rows' },
+      insertedId: { type: 'Number', example: 101, description: 'Inserted record ID' },
+      executionTime: { type: 'Number', example: 8, description: 'Execution duration ms' },
+    },
+  },
+  postgres: {
+    label: 'PostgreSQL Database',
+    icon: 'HardDrive',
+    outputs: {
+      rows: { type: 'Array', example: [{ id: 1, data: { role: 'admin' } }], description: 'Returned rows array' },
+      rowCount: { type: 'Number', example: 1, description: 'Number of returned/affected rows' },
+      insertedId: { type: 'Number', example: 101, description: 'Inserted record ID' },
+      executionTime: { type: 'Number', example: 6, description: 'Execution duration ms' },
+    },
+  },
+  databaseQuery: {
+    label: 'Universal DB Query',
+    icon: 'FileJson',
+    outputs: {
+      documents: { type: 'Array', example: [{ id: 1 }], description: 'Returned records' },
+      rows: { type: 'Array', example: [{ id: 1 }], description: 'Returned rows' },
+      count: { type: 'Number', example: 1, description: 'Row or document count' },
+      affectedRows: { type: 'Number', example: 1, description: 'Affected rows count' },
+      executionTime: { type: 'Number', example: 10, description: 'Execution duration ms' },
     },
   },
   groq: {

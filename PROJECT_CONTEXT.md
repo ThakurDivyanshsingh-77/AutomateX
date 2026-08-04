@@ -114,6 +114,19 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Mapping Inspector & Auto Validation**: Dedicated inspector tab listing all active bindings (`Source ──► Destination ──► Transformation`), evaluated outputs, validation status, and single-click clear action. Flags unknown variables with warning tooltips (`"Variable no longer exists"`).
 - **Mapping Persistence**: Mappings persist directly inside `node.data.config`, surviving workflow saving, versioning, export/import, and publication.
 
+### **Phase 14 Complete — Universal Database Framework (Enterprise Database Nodes)** — ✅ COMPLETED
+- **Pluggable Database Core Architecture** (`backend/src/engine/database/`):
+  - `DatabaseProvider.js`: Abstract base interface (`connect`, `disconnect`, `find`, `findOne`, `insert`, `insertMany`, `update`, `delete`, `aggregate`, `execute`, `validate`, `healthCheck`).
+  - `MongoProvider.js`: MongoDB driver supporting document find, insert, update, delete, aggregation pipelines, and index inspections.
+  - `MySQLProvider.js`: MySQL driver enforcing parameterized queries (`?`), connection pooling, SELECT/INSERT/UPDATE/DELETE, and transactions.
+  - `PostgresProvider.js`: PostgreSQL driver enforcing parameterized queries (`$1, $2`), JSONB columns, SELECT/INSERT/UPDATE/DELETE, and transactions.
+  - `DatabaseRegistry.js`: Singleton registry managing drivers (`mongodb`, `mysql`, `postgres`).
+  - `DatabaseCredentialManager.js`: Resolves and decrypts AES-256 encrypted database vault credentials.
+  - `DatabaseValidator.js`: Validates queries and flags un-parameterized SQL injection risks (`${...}`).
+  - `DatabaseExecutor.js`: Executor registered in `ExecutorRegistry.js` for executing database workflow nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`). Passed 17/17 automated unit tests in `test_phase14_database.js`.
+- **Database REST API Subsystem** (`backend/src/controllers/databaseController.js` & `databaseRoutes.js`): Mounted under `/api/v1/database` (`/providers`, `/connections`, `/test`, `/query`).
+- **Visual Palette Nodes & Variable Engine**: `databaseManifest.js` registering `mongodb`, `mysql`, `postgres`, and `databaseQuery` under `Database` palette category. Auto-registers outputs (`documents`, `rows`, `count`, `affectedRows`, `insertedId`, `executionTime`) in `VariableEngine.js`.
+
 ---
 
 ## 🛠️ Complete Tech Stack
@@ -121,7 +134,8 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 ### **Backend (`/backend`)**
 - **Runtime**: Node.js (ES Modules `"type": "module"`)
 - **Framework**: Express.js
-- **Database**: MongoDB & Mongoose ORM
+- **Database Engine Framework**: `DatabaseProvider`, `MongoProvider`, `MySQLProvider`, `PostgresProvider`, `DatabaseRegistry`, `DatabaseCredentialManager`, `DatabaseValidator`, `DatabaseExecutor`
+- **Database ORM & Drivers**: MongoDB & Mongoose ORM
 - **Security & Vault**: `bcryptjs`, `jsonwebtoken`, `crypto` (AES-256-CBC Encryption)
 - **AI Engine & Intent Classifier**: `IntentClassifier` (5 intent categories, 70% confidence threshold), Groq API (`gsk_...` key, `llama-3.3-70b-versatile`), xAI Grok API (`grok-2-latest`), `HeuristicWorkflowGenerator` offline engine
 - **Versioning Engine**: `WorkflowVersion` model, `VersionManager`, `VersionComparator` (structured node/edge diff), `PublishManager`
@@ -130,7 +144,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Webhook Subsystem**: `WebhookService`, `WebhookAuth`, `WebhookValidator` (100 req/min Rate Limiter), `WebhookReplay`
 - **Execution Debugger**: `ExecutionSnapshot`, `ExecutionInspector`, `ExecutionMetrics`, `ExecutionReplay`, `ExecutionDebuggerService`
 - **Google Integration**: `googleapis` (OAuth2 & Gmail v1 REST API)
-- **Executors & Plugins**: `ExecutorRegistry` (`start`, `http`, `delay`, `log`, `end`, `gmail`, `condition`, `webhook`, `tryCatch`), `ConditionExecutor`, `GmailPlugin`, `PluginRegistry`, `ConnectorClient`
+- **Executors & Plugins**: `ExecutorRegistry` (`start`, `http`, `delay`, `log`, `end`, `gmail`, `condition`, `webhook`, `tryCatch`, `mongodb`, `mysql`, `postgres`, `databaseQuery`), `ConditionExecutor`, `GmailPlugin`, `PluginRegistry`, `ConnectorClient`
 - **Engine & Runtime**: Standalone Graph Engine, Adjacency List Traversal, Dual-Branch Handle Router, `RuntimeEventBus`, `RuntimeManager`, `ExecutionWorker`, `RetryManager`, `TimeoutManager`, `CronScheduler`, Public Webhook Receiver Endpoint
 
 ### **Frontend (`/frontend`)**
@@ -140,7 +154,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Versioning UI**: `VersionHistoryPanel.jsx`, `PublishDialog.jsx`, `CompareVersionsModal.jsx`
 - **Reliability UI**: `ReliabilityDashboard.jsx` (`/reliability`), Dead Letter Queue inspector
 - **Variable & Mapping Engine UI**: `DataMapperPanel`, `VariableEngine` (`VariableEngine.test.js`), `UniversalVariableInput`, `VariablePickerDrawer`, `JSONTreeExplorer`, `VariablePreviewModal`, `ExpressionSyntaxHighlighter`
-- **Custom Nodes**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`
+- **Custom Nodes**: `TriggerNode`, `HttpNode`, `DelayNode`, `LogNode`, `EndNode`, `GmailNode`, `ConditionNode`, `WebhookNode`, `TryCatchNode`, `Database` nodes (`mongodb`, `mysql`, `postgres`, `databaseQuery`)
 - **Expression Components**: `UniversalVariableInput`, `ExpressionInput`, `VariablePickerDrawer`, `JSONTreeExplorer`, `VariablePreviewModal`, `ExpressionSyntaxHighlighter`
 - **Webhook Components**: `WebhookURL`, `WebhookTester`, `WebhookProperties`
 - **Debugger Components**: `ExecutionDebugger`, `ExecutionTimeline`, `ExecutionInspector`, `NodeInspector`, `ExpressionInspector`, `PerformancePanel`, `ExecutionReplay`

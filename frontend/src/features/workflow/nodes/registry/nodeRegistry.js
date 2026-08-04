@@ -8,6 +8,7 @@ import { conditionManifest, validateConditionNode } from '../condition';
 import { webhookManifest } from '../webhook';
 import { tryCatchManifest } from '../tryCatch';
 import { cronManifest } from '../cron/cronManifest';
+import { databaseManifest } from '../database/databaseManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -25,6 +26,10 @@ export const NODE_TYPES = {
   WEBHOOK: 'webhook',
   TRY_CATCH: 'tryCatch',
   CRON: 'cron',
+  MONGODB: 'mongodb',
+  MYSQL: 'mysql',
+  POSTGRES: 'postgres',
+  DATABASE_QUERY: 'databaseQuery',
 };
 
 // Central Registry of Node Definitions
@@ -39,6 +44,10 @@ export const nodeDefinitions = {
   [NODE_TYPES.WEBHOOK]: webhookManifest,
   [NODE_TYPES.TRY_CATCH]: tryCatchManifest,
   [NODE_TYPES.CRON]: cronManifest,
+  [NODE_TYPES.MONGODB]: databaseManifest.mongodb,
+  [NODE_TYPES.MYSQL]: databaseManifest.mysql,
+  [NODE_TYPES.POSTGRES]: databaseManifest.postgres,
+  [NODE_TYPES.DATABASE_QUERY]: databaseManifest.databaseQuery,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;
@@ -54,6 +63,10 @@ export const nodeValidators = {
   [NODE_TYPES.CONDITION]: validateConditionNode,
   [NODE_TYPES.WEBHOOK]: () => ({ isValid: true, errors: [] }),
   [NODE_TYPES.CRON]: cronManifest.validate,
+  [NODE_TYPES.MONGODB]: () => ({ isValid: true, errors: [] }),
+  [NODE_TYPES.MYSQL]: () => ({ isValid: true, errors: [] }),
+  [NODE_TYPES.POSTGRES]: () => ({ isValid: true, errors: [] }),
+  [NODE_TYPES.DATABASE_QUERY]: () => ({ isValid: true, errors: [] }),
 };
 
 // Helper: Get definition by node type
