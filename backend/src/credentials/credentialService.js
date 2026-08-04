@@ -6,7 +6,8 @@ const inMemoryCredentials = [];
 
 export const credentialService = {
   createCredential: async (ownerId, data) => {
-    const { encryptedData, maskedValue } = credentialCrypto.encrypt(data.secret);
+    const rawSecret = typeof data.secret === 'object' ? JSON.stringify(data.secret) : data.secret;
+    const { encryptedData, maskedValue } = credentialCrypto.encrypt(rawSecret);
 
     if (mongoose.connection.readyState === 1) {
       const cred = await Credential.create({
@@ -42,7 +43,7 @@ export const credentialService = {
   },
 
   /**
-   * Get credentials filtered by service type (e.g., 'gmail')
+   * Get credentials filtered by service type (e.g., 'gmail', 'mongodb')
    */
   getCredentialsByService: async (ownerId, service) => {
     if (mongoose.connection.readyState === 1) {
@@ -68,33 +69,36 @@ export const credentialService = {
   },
 
   /**
-   * Get decrypted plain-text secret (for simple API key / bearer token credentials)
+   * Get decrypted plain-text secret or object
    */
   getDecryptedSecret: async (ownerId, credentialId) => {
+    let encryptedData;
     if (mongoose.connection.readyState === 1) {
       const cred = await Credential.findOne({ _id: credentialId, owner: ownerId }).select('+encryptedData');
       if (!cred) return null;
-      return credentialCrypto.decrypt(cred.encryptedData);
+      encryptedData = cred.encryptedData;
     } else {
       const cred = inMemoryCredentials.find((c) => c._id === credentialId);
       if (!cred) return null;
-      return credentialCrypto.decrypt(cred.encryptedData);
+      encryptedData = cred.encryptedData;
+    }
+
+    const decrypted = credentialCrypto.decrypt(encryptedData);
+    try {
+      return JSON.parse(decrypted);
+    } catch {
+      return decrypted;
     }
   },
 
   /**
-   * Get decrypted OAuth2 data as a parsed JSON object.
-   * Used by GmailPlugin, SlackPlugin, etc.
-   * Returns: { clientId, clientSecret, refreshToken, accessToken, expiryDate, userEmail }
-   *
-   * NOTE: No ownerId check here — executors run server-side and need direct access.
-   *       The workflow is already owned by the user, so indirect ownership is guaranteed.
+   * Get decrypted credential by ID
    */
-  getDecryptedOAuthData: async (credentialId) => {
+  getCredentialById: async (credentialId, ownerId = null) => {
     let encryptedData;
-
     if (mongoose.connection.readyState === 1) {
-      const cred = await Credential.findById(credentialId).select('+encryptedData');
+      const query = ownerId ? { _id: credentialId, owner: ownerId } : { _id: credentialId };
+      const cred = await Credential.findOne(query).select('+encryptedData');
       if (!cred) throw new Error(`Credential not found: ${credentialId}`);
       encryptedData = cred.encryptedData;
     } else {
@@ -107,7 +111,14 @@ export const credentialService = {
     try {
       return JSON.parse(decrypted);
     } catch {
-      throw new Error('Credential data is not valid OAuth JSON. Please reconnect the account.');
+      return { connectionUri: decrypted };
     }
+  },
+
+  /**
+   * Get decrypted OAuth2 data as a parsed JSON object.
+   */
+  getDecryptedOAuthData: async (credentialId) => {
+    return credentialService.getCredentialById(credentialId);
   },
 };

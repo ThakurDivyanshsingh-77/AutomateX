@@ -1,6 +1,7 @@
 import { DatabaseRegistry } from '../engine/database/DatabaseRegistry.js';
 import { DatabaseCredentialManager } from '../engine/database/DatabaseCredentialManager.js';
 import { DatabaseValidator } from '../engine/database/DatabaseValidator.js';
+import { MongoConnectionPool } from '../engine/database/MongoConnectionPool.js';
 
 export const getDatabaseProviders = async (req, res, next) => {
   try {
@@ -29,10 +30,63 @@ export const getDatabaseConnections = async (req, res, next) => {
   }
 };
 
+export const testMongoConnection = async (req, res, next) => {
+  try {
+    const { connectionUri, databaseName, username, password, authDatabase, tlsEnable } = req.body;
+    const health = await MongoConnectionPool.healthCheck({
+      connectionUri,
+      databaseName,
+      username,
+      password,
+      authDatabase,
+      tlsEnable,
+    });
+
+    if (health.connected) {
+      return res.status(200).json({
+        success: true,
+        message: 'Connected Successfully',
+        version: health.version,
+        latencyMs: health.latencyMs,
+        database: health.database,
+        health,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: health.error || 'Connection Failed',
+      latencyMs: health.latencyMs,
+      health,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: `MongoDB connection test failed: ${err.message}`,
+    });
+  }
+};
+
+export const getMongoStatus = async (req, res, next) => {
+  try {
+    const status = MongoConnectionPool.getPoolStatus();
+    return res.status(200).json({
+      success: true,
+      status,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const testDatabaseConnection = async (req, res, next) => {
   try {
     const { provider, host, port, username, password, database, connectionUri } = req.body;
     const providerId = (provider || 'mongodb').toLowerCase();
+
+    if (providerId === 'mongodb') {
+      return testMongoConnection(req, res, next);
+    }
 
     const instance = DatabaseRegistry.createInstance(providerId, {
       connectionUri,
