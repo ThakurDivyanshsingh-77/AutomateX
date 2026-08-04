@@ -123,10 +123,10 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Test Suite**: Passed **14/14** automated unit and workflow execution tests in `test_phase14_2_mongo_crud.js`, including the demo pipeline (`Start ──► MongoDB Insert One ──► MongoDB Find One ──► Log ──► End`).
 
 ### **Phase 15.1 Complete — PDF Generator Node & Production Puppeteer Engine** — ✅ COMPLETED
-- **Backend PDF Generation Subsystem**:
+- **Backend PDF Generation & Gmail Integration Subsystem**:
   - `PdfService.js`: Production PDF generation service powered by Handlebars HTML templating & Puppeteer headless Chrome renderer. Ensures custom user HTML (`htmlContent`, `customHtml`, `bodyHtml`, `content`) overrides built-in report fallback, pre-compiles templates with Handlebars using structured runtime variables (`{ now, gmail, mongodb, http, workflow, vars }`), and injects debug logging for request inspection.
   - `PdfGeneratorExecutor.js`: Execution handler passing raw user HTML content (`htmlContent`, `customHtml`, `bodyHtml`, `content`) to `PdfService`, populating standard runtime variables (`now`, `gmail`, `mongodb`, `http`, `workflow`, `vars`), and returning full execution payload `{ success, fileName, mimeType, size, base64, attachment, downloadUrl }`.
-  - `GmailPlugin.js`: Upgraded RFC 2822 MIME builder (`buildRawEmail`) to support `multipart/mixed` payloads with base64 PDF attachments. Automatically detects upstream `attachment` objects from PDF Generator nodes.
+  - `GmailPlugin.js`: Upgraded `_searchEmails` and `_readEmails` with `_enrichMessages()` to fetch `format: 'full'` message details via `gmail.users.messages.get()`, populating `from`, `to`, `subject`, `date`, `cc`, `bcc`, `snippet`, `labelIds`, `hasAttachments`, `attachments`, `bodyText`, and `bodyHtml` for Handlebars template compatibility (`{{#each gmail.messages}} {{this.subject}} {{this.from}} {{/each}}`). Also upgraded RFC 2822 MIME builder (`buildRawEmail`) for `multipart/mixed` PDF attachments.
   - `.puppeteerrc.cjs` & Render Deployment Fix: Redirected Puppeteer cache directory to `backend/.cache/puppeteer` inside project root to ensure Chromium/Chrome binaries persist across Render deployment steps.
 - **Frontend PDF Generator & Live Preview Engine**:
   - `PdfGeneratorProperties.jsx`: Synchronized Live Preview iframe rendering engine with backend Handlebars compiler using sample runtime variables (`gmail`, `mongodb`, `http`, `workflow`, `now`).
