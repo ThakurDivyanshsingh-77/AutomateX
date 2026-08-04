@@ -250,6 +250,115 @@ export class GmailPlugin {
     };
   }
 
+  // ── Enrich Message Stubs with Full Email Metadata ────────────────────────
+  async _enrichMessages(gmail, messageStubs) {
+    if (!Array.isArray(messageStubs) || messageStubs.length === 0) return [];
+
+    const enrichedMessages = await Promise.all(
+      messageStubs.map(async (stub) => {
+        try {
+          const detailRes = await gmail.users.messages.get({
+            userId: 'me',
+            id: stub.id,
+            format: 'full',
+          });
+
+          const msg = detailRes.data;
+          const headers = msg.payload?.headers || [];
+
+          const getHeader = (name) => {
+            const h = headers.find((item) => item.name?.toLowerCase() === name.toLowerCase());
+            return h ? h.value : '';
+          };
+
+          const from = getHeader('From');
+          const to = getHeader('To');
+          const subject = getHeader('Subject');
+          const date = getHeader('Date');
+          const cc = getHeader('Cc');
+          const bcc = getHeader('Bcc');
+
+          let bodyText = '';
+          let bodyHtml = '';
+          const attachments = [];
+
+          // Helper function to recursively parse mime parts
+          const parsePart = (part) => {
+            if (!part) return;
+
+            if (part.mimeType === 'text/plain' && part.body?.data) {
+              bodyText += Buffer.from(part.body.data, 'base64').toString('utf8');
+            } else if (part.mimeType === 'text/html' && part.body?.data) {
+              bodyHtml += Buffer.from(part.body.data, 'base64').toString('utf8');
+            }
+
+            if (part.filename && part.filename.length > 0) {
+              attachments.push({
+                filename: part.filename,
+                mimeType: part.mimeType,
+                size: part.body?.size || 0,
+                attachmentId: part.body?.attachmentId || null,
+              });
+            }
+
+            if (Array.isArray(part.parts)) {
+              part.parts.forEach(parsePart);
+            }
+          };
+
+          if (msg.payload) {
+            if (msg.payload.body?.data) {
+              const bodyStr = Buffer.from(msg.payload.body.data, 'base64').toString('utf8');
+              if (msg.payload.mimeType === 'text/html') {
+                bodyHtml = bodyStr;
+              } else {
+                bodyText = bodyStr;
+              }
+            }
+            if (Array.isArray(msg.payload.parts)) {
+              msg.payload.parts.forEach(parsePart);
+            }
+          }
+
+          return {
+            id: msg.id,
+            threadId: msg.threadId,
+            from,
+            to,
+            subject,
+            date,
+            cc,
+            bcc,
+            snippet: msg.snippet || '',
+            labelIds: msg.labelIds || [],
+            hasAttachments: attachments.length > 0,
+            attachments,
+            bodyText: bodyText.trim(),
+            bodyHtml: bodyHtml.trim(),
+          };
+        } catch (err) {
+          console.warn(`[GmailPlugin] Could not fetch details for message ${stub.id}: ${err.message}`);
+          return {
+            id: stub.id,
+            threadId: stub.threadId,
+            from: '',
+            to: '',
+            subject: '(Failed to fetch email details)',
+            date: '',
+            snippet: '',
+            labelIds: [],
+            hasAttachments: false,
+            attachments: [],
+            bodyText: '',
+            bodyHtml: '',
+          };
+        }
+      })
+    );
+
+    return enrichedMessages;
+  }
+
   // ── Read Emails (most recent N) ────────────────────────────────────────────
   async _readEmails(auth, config, executionId) {
     const gmail = google.gmail({ version: 'v1', auth });
@@ -258,14 +367,21 @@ export class GmailPlugin {
     try {
       listRes = await gmail.users.messages.list({
         userId: 'me',
-        maxResults: 10,
+        maxResults: config.maxResults || 10,
         labelIds: ['INBOX'],
       });
     } catch (err) {
       this._handleGmailApiError(err);
     }
 
-    const messages = listRes.data.messages || [];
+    const rawStubs = listRes.data?.messages || [];
+    const messages = await this._enrichMessages(gmail, rawStubs);
+
+    console.log(`[GmailPlugin] ReadEmails fetched & enriched ${messages.length} messages.`);
+    if (messages.length > 0) {
+      console.log('[GmailPlugin] Sample enriched message payload:', JSON.stringify(messages[0], null, 2));
+    }
+
     return {
       success: true,
       provider: 'gmail',
@@ -286,13 +402,20 @@ export class GmailPlugin {
       searchRes = await gmail.users.messages.list({
         userId: 'me',
         q: searchQuery,
-        maxResults: 20,
+        maxResults: config.maxResults || 20,
       });
     } catch (err) {
       this._handleGmailApiError(err);
     }
 
-    const messages = searchRes.data.messages || [];
+    const rawStubs = searchRes.data?.messages || [];
+    const messages = await this._enrichMessages(gmail, rawStubs);
+
+    console.log(`[GmailPlugin] SearchEmails query="${searchQuery}" fetched & enriched ${messages.length} messages.`);
+    if (messages.length > 0) {
+      console.log('[GmailPlugin] Sample enriched message payload:', JSON.stringify(messages[0], null, 2));
+    }
+
     return {
       success: true,
       provider: 'gmail',
