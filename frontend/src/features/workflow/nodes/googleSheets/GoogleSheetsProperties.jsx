@@ -109,10 +109,9 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
 
   const fetchCredentials = async () => {
     try {
-      const res = await fetch('/api/v1/credentials');
-      const data = await res.json();
-      if (data.success) {
-        const googleCreds = (data.data || []).filter((c) => c.service === 'gmail' || c.service === 'googleSheets' || c.service === 'google');
+      const res = await api.get('/credentials');
+      if (res.data.success) {
+        const googleCreds = (res.data.data || []).filter((c) => c.service === 'gmail' || c.service === 'googleSheets' || c.service === 'google');
         setCredentials(googleCreds);
         if (!credentialId && googleCreds.length > 0) {
           setCredentialId(googleCreds[0]._id);

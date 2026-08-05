@@ -89,25 +89,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
 ### **Phase 17 Complete — Production-Grade Google Sheets Integration & Cookie-Based OAuth Session Preservation** — ✅ COMPLETED
-- **GET /api/v1/credentials 401 Resolution**:
-  - **Root Cause Analysis**: `cookie-parser` was missing from Express middleware in `app.js`, and `res.cookie()` was not setting the JWT `token` cookie upon login/registration. Consequently, cross-domain redirects or requests relying on browser cookies returned HTTP `401 Unauthorized` on `GET /api/v1/credentials`.
-  - **Backend Solution**:
-    1. Mounted `cookie-parser` middleware in `backend/src/app.js`.
-    2. Configured `authController.js` (`loginUser`, `registerUser`) to issue `HttpOnly`, `SameSite=None` (in production) / `Lax` (in dev), `Secure` cookies alongside JWT JSON responses.
-    3. Enhanced `authMiddleware.js` (`protect`) to extract tokens from `req.headers.authorization`, `req.cookies.token`, or `req.query.token`.
-    4. Added detailed debug logs on `GET /credentials` and `authMiddleware.js`:
-       - `[AuthMiddleware] 🔍 Path: GET /api/v1/credentials`
-       - `[AuthMiddleware] 🍪 Cookies: ...`
-       - `[AuthMiddleware] 🔑 Header Authorization: Bearer ...`
-       - `[AuthMiddleware] ✅ Token verified for User ID: <id>`
-  - **Frontend Solution**:
-    - Added `withCredentials: true` across all Axios client instances (`frontend/src/services/api.js` and `frontend/src/api/axiosClient.js`) so cookies are sent with all API requests.
+- **Exact Line Bug Analysis & Resolution (`GET /api/v1/credentials` 401)**:
+  - **Root Cause Identified**: In `GoogleSheetsProperties.jsx`, line 112 executed a raw browser `fetch('/api/v1/credentials')`:
+    ```javascript
+    const res = await fetch('/api/v1/credentials');
+    ```
+    Raw `fetch()` calls do NOT send the `Authorization: Bearer <token>` header stored in `localStorage`. When Google OAuth completed and returned to the canvas builder, `GoogleSheetsProperties` executed `fetchCredentials()`. Backend `authMiddleware.js` rejected this unauthenticated request with HTTP `401 Unauthorized`. The response interceptor in `api.js` received HTTP 401, cleared `localStorage.getItem('token')`, and triggered `window.location.href = '/login'`.
+  - **Fix Implemented**: Replaced line 112 in `GoogleSheetsProperties.jsx` with `api.get('/credentials')`, which automatically attaches the `Authorization: Bearer ${token}` header and sends HttpOnly cookies (`withCredentials: true`), returning HTTP `200 OK`.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 
