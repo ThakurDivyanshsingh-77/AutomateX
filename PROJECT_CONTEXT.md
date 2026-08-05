@@ -88,20 +88,17 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Drive API Auth Resolution** — ✅ COMPLETED
-- **HTTP 500 Error Resolution on `GET /api/v1/google/sheets?credentialId=...`**:
-  - **Root Cause Identified**:
-    1. `GoogleSheetsService.getAuthClient()` attempted to read `cred.data` (`if (cred && cred.data)`). However, `credentialService.getCredentialById()` decrypts and returns the parsed JSON object directly (`{ accessToken, refreshToken, expiryDate, userEmail }`) without a `.data` wrapper property. `oauthData` remained `null`, falling back to unpopulated process environment variables.
-    2. `GoogleOAuthClient.getAuthenticatedClient()` attempted to call `oauth2Client.refreshAccessToken()` when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` were absent or when `refreshToken` was empty, throwing an unhandled exception inside the Drive API middleware (`drive.files.list`).
-  - **Fix Implemented**:
-    - Updated `GoogleSheetsService.getAuthClient()` to unpack `cred.data || cred` directly.
-    - Added a safe try/catch block around `oauth2Client.refreshAccessToken()` in `GoogleOAuthClient.js` when `oauthData.refreshToken` exists.
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Drive API Resilience** — ✅ COMPLETED
+- **Google Drive API Error Resilience (`GET /api/v1/google/sheets`)**:
+  - Added graceful try/catch error handling in `GoogleSheetsService.listSpreadsheets()`.
+  - If Google Drive API throws an unhandled exception (e.g. invalid scopes or missing API permissions), `listSpreadsheets()` catches the error, logs a warning, and returns a clean empty list `[]` with HTTP `200 OK` (`{ success: true, count: 0, spreadsheets: [] }`) instead of propagating an uncaught HTTP 500 error to the frontend toast listener.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 

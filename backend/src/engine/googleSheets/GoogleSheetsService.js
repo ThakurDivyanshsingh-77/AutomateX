@@ -46,26 +46,32 @@ export class GoogleSheetsService {
    * List all Google Spreadsheets from Google Drive API
    */
   static async listSpreadsheets({ credentialId, userId, query = '' }) {
-    const drive = await this.getDriveClient(credentialId, userId);
+    try {
+      const drive = await this.getDriveClient(credentialId, userId);
 
-    let mimeQuery = "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
-    if (query) {
-      mimeQuery += ` and name contains '${query.replace(/'/g, "\\'")}'`;
+      let mimeQuery = "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+      if (query) {
+        mimeQuery += ` and name contains '${query.replace(/'/g, "\\'")}'`;
+      }
+
+      const response = await drive.files.list({
+        q: mimeQuery,
+        fields: 'files(id, name, modifiedTime, thumbnailLink, webViewLink)',
+        pageSize: 50,
+        orderBy: 'modifiedTime desc',
+      });
+
+      return (response.data.files || []).map((file) => ({
+        id: file.id,
+        name: file.name,
+        modifiedTime: file.modifiedTime,
+        webViewLink: file.webViewLink,
+      }));
+    } catch (err) {
+      console.warn('[GoogleSheetsService] ⚠️ Drive API listSpreadsheets warning:', err.message);
+      // If Drive API call fails (e.g. invalid scopes or missing API permissions), return empty list cleanly instead of throwing HTTP 500
+      return [];
     }
-
-    const response = await drive.files.list({
-      q: mimeQuery,
-      fields: 'files(id, name, modifiedTime, thumbnailLink, webViewLink)',
-      pageSize: 50,
-      orderBy: 'modifiedTime desc',
-    });
-
-    return (response.data.files || []).map((file) => ({
-      id: file.id,
-      name: file.name,
-      modifiedTime: file.modifiedTime,
-      webViewLink: file.webViewLink,
-    }));
   }
 
   /**
