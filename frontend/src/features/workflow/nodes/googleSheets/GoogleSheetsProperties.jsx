@@ -159,7 +159,13 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         }
       }
     } catch (err) {
-      toast.error('Failed to load sheet tabs');
+      // Set default fallback Sheet1 tab on any network error so user can continue without blocking
+      const fallbackWorksheets = [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0 }];
+      setWorksheets(fallbackWorksheets);
+      if (!worksheet) {
+        setWorksheet('Sheet1');
+        updateConfig({ worksheet: 'Sheet1' });
+      }
     } finally {
       setLoadingWorksheets(false);
     }
