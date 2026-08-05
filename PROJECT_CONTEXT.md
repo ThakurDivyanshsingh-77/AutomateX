@@ -88,7 +88,22 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 11 Complete — Reliability Engine (Retry, Error Handling & Failure Recovery)** — ✅ COMPLETED
+### **Phase 15.2 Complete — Production-Grade Retry Policy Module Architecture** — ✅ COMPLETED
+- **Backend Modular Architecture** (`backend/src/engine/retry/`):
+  - `RetryTypes.js`: Enums (`fixed`, `linear`, `exponential`, `none`, `random`, `full`), default error/status codes, and standard `DEFAULT_RETRY_CONFIG`.
+  - Strategy Pattern (`strategies/`): `IRetryStrategy.js`, `FixedDelayStrategy`, `LinearBackoffStrategy`, `ExponentialBackoffStrategy`, `JitterUtility` (Random & AWS Full Jitter), and `RetryStrategyFactory`.
+  - Evaluator & Classifier (`evaluators/RetryEvaluator.js`): Evaluates retryability based on HTTP status codes (`408`, `429`, `500`, `502`, `503`, `504`), non-retryable codes (`400`, `401`, `403`, `404`, `422`), and error code patterns (`Network Error`, `Timeout`, `ECONNRESET`, `ETIMEDOUT`, `DNS Error`, `Rate Limit`). Fast-fails non-retryable errors like credentials failure.
+  - `RetryEngine.js`: Refactored core execution wrapper integrating strategies, jitter, per-attempt timeouts, logger, and returning formatted execution result `{ success, retryAttempts, finalError, executionTime, result, attempts, recovered, timedOut, continueOnError }`.
+  - Middleware (`middleware/RetryMiddleware.js`): Reusable wrapper for node execution functions.
+- **Database & Execution History**:
+  - `ExecutionStep.js`: Mongoose model updated with `retryAttempts` schema array and `retrySummary` metadata.
+  - `ExecutionLogger.js` & `WorkflowEngine.js`: Integrated step history recording attempt timelines.
+- **Frontend Inspector & Configuration Schema**:
+  - `RetryConfigSchema.js`: Inspector form schema definition for node properties panels.
+  - `RetryTimelineInspector.jsx`: Visual execution timeline displaying attempts (`Attempt #1 Failed 500 -> Retry in 5s -> Attempt #2 Success`).
+- **Automated Verification**:
+  - Passed **41/41** automated tests in `test_retry_engine.js`.
+
 - **Backend Reliability System**:
   - `TimeoutManager.js`: Enforces per-node timeout bounds using `Promise.race()` and `ExecutionTimeoutError`.
   - `RetryEngine.js`: Updated to wrap node executions in `TimeoutManager.raceWithTimeout(..., config.timeoutMs)` while preserving backoff strategies.

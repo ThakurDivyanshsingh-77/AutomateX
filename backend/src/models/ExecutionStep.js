@@ -1,5 +1,16 @@
 import mongoose from 'mongoose';
 
+const retryAttemptSchema = new mongoose.Schema({
+  attemptNumber: { type: Number, required: true },
+  timestamp: { type: Date, default: Date.now },
+  delayUsed: { type: Number, default: 0 },
+  status: { type: String, required: true }, // 'success' | 'recovered' | 'failed' | 'timeout'
+  statusCode: { type: Number, default: null },
+  error: { type: String, default: null },
+  duration: { type: Number, default: 0 },
+  durationMs: { type: Number, default: 0 },
+});
+
 const executionStepSchema = new mongoose.Schema(
   {
     executionId: {
@@ -24,7 +35,7 @@ const executionStepSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'waiting', 'running', 'completed', 'success', 'failed', 'skipped'],
+      enum: ['pending', 'waiting', 'running', 'completed', 'success', 'recovered', 'failed', 'skipped'],
       default: 'pending',
       index: true,
     },
@@ -50,6 +61,12 @@ const executionStepSchema = new mongoose.Schema(
     error: {
       type: Object,
       default: null,
+    },
+    retryAttempts: [retryAttemptSchema],
+    retrySummary: {
+      totalAttempts: { type: Number, default: 1 },
+      recovered: { type: Boolean, default: false },
+      finalError: { type: String, default: null },
     },
     logs: [
       {

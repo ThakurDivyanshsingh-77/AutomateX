@@ -29,14 +29,48 @@ export class ExecutionLogger {
   }
 
   /**
+   * Helper to format raw step log object prior to DB write
+   */
+  static createStepLog(currentNode, status, duration, input, output = null, error = null) {
+    return {
+      nodeId: currentNode.id,
+      nodeName: currentNode.data?.label || currentNode.name || currentNode.id,
+      nodeType: currentNode.type,
+      status,
+      duration,
+      input,
+      output: output || {},
+      error: error ? { message: error.message || String(error), stack: error.stack } : null,
+      retryAttempts: [],
+    };
+  }
+
+  /**
    * Record a single step execution
    */
   static async logStep(executionId, stepData) {
-    const { nodeId, nodeName = '', nodeType, status, duration = 0, input = {}, output = {}, error = null, logs = [] } = stepData;
+    const {
+      nodeId,
+      nodeName = '',
+      nodeType,
+      status,
+      duration = 0,
+      input = {},
+      output = {},
+      error = null,
+      retryAttempts = [],
+      logs = [],
+    } = stepData;
 
     try {
       const finishedAt = new Date();
       const startedAt = new Date(finishedAt.getTime() - duration);
+
+      const retrySummary = {
+        totalAttempts: retryAttempts.length || 1,
+        recovered: status === 'recovered',
+        finalError: error ? (error.message || String(error)) : null,
+      };
 
       const stepRecord = await ExecutionStep.create({
         executionId,
@@ -50,6 +84,8 @@ export class ExecutionLogger {
         input,
         output,
         error,
+        retryAttempts,
+        retrySummary,
         logs,
       });
 
@@ -66,6 +102,7 @@ export class ExecutionLogger {
             input,
             output,
             error,
+            retryAttempts,
             timestamp: finishedAt,
           },
         },
