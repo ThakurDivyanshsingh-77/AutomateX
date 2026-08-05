@@ -3,6 +3,7 @@ import { ManualTriggerExecutor, WebhookTriggerExecutor, ScheduleTriggerExecutor 
 import { HttpRequestExecutor, DelayExecutor, CodeTransformExecutor, ConditionExecutor, LogActionExecutor } from './executors/ActionExecutors.js';
 
 import { LoopExecutor } from './executors/LoopExecutor.js';
+import { GoogleSheetsExecutor } from './googleSheets/GoogleSheetsExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -23,6 +24,7 @@ class ExecutorRegistry {
     this.register(NODE_TYPES.CONDITION, new ConditionExecutor());
     this.register(NODE_TYPES.LOG_ACTION, new LogActionExecutor());
     this.register('loop', new LoopExecutor());
+    this.register('googleSheets', new GoogleSheetsExecutor());
   }
 
   register(nodeType, executorInstance) {

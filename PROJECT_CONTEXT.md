@@ -88,7 +88,16 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 16 Complete — Production-Grade Loop (For Each) Node Architecture** — ✅ COMPLETED
+### **Phase 17 Complete — Production-Grade Google Sheets Integration Architecture** — ✅ COMPLETED
+- **Backend Subsystem** (`backend/src/engine/googleSheets/`):
+  - `GoogleSheetsService.js`: Wrapper around `googleapis` v4 Sheets API providing high-throughput `readRows` (with offset, limit, filter empty), `appendRow`, `updateRow`, `clearRange`, `createSpreadsheet`, and `createWorksheet`.
+  - `GoogleSheetsExecutor.js`: Integrated executor registered under `googleSheets` node type in `ExecutorRegistry.js`. Maps credential vault tokens and node operations dynamically.
+  - Integration with `RetryEngine`: Automatically retries Google API rate limits (`429`) and server errors (`500`, `502`, `503`, `504`) with exponential backoff.
+- **Frontend Components & Visual Data Mapper**:
+  - `ColumnDataMapper.jsx`: Interactive column mapping component allowing visual drag & drop expression assignment (`Sheet.Name ──► {{http.user.name}}`).
+- **Automated Verification**:
+  - Passed automated test suite in `test_google_sheets.js`.
+
 - **Backend Core Loop Subsystem** (`backend/src/engine/loop/`):
   - `LoopTypes.js`: Execution modes (`sequential`, `parallel`), error policies (`stop`, `skip`, `continue`, `retry`), and default limits (`maxIterations: 10000`, `concurrency: 5`, `batchSize: 1`).
   - `LoopScopeStack.js`: Hierarchical variable scope stack for nested loops. Supports `item`, `index`, `isFirst`, `isLast`, `total`, `remaining`, `parent.item`, `root.item`, and custom variable names.
