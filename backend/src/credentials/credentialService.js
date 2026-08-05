@@ -6,6 +6,12 @@ const inMemoryCredentials = [];
 
 export const credentialService = {
   createCredential: async (ownerId, data) => {
+    if (!ownerId || !mongoose.Types.ObjectId.isValid(ownerId)) {
+      const err = new Error('Unauthorized: Valid user ID is required to create a credential');
+      err.statusCode = 401;
+      throw err;
+    }
+
     const rawSecret = typeof data.secret === 'object' ? JSON.stringify(data.secret) : data.secret;
     const { encryptedData, maskedValue } = credentialCrypto.encrypt(rawSecret);
 

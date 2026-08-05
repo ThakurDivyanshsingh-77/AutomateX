@@ -1,6 +1,7 @@
 import { googleOAuthClient } from './GoogleOAuthClient.js';
 import { credentialService } from '../credentials/credentialService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import mongoose from 'mongoose';
 
 /**
  * Step 1: Redirect user to Google OAuth consent screen
@@ -23,8 +24,8 @@ export const initiateGoogleOAuth = asyncHandler(async (req, res) => {
     }
   }
 
-  if (!userId) {
-    return res.status(400).json({ success: false, message: 'userId query param is required' });
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: A valid MongoDB user ObjectId is required' });
   }
 
   // Encode state as base64 JSON so special characters don't break the URL
@@ -63,6 +64,14 @@ export const handleGoogleCallback = asyncHandler(async (req, res) => {
   }
 
   const { name, userId } = decodedState || {};
+
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.redirect(
+      `${frontendUrl}/oauth/callback?status=error&message=${encodeURIComponent(
+        'Unauthorized: Valid user ObjectId missing from OAuth state.'
+      )}`
+    );
+  }
 
   // Exchange authorization code for tokens
   const tokens = await googleOAuthClient.exchangeCodeForTokens(code, req);

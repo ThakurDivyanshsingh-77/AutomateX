@@ -88,19 +88,18 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Properties Panel Fix** — ✅ COMPLETED
-- **Root Cause Resolution**:
-  - Identified why Google Sheets nodes displayed *"No custom parameters configured"*: `PropertiesPanel.jsx` lacked a dedicated properties renderer branch for `isGoogleSheetsNode` (`googleSheets*`), causing it to fall through to `AutoForm` with unpopulated fallback schemas.
-  - Added `isGoogleSheetsNode` check in `PropertiesPanel.jsx` to render `GoogleSheetsProperties.jsx` automatically whenever any Google Sheets node is selected.
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & OAuth Fix** — ✅ COMPLETED
+- **OAuth Callback ObjectId Bug Resolution**:
+  - Identified root cause of `Cast to ObjectId failed for value "current_user" at path "owner"`: `GoogleSheetsProperties.jsx` had fallback `localStorage.getItem('userId') || 'current_user'`, passing literal string `"current_user"` into OAuth redirect URLs when unauthenticated or when `userId` key was absent.
+  - Updated `GoogleSheetsProperties.jsx` to consume `user._id` from `AuthContext` and execute centered popup flow matching `GmailProperties.jsx`.
+  - Upgraded `credentialService.js`, `Credential.js`, `oauthController.js`, and `credentialController.js`: Enforced `mongoose.Types.ObjectId.isValid(ownerId)` check across all credential creation routines. Returns HTTP `401 Unauthorized` instead of attempting to save non-ObjectId owner strings.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
-- **Frontend Node Configuration Panel & Auto-Mapper**:
-  - `GoogleSheetsProperties.jsx`: Full step-by-step node configuration panel (Google Account selector with 1-click OAuth button, Drive API Spreadsheet selector, Worksheet tab selector, Automatic header detector with visual column mapping cards, and Live Data Preview).
-  - `GoogleSheetsNodeRegistry.js`: Updated node schema definitions exporting `id`, `type`, `displayName`, `icon`, `color`, `defaultConfig`, `configSchema`, and `validate`.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 

@@ -14,6 +14,8 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react';
+import { AuthContext } from '../../../../context/AuthContext';
+import { credentialService } from '../../../../services/credentialService';
 import toast from 'react-hot-toast';
 
 export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeConfig, onUpdateNodeData, onChange }) => {
@@ -183,9 +185,25 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     }
   };
 
-  const handleConnectOAuth = () => {
-    const userId = localStorage.getItem('userId') || 'current_user';
-    window.location.href = `/api/v1/oauth/google?name=Google+Sheets&userId=${userId}`;
+  const { user } = React.useContext(AuthContext);
+
+  const handleConnectOAuth = async () => {
+    const userId = user?._id || user?.id;
+    if (!userId) {
+      toast.error('You must be logged in to connect Google Account.');
+      return;
+    }
+    try {
+      const result = await credentialService.connectGmail(userId, `Google Account – ${user.name || user.email}`);
+      toast.success(`✅ Connected: ${result.email}`);
+      await fetchCredentials();
+      if (result.credentialId) {
+        setCredentialId(result.credentialId);
+        updateConfig({ credentialId: result.credentialId });
+      }
+    } catch (err) {
+      toast.error(err.message || 'OAuth connection failed');
+    }
   };
 
   const handleMappingChange = (idx, field, val) => {

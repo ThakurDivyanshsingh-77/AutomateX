@@ -15,7 +15,7 @@ const credentialSchema = new mongoose.Schema(
     },
     service: {
       type: String,
-      enum: ['mongodb', 'mysql', 'postgres', 'gmail', 'slack', 'discord', 'telegram', 'github', 'openai', 'http', 'custom'],
+      enum: ['mongodb', 'mysql', 'postgres', 'gmail', 'google', 'googleSheets', 'slack', 'discord', 'telegram', 'github', 'openai', 'http', 'custom'],
       required: true,
       index: true,
     },
