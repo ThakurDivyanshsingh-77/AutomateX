@@ -17,6 +17,8 @@ import { validateDelayNode } from '../validators/delayValidator';
 import { validateLogNode } from '../validators/logValidator';
 import { gmailValidator } from '../validators/gmailValidator';
 
+import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
+
 export const NODE_TYPES = {
   START: 'start',
   HTTP: 'http',
@@ -40,6 +42,7 @@ export const NODE_TYPES = {
   MONGO_COUNT: 'mongoCount',
   MONGO_AGGREGATE: 'mongoAggregate',
   PDF_GENERATOR: 'pdfGenerator',
+  ...GOOGLE_SHEETS_NODE_TYPES,
 };
 
 const databaseValidator = (nodeData) => {
@@ -75,6 +78,7 @@ export const nodeDefinitions = {
   [NODE_TYPES.MONGO_COUNT]: mongoCrudManifest.mongoCount,
   [NODE_TYPES.MONGO_AGGREGATE]: mongoCrudManifest.mongoAggregate,
   [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest,
+  ...googleSheetsNodeDefinitions,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;

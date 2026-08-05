@@ -23,6 +23,11 @@ export const NODE_TYPES = {
   CONDITION: 'CONDITION',
   LOG_ACTION: 'LOG_ACTION',
   PDF_GENERATOR: 'pdfGenerator',
+  // Google Sheets
+  GOOGLE_SHEETS_READ_ROWS: 'googleSheetsReadRows',
+  GOOGLE_SHEETS_APPEND_ROW: 'googleSheetsAppendRow',
+  GOOGLE_SHEETS_UPDATE_ROW: 'googleSheetsUpdateRow',
+  GOOGLE_SHEETS_DELETE_ROW: 'googleSheetsDeleteRow',
 };
 
 export const NODE_REGISTRY = {
@@ -141,5 +146,25 @@ export const NODE_REGISTRY = {
       outputMode: 'base64',
       content: '<h1>Hello {{trigger.body.name}}</h1>\n<p>Generated on {{now}}</p>',
     },
+  },
+  [NODE_TYPES.GOOGLE_SHEETS_READ_ROWS]: {
+    type: NODE_TYPES.GOOGLE_SHEETS_READ_ROWS,
+    category: 'Google Sheets',
+    label: 'Google Sheets Read Rows',
+    description: 'Read rows from a Google Sheet into JSON format',
+    icon: FileOutput,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: { range: 'A1:Z100', headerRow: 1, filterEmpty: true },
+  },
+  [NODE_TYPES.GOOGLE_SHEETS_APPEND_ROW]: {
+    type: NODE_TYPES.GOOGLE_SHEETS_APPEND_ROW,
+    category: 'Google Sheets',
+    label: 'Google Sheets Append Row',
+    description: 'Append row with column auto detection and variable mapping',
+    icon: FileOutput,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: { range: 'Sheet1!A1', mappings: [] },
   },
 };

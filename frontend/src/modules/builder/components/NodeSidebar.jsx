@@ -15,6 +15,7 @@ export const NodeSidebar = () => {
 
   const triggers = filteredNodes.filter((n) => n.category === 'TRIGGER');
   const actions = filteredNodes.filter((n) => n.category === 'ACTION');
+  const googleSheets = filteredNodes.filter((n) => n.category === 'Google Sheets');
   const logic = filteredNodes.filter((n) => n.category === 'LOGIC');
 
   const onDragStart = (event, nodeType) => {
@@ -92,6 +93,7 @@ export const NodeSidebar = () => {
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
         {renderCategoryGroup('Triggers', triggers)}
         {renderCategoryGroup('Actions', actions)}
+        {renderCategoryGroup('Google Sheets', googleSheets)}
         {renderCategoryGroup('Logic & Control', logic)}
 
         {filteredNodes.length === 0 && (
