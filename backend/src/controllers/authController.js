@@ -26,6 +26,13 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     const token = generateToken(user._id, user.role);
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
     return res.status(201).json({
       success: true,
       message: 'User Registered Successfully',
@@ -41,6 +48,12 @@ export const registerUser = asyncHandler(async (req, res) => {
     // In-memory fallback mode
     const mockId = 'usr_' + Date.now();
     const token = generateToken(mockId, 'user');
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     return res.status(201).json({
       success: true,
       message: 'User Registered Successfully',
@@ -73,6 +86,13 @@ export const loginUser = asyncHandler(async (req, res) => {
 
     const token = generateToken(user._id, user.role);
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.status(200).json({
       success: true,
       token,
@@ -87,6 +107,12 @@ export const loginUser = asyncHandler(async (req, res) => {
     // Demo fallback login
     const mockId = 'usr_demo_123';
     const token = generateToken(mockId, 'user');
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     return res.status(200).json({
       success: true,
       token,
