@@ -79,6 +79,7 @@ export const nodeDefinitions = {
   [NODE_TYPES.MONGO_COUNT]: mongoCrudManifest.mongoCount,
   [NODE_TYPES.MONGO_AGGREGATE]: mongoCrudManifest.mongoAggregate,
   [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest,
+  googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
 };
 
@@ -120,12 +121,20 @@ export const nodeValidators = {
   [NODE_TYPES.MONGO_COUNT]: databaseValidator,
   [NODE_TYPES.MONGO_AGGREGATE]: databaseValidator,
   [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest.validate,
-  [NODE_TYPES.READ_ROWS]: googleSheetsValidator,
-  [NODE_TYPES.APPEND_ROW]: googleSheetsValidator,
-  [NODE_TYPES.UPDATE_ROW]: googleSheetsValidator,
-  [NODE_TYPES.FIND_ROW]: googleSheetsValidator,
-  [NODE_TYPES.DELETE_ROW]: googleSheetsValidator,
-  [NODE_TYPES.CLEAR_RANGE]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.TRIGGER_WATCH_ROWS]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.READ_ROWS]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.FIND_ROW]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.APPEND_ROW]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.UPDATE_ROW]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.DELETE_ROW]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.CLEAR_RANGE]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.BATCH_UPDATE]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.CREATE_SPREADSHEET]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.CREATE_WORKSHEET]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.DUPLICATE_WORKSHEET]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.DELETE_WORKSHEET]: googleSheetsValidator,
+  [GOOGLE_SHEETS_NODE_TYPES.GET_SPREADSHEET_INFO]: googleSheetsValidator,
+  googleSheets: googleSheetsValidator,
 };
 
 // Helper: Get definition by node type

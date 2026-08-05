@@ -16,14 +16,16 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export const GoogleSheetsProperties = ({ nodeData, onChange }) => {
-  const config = nodeData?.config || {};
+export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeConfig, onUpdateNodeData, onChange }) => {
+  const currentNode = node || { data: nodeData };
+  const currentType = nodeType || currentNode?.type || 'googleSheetsAppendRow';
+  const config = currentNode?.data?.config || nodeData?.config || {};
 
   // Form State
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
   const [spreadsheetId, setSpreadsheetId] = useState(config.spreadsheetId || '');
   const [worksheet, setWorksheet] = useState(config.worksheet || 'Sheet1');
-  const [operation, setOperation] = useState(config.operation || nodeData?.type || 'appendRow');
+  const [operation, setOperation] = useState(config.operation || currentType || 'appendRow');
   const [range, setRange] = useState(config.range || 'A1:Z100');
   const [headerRow, setHeaderRow] = useState(config.headerRow || 1);
 
@@ -42,6 +44,17 @@ export const GoogleSheetsProperties = ({ nodeData, onChange }) => {
   const [loadingHeaders, setLoadingHeaders] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+
+  // Sync internal state if node changes externally
+  useEffect(() => {
+    if (config.credentialId !== undefined) setCredentialId(config.credentialId);
+    if (config.spreadsheetId !== undefined) setSpreadsheetId(config.spreadsheetId);
+    if (config.worksheet !== undefined) setWorksheet(config.worksheet);
+    if (config.operation !== undefined) setOperation(config.operation);
+    if (config.range !== undefined) setRange(config.range);
+    if (config.headerRow !== undefined) setHeaderRow(config.headerRow);
+    if (config.mappings !== undefined) setMappings(config.mappings);
+  }, [currentNode?.id, config.credentialId, config.spreadsheetId, config.worksheet]);
 
   // 1. Fetch User Google Credentials on mount
   useEffect(() => {
@@ -70,18 +83,24 @@ export const GoogleSheetsProperties = ({ nodeData, onChange }) => {
   }, [spreadsheetId, worksheet]);
 
   const updateConfig = (newFields) => {
-    if (onChange) {
-      onChange({
-        ...config,
-        credentialId,
-        spreadsheetId,
-        worksheet,
-        operation,
-        range,
-        headerRow,
-        mappings,
-        ...newFields,
-      });
+    const nextConfig = {
+      ...config,
+      credentialId,
+      spreadsheetId,
+      worksheet,
+      operation,
+      range,
+      headerRow,
+      mappings,
+      ...newFields,
+    };
+
+    if (onUpdateNodeConfig) {
+      onUpdateNodeConfig(nextConfig);
+    } else if (onUpdateNodeData && currentNode?.id) {
+      onUpdateNodeData(currentNode.id, { config: nextConfig });
+    } else if (onChange) {
+      onChange(nextConfig);
     }
   };
 
