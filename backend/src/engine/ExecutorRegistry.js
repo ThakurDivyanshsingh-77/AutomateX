@@ -2,6 +2,8 @@ import { NODE_TYPES } from '../constants/status.js';
 import { ManualTriggerExecutor, WebhookTriggerExecutor, ScheduleTriggerExecutor } from './executors/TriggerExecutors.js';
 import { HttpRequestExecutor, DelayExecutor, CodeTransformExecutor, ConditionExecutor, LogActionExecutor } from './executors/ActionExecutors.js';
 
+import { LoopExecutor } from './executors/LoopExecutor.js';
+
 class ExecutorRegistry {
   constructor() {
     this.executors = new Map();
@@ -20,6 +22,7 @@ class ExecutorRegistry {
     this.register(NODE_TYPES.CODE_TRANSFORM, new CodeTransformExecutor());
     this.register(NODE_TYPES.CONDITION, new ConditionExecutor());
     this.register(NODE_TYPES.LOG_ACTION, new LogActionExecutor());
+    this.register('loop', new LoopExecutor());
   }
 
   register(nodeType, executorInstance) {

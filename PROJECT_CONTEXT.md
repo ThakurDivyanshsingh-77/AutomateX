@@ -88,7 +88,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 15.2 Complete — Production-Grade Retry Policy Module Architecture** — ✅ COMPLETED
+### **Phase 16 Complete — Production-Grade Loop (For Each) Node Architecture** — ✅ COMPLETED
+- **Backend Core Loop Subsystem** (`backend/src/engine/loop/`):
+  - `LoopTypes.js`: Execution modes (`sequential`, `parallel`), error policies (`stop`, `skip`, `continue`, `retry`), and default limits (`maxIterations: 10000`, `concurrency: 5`, `batchSize: 1`).
+  - `LoopScopeStack.js`: Hierarchical variable scope stack for nested loops. Supports `item`, `index`, `isFirst`, `isLast`, `total`, `remaining`, `parent.item`, `root.item`, and custom variable names.
+  - `LoopStreamManager.js`: Memory-optimized lazy batch iterator processing raw JSON arrays, MongoDB documents, SQL rows, HTTP response payloads, CSV lines, Google Sheets, and Airtable records for 100,000+ item payloads.
+  - `LoopExecutionEngine.js`: Core execution orchestrator supporting Sequential and Parallel concurrency (1-20 worker pool) with configurable error policies (stop/skip).
+  - `LoopExecutor.js`: Executor registered under `loop` node type in `ExecutorRegistry.js`.
+- **Frontend Custom Node & Inspector**:
+  - `loopManifest.js`: Registered under **Control Flow** category with cyan theme (`#06b6d4`), dual `Loop Body` & `Completed` output handles.
+  - `LoopNode.jsx`: Canvas component with SVG Progress Ring, iteration counter (`7/100`), and `⚡ 5x Parallel` concurrency badge.
+  - `LoopProgressInspector.jsx`: Debugger slide-over progress bar and live iteration trace panel.
+- **Automated Verification**:
+  - Passed **20/20** automated tests in `test_loop_engine.js`.
+
 - **Backend Modular Architecture** (`backend/src/engine/retry/`):
   - `RetryTypes.js`: Enums (`fixed`, `linear`, `exponential`, `none`, `random`, `full`), default error/status codes, and standard `DEFAULT_RETRY_CONFIG`.
   - Strategy Pattern (`strategies/`): `IRetryStrategy.js`, `FixedDelayStrategy`, `LinearBackoffStrategy`, `ExponentialBackoffStrategy`, `JitterUtility` (Random & AWS Full Jitter), and `RetryStrategyFactory`.
