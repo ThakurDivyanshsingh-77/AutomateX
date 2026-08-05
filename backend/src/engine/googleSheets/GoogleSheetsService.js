@@ -380,6 +380,118 @@ export class GoogleSheetsService {
   }
 
   /**
+   * Delete Row by rowNumber or Mapped Column Criteria
+   * Uses Google Sheets API batchUpdate with deleteDimension (zero-indexed)
+   */
+  static async deleteRow({
+    credentialId,
+    userId,
+    spreadsheetId,
+    worksheetTitle = 'Sheet1',
+    rowNumber,
+    searchColumn,
+    searchValue,
+    columnsMap = {},
+  }) {
+    console.log(`[GoogleSheetsService] 🗑️ deleteRow requested for Spreadsheet: ${spreadsheetId}, Sheet: ${worksheetTitle}`);
+
+    if (!spreadsheetId) {
+      throw new Error('Spreadsheet ID is required for Delete Row operation.');
+    }
+
+    const readResult = await this.readRows({ credentialId, userId, spreadsheetId, worksheetTitle, filterEmpty: false });
+    const rows = readResult.rows || [];
+
+    let targetRowNumber = rowNumber !== undefined && rowNumber !== null ? parseInt(rowNumber, 10) : null;
+    let matchedRow = null;
+
+    // Option A: If rowNumber provided explicitly
+    if (targetRowNumber && !isNaN(targetRowNumber)) {
+      matchedRow = rows.find((r) => r._rowNumber === targetRowNumber) || { _rowNumber: targetRowNumber };
+    }
+    // Option B: Match by searchColumn & searchValue
+    else if (searchColumn && searchValue) {
+      const findResult = await this.findRow({
+        credentialId,
+        userId,
+        spreadsheetId,
+        worksheetTitle,
+        searchColumn,
+        searchValue,
+        matchType: 'equals',
+      });
+      if (findResult.foundRow) {
+        matchedRow = findResult.foundRow;
+        targetRowNumber = findResult.foundRow._rowNumber;
+      }
+    }
+    // Option C: Match by column mappings (ignore empty mappings)
+    else if (columnsMap && Object.keys(columnsMap).length > 0) {
+      const activeMappings = Object.entries(columnsMap).filter(([_, v]) => v !== undefined && v !== null && String(v).trim().length > 0);
+      if (activeMappings.length > 0) {
+        matchedRow = rows.find((r) => {
+          return activeMappings.every(([colKey, expectedVal]) => {
+            const cellVal = r[colKey] !== undefined ? String(r[colKey]).trim() : '';
+            return cellVal.toLowerCase() === String(expectedVal).trim().toLowerCase();
+          });
+        });
+        if (matchedRow) {
+          targetRowNumber = matchedRow._rowNumber;
+        }
+      }
+    }
+
+    // Safety Validation: Never allow deleting Header row 1 or invalid row number
+    if (!targetRowNumber || isNaN(targetRowNumber) || targetRowNumber <= 1) {
+      console.warn(`[GoogleSheetsService] ⚠️ Matching row not found or row <= 1 (headers preserved)`);
+      return {
+        success: false,
+        message: 'Matching row not found.',
+      };
+    }
+
+    console.log(`[GoogleSheetsService] 🔎 Target row for deletion identified: Row #${targetRowNumber}`);
+
+    // Get sheet tab numeric sheetId required for batchUpdate deleteDimension
+    const worksheets = await this.getWorksheets({ credentialId, userId, spreadsheetId });
+    const targetSheet = worksheets.find((w) => w.title === worksheetTitle) || worksheets[0];
+    const numericSheetId = targetSheet ? (targetSheet.sheetId !== undefined ? targetSheet.sheetId : targetSheet.id) : 0;
+
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    const zeroIndexedStartIndex = targetRowNumber - 1; // Google API deleteDimension uses 0-indexed startIndex (inclusive) and endIndex (exclusive)
+
+    console.log(`[GoogleSheetsService] 📤 Executing batchUpdate deleteDimension for SheetID: ${numericSheetId}, Row Index: ${zeroIndexedStartIndex}:${zeroIndexedStartIndex + 1}`);
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            deleteDimension: {
+              range: {
+                sheetId: numericSheetId || 0,
+                dimension: 'ROWS',
+                startIndex: zeroIndexedStartIndex,
+                endIndex: zeroIndexedStartIndex + 1,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    console.log(`[GoogleSheetsService] ✅ Row #${targetRowNumber} deleted successfully`);
+    return {
+      success: true,
+      message: 'Row deleted successfully.',
+      spreadsheetId,
+      worksheet: worksheetTitle,
+      deletedRowNumber: targetRowNumber,
+      deletedRow: matchedRow,
+      item: matchedRow,
+    };
+  }
+
+  /**
    * Clear Range / Row
    */
   static async clearRows({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', range = 'A2:ZZ100' }) {

@@ -88,24 +88,31 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Update Row Implementation** — ✅ COMPLETED
-- **Google Sheets Update Row Node Implementation (n8n/Zapier Parity)**:
-  - **Row Selection Modes (`GoogleSheetsProperties.jsx`)**: Added interactive mode toggles for Update Row nodes:
-    1. **Manual Row Number**: Allows entering explicit row indices (e.g. `2`).
-    2. **From Previous Node**: Auto-fills `{{item._rowNumber}}` or `{{steps.findRow._rowNumber}}`.
-  - **Selective Column Preservation & Google API Call (`GoogleSheetsService.js`)**:
-    1. Reads existing row values from Google Sheets API `spreadsheets.values.get` to preserve unmapped columns.
-    2. Maps updated column fields while preserving untouched cells.
-    3. Calls `spreadsheets.values.update` with `valueInputOption: 'USER_ENTERED'`.
-    4. Returns structured output `{ success: true, updatedRow: 2, rowNumber: 2, values: { Name: 'Divyansh', Email: 'divyansh@gmail.com', City: 'Mumbai' }, item: { _rowNumber: 2, ... } }`.
-  - **Expression Variable Resolution (`GoogleSheetsExecutor.js`)**:
-    - Resolves `{{item._rowNumber}}`, `{{item.name}}`, `{{trigger.city}}` dynamically at execution time.
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Delete Row Implementation** — ✅ COMPLETED
+- **Google Sheets Delete Row Backend Implementation (n8n/Zapier Parity)**:
+  - **Selective Row Matching & Batch Delete (`GoogleSheetsService.js`)**:
+    1. `GoogleSheetsService.deleteRow()` reads rows from Google Sheets API and matches target rows using mapped column criteria (`columnsMap`), `searchColumn`/`searchValue`, or `rowNumber`.
+    2. Header Preservation: Validates `targetRowNumber > 1` so Row 1 (header row) is never deleted.
+    3. Executes Google Sheets API `spreadsheets.batchUpdate` with `deleteDimension` specifying `sheetId` (numeric tab ID), `dimension: 'ROWS'`, `startIndex` (0-indexed inclusive), and `endIndex` (0-indexed exclusive).
+    4. Return payloads:
+       - On success: `{ success: true, message: 'Row deleted successfully.', deletedRowNumber: 2, deletedRow: { ...rowData }, item: { ...rowData } }`.
+       - On missing row: `{ success: false, message: 'Matching row not found.' }`.
+  - **REST API & HTTP Status Codes (`googleSheetsRoutes.js`)**:
+    - Mounted `POST /api/v1/google/sheets/delete` endpoint with clear HTTP mappings:
+      - `400 Bad Request`: Missing configuration (`spreadsheetId` or `worksheet`).
+      - `401 Unauthorized`: Token expired or invalid credential.
+      - `404 Not Found`: Matching row not found.
+      - `500 Internal Server Error`: Uncaught Google API errors.
+  - **Workflow Engine & Executor (`GoogleSheetsExecutor.js` & `ExecutorRegistry.js`)**:
+    - Resolves expression variables for column mappings (`context.resolveVariables(val)`).
+    - Fully registered under node type `googleSheetsDeleteRow`.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
-  - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
-  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
+  - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `deleteRow`, `clearRows`).
+  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/delete`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
-  - Passed automated test suite in `test_google_sheets.js` (16/16 assertions passed).
+  - Passed automated test suite in `test_google_sheets.js` (19/19 assertions passed).
+
 
 
 

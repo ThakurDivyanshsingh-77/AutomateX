@@ -136,6 +136,53 @@ async function runGoogleSheetsTestSuite() {
     GoogleSheetsService.getSheetsClient = origGetSheetsClient;
   }
 
+  // ----------------------------------------------------
+  // Test 4: Delete Row Operations
+  // ----------------------------------------------------
+  console.log('\n--- Test 4: Delete Row Operations ---');
+  const origReadRows4 = GoogleSheetsService.readRows;
+  const origGetWorksheets4 = GoogleSheetsService.getWorksheets;
+
+  GoogleSheetsService.readRows = async () => ({
+    rows: [
+      { _rowNumber: 2, Name: 'Divyansh', Email: 'divyansh@gmail.com', City: 'Vapi' },
+      { _rowNumber: 3, Name: 'Alex', Email: 'alex@example.com', City: 'New York' },
+    ]
+  });
+  GoogleSheetsService.getWorksheets = async () => [{ sheetId: 0, title: 'Sheet1' }];
+  GoogleSheetsService.getSheetsClient = async () => ({
+    spreadsheets: {
+      batchUpdate: async ({ requestBody }) => ({ data: { replies: [{ deleteDimension: {} }] } }),
+    }
+  });
+
+  try {
+    // 4a. Delete existing row by mapped column criteria
+    const delRes = await GoogleSheetsService.deleteRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      columnsMap: { Email: 'divyansh@gmail.com' },
+    });
+    assert(delRes.success && delRes.deletedRowNumber === 2, 'Delete row matched by column criteria and returned row #2');
+    assert(delRes.deletedRow.Name === 'Divyansh', 'Deleted row payload preserved rowData');
+
+    // 4b. Return 404/failure when row does not exist
+    const delNotFound = await GoogleSheetsService.deleteRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      columnsMap: { Email: 'nonexistent@gmail.com' },
+    });
+    assert(!delNotFound.success && delNotFound.message === 'Matching row not found.', 'Nonexistent row returned success: false');
+  } finally {
+    GoogleSheetsService.readRows = origReadRows4;
+    GoogleSheetsService.getWorksheets = origGetWorksheets4;
+    GoogleSheetsService.getSheetsClient = origGetSheetsClient;
+  }
+
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log('====================================================\n');

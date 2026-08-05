@@ -112,6 +112,41 @@ export class GoogleSheetsExecutor {
         break;
       }
 
+      case 'deleteRow':
+      case 'googleSheetsDeleteRow': {
+        // Resolve rowNumber or columnsMap variable expressions
+        let resolvedRow = config.rowNumber;
+        if (typeof config.rowNumber === 'string' && context.resolveVariables) {
+          resolvedRow = context.resolveVariables(config.rowNumber);
+        }
+
+        const resolvedColumnsMap = {};
+        Object.entries(columnsMap).forEach(([col, val]) => {
+          let resolvedVal = val;
+          if (typeof val === 'string' && context.resolveVariables) {
+            resolvedVal = context.resolveVariables(val);
+          }
+          resolvedColumnsMap[col] = resolvedVal;
+        });
+
+        let resolvedSearchVal = config.searchValue;
+        if (typeof config.searchValue === 'string' && context.resolveVariables) {
+          resolvedSearchVal = context.resolveVariables(config.searchValue);
+        }
+
+        result = await GoogleSheetsService.deleteRow({
+          credentialId,
+          userId,
+          spreadsheetId,
+          worksheetTitle: worksheet,
+          rowNumber: resolvedRow,
+          searchColumn: config.searchColumn,
+          searchValue: resolvedSearchVal,
+          columnsMap: resolvedColumnsMap,
+        });
+        break;
+      }
+
       case 'clearRange':
       case 'googleSheetsClearRange':
         result = await GoogleSheetsService.clearRows({

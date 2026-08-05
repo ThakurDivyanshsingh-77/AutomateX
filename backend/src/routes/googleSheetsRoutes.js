@@ -179,6 +179,47 @@ router.post('/sheets/find', async (req, res, next) => {
 });
 
 /**
+ * POST /api/v1/google/sheets/delete
+ */
+router.post('/sheets/delete', async (req, res, next) => {
+  try {
+    const { credentialId, spreadsheetId, worksheet, rowNumber, searchColumn, searchValue, columnsMap } = req.body;
+
+    if (!spreadsheetId || !worksheet) {
+      return res.status(400).json({ success: false, message: 'Missing configuration: spreadsheetId and worksheet are required.' });
+    }
+
+    const result = await GoogleSheetsService.deleteRow({
+      credentialId,
+      userId: req.user._id,
+      spreadsheetId,
+      worksheetTitle: worksheet,
+      rowNumber,
+      searchColumn,
+      searchValue,
+      columnsMap,
+    });
+
+    if (!result.success) {
+      return res.status(404).json(result);
+    }
+
+    return res.json(result);
+  } catch (err) {
+    if (err.message.includes('not found') || err.message.includes('404')) {
+      return res.status(404).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('required') || err.message.includes('400')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('token') || err.message.includes('401') || err.message.includes('auth')) {
+      return res.status(401).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+});
+
+/**
  * POST /api/v1/google/sheets/clear
  */
 router.post('/sheets/clear', async (req, res, next) => {
