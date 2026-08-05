@@ -9,14 +9,17 @@ export class GoogleSheetsService {
   static async getAuthClient(credentialId, userId = null) {
     let oauthData = null;
 
+    console.log(`[GoogleSheetsService] 🔐 Resolving Google Auth Client for Credential ID: ${credentialId || 'default'}, User ID: ${userId}`);
     if (credentialId) {
       const cred = await credentialService.getCredentialById(credentialId, userId);
       if (cred) {
         oauthData = cred.data || cred;
+        console.log(`[GoogleSheetsService] 💳 Credential loaded successfully. Access Token Present: ${!!oauthData.accessToken}, Refresh Token Present: ${!!oauthData.refreshToken}, Expiry Date: ${oauthData.expiryDate || 'N/A'}`);
       }
     }
 
     if (!oauthData || (!oauthData.refreshToken && !oauthData.accessToken)) {
+      console.warn(`[GoogleSheetsService] ⚠️ No database OAuth token found. Falling back to environment variables.`);
       oauthData = {
         accessToken: process.env.GOOGLE_ACCESS_TOKEN,
         refreshToken: process.env.GOOGLE_REFRESH_TOKEN,

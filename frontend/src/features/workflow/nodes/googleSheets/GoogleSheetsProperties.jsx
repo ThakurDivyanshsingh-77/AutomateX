@@ -238,25 +238,21 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     setTesting(true);
     setTestResult(null);
     try {
-      const res = await fetch('/api/v1/google/sheets/read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          credentialId,
-          spreadsheetId,
-          worksheet,
-          limit: 3,
-        }),
+      const res = await api.post('/google/sheets/read', {
+        credentialId,
+        spreadsheetId,
+        worksheet,
+        limit: 3,
       });
-      const data = await res.json();
+      const data = res.data;
       setTestResult(data);
       if (data.success) {
         toast.success(`Test Successful! Read ${data.rows?.length || 0} rows.`);
       } else {
-        toast.error('Test operation failed');
+        toast.error(data.message || 'Test operation failed');
       }
     } catch (err) {
-      toast.error('Test execution error');
+      toast.error(err.response?.data?.message || 'Test execution error');
     } finally {
       setTesting(false);
     }
