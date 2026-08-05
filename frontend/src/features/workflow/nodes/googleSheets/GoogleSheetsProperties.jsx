@@ -393,7 +393,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <div className="space-y-1">
               <label className="text-[10px] text-slate-400 flex items-center justify-between">
                 <span>Row Numbers</span>
-                <span className="text-[9px] text-emerald-400 font-mono">e.g. 2, 5, 8 or {{items}}</span>
+                <span className="text-[9px] text-emerald-400 font-mono">e.g. 2, 5, 8 or {"{{items}}"}</span>
               </label>
               <input
                 type="text"

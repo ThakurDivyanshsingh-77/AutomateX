@@ -114,7 +114,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification & UI Polish**:
   - Passed automated test suite in `test_google_sheets.js` (25/25 assertions passed).
-  - Fixed JSX text node syntax error in `GoogleSheetsProperties.jsx` by wrapping unescaped `{{item.email}}` variable placeholders in JavaScript string expressions (`{"{{item.email}}"}`).
+  - Fixed JSX text node syntax & runtime errors in `GoogleSheetsProperties.jsx` by wrapping unescaped `{{items}}` and `{{item.email}}` variable placeholders in JavaScript string expressions (`{"{{items}}"}`).
 
 
 
