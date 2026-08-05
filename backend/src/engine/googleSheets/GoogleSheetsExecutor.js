@@ -165,6 +165,52 @@ export class GoogleSheetsExecutor {
         break;
       }
 
+      case 'batchUpdate':
+      case 'googleSheetsBatchUpdate': {
+        let resolvedRowNumbers = config.rowNumbers;
+        if (typeof config.rowNumbers === 'string' && context.resolveVariables) {
+          resolvedRowNumbers = context.resolveVariables(config.rowNumbers);
+        }
+        if (typeof resolvedRowNumbers === 'string') {
+          resolvedRowNumbers = resolvedRowNumbers.split(',').map((s) => s.trim()).filter(Boolean);
+        }
+
+        let resolvedItems = config.items;
+        if (typeof config.items === 'string' && context.resolveVariables) {
+          resolvedItems = context.resolveVariables(config.items);
+        }
+
+        let resolvedSearchVal = config.searchValue;
+        if (typeof config.searchValue === 'string' && context.resolveVariables) {
+          resolvedSearchVal = context.resolveVariables(config.searchValue);
+        }
+
+        const resolvedColumnsMap = {};
+        Object.entries(columnsMap).forEach(([col, val]) => {
+          let resolvedVal = val;
+          if (typeof val === 'string' && context.resolveVariables) {
+            resolvedVal = context.resolveVariables(val);
+          }
+          resolvedColumnsMap[col] = resolvedVal;
+        });
+
+        result = await GoogleSheetsService.batchUpdateRows({
+          credentialId,
+          userId,
+          spreadsheetId,
+          worksheetTitle: worksheet,
+          updateMode: config.updateMode || config.mode || 'rowNumber',
+          rowNumbers: resolvedRowNumbers || [],
+          searchColumn: config.searchColumn,
+          searchValue: resolvedSearchVal,
+          columnsMap: resolvedColumnsMap,
+          items: Array.isArray(resolvedItems) ? resolvedItems : [],
+          batchSize: config.batchSize || 100,
+          continueOnError: config.continueOnError !== false,
+        });
+        break;
+      }
+
       default:
         // Default fallback to readRows
         result = await GoogleSheetsService.readRows({

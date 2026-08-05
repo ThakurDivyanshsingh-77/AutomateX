@@ -88,29 +88,28 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Clear Range Implementation** — ✅ COMPLETED
-- **Google Sheets Clear Range Implementation (n8n/Zapier Parity)**:
-  - **Worksheet Prefixing & Row 1 Header Protection (`GoogleSheetsService.js`)**:
-    1. `GoogleSheetsService.clearRows()` auto-prefixes worksheet title (e.g. converting `A2:C100` to `'Sheet1'!A2:C100`).
-    2. Header Protection: If a user enters range `A1:C100`, the engine automatically transforms it to `'Sheet1'!A2:C100` to preserve row 1 column headers (unless `allowHeaderClear: true` is explicitly passed).
-    3. Calls Google Sheets API `spreadsheets.values.clear`.
-    4. Return payloads:
-       - On success: `{ success: true, message: 'Range cleared successfully.', clearedRange: "'Sheet1'!A2:C100" }`.
-  - **REST API & HTTP Status Codes (`googleSheetsRoutes.js`)**:
-    - Updated `POST /api/v1/google/sheets/clear` endpoint with clear HTTP status mappings:
-      - `400 Bad Request`: Missing configuration (`spreadsheetId`, `worksheet`, or `range`).
-      - `401 Unauthorized`: Token expired or invalid credential.
-      - `404 Not Found`: Spreadsheet or worksheet tab not found.
-      - `500 Internal Server Error`: Uncaught Google API errors.
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Batch Update Implementation** — ✅ COMPLETED
+- **Google Sheets Batch Update Implementation (n8n/Zapier Parity)**:
+  - **High-Performance Batch Updating (`GoogleSheetsService.js`)**:
+    1. `GoogleSheetsService.batchUpdateRows()` supports two update modes:
+       - **Update by Row Number**: Accepts arrays of explicit row numbers (`[2, 5, 8]`) or item arrays (`{{items}}`).
+       - **Update by Search Column**: Matches rows dynamically by search column & search value (e.g. `City = 'Vapi'`).
+    2. Builds a single `spreadsheets.values.batchUpdate` payload with multiple range vectors while preserving unmapped columns.
+    3. Respects `batchSize` limits (default 100 rows per batch) and `continueOnError` toggles.
+    4. Outputs structured workflow summaries:
+       `{ success: true, count: 3, updatedRows: 3, rows: [2, 5, 8], updatedRowStatusList: [{ row: 2, status: 'success' }, { row: 5, status: 'success' }, { row: 8, status: 'success' }], executionTime: 42 }`.
+  - **REST API & HTTP Status Mappings (`googleSheetsRoutes.js`)**:
+    - Mounted `POST /api/v1/google/sheets/batch-update` with HTTP error handling (400, 401, 404, 500).
   - **Workflow Engine & Executor (`GoogleSheetsExecutor.js` & `ExecutorRegistry.js`)**:
-    - Resolves expression variables for range inputs (`context.resolveVariables(config.range)`).
-    - Fully registered under node type `googleSheetsClearRange`.
+    - Resolves expression variables (`{{items}}`, `{{item.email}}`, `{{trigger.city}}`).
+    - Fully registered under node type `googleSheetsBatchUpdate`.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
-  - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `deleteRow`, `clearRows`).
-  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/delete`, `POST /sheets/clear`).
+  - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `deleteRow`, `clearRows`, `batchUpdateRows`).
+  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/delete`, `POST /sheets/clear`, `POST /sheets/batch-update`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
-  - Passed automated test suite in `test_google_sheets.js` (22/22 assertions passed).
+  - Passed automated test suite in `test_google_sheets.js` (24/24 assertions passed).
+
 
 
 

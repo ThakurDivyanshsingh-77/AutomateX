@@ -225,6 +225,63 @@ async function runGoogleSheetsTestSuite() {
     GoogleSheetsService.getSheetsClient = origGetSheetsClient;
   }
 
+  // ----------------------------------------------------
+  // Test 6: Batch Update Operations (batchUpdateRows)
+  // ----------------------------------------------------
+  console.log('\n--- Test 6: Batch Update Operations ---');
+  let lastBatchPayload = null;
+  const origReadRows6 = GoogleSheetsService.readRows;
+
+  GoogleSheetsService.readRows = async () => ({
+    rows: [
+      { _rowNumber: 2, Name: 'Divyansh', Email: 'divyansh@gmail.com', City: 'Vapi' },
+      { _rowNumber: 3, Name: 'Alex', Email: 'alex@example.com', City: 'Vapi' },
+      { _rowNumber: 4, Name: 'John', Email: 'john@example.com', City: 'Delhi' },
+      { _rowNumber: 5, Name: 'Sam', Email: 'sam@example.com', City: 'Vapi' },
+    ]
+  });
+  GoogleSheetsService.getSheetsClient = async () => ({
+    spreadsheets: {
+      values: {
+        get: async () => ({ data: { values: [['Name', 'Email', 'City']] } }),
+        batchUpdate: async ({ requestBody }) => {
+          lastBatchPayload = requestBody;
+          return { data: { responses: requestBody.data.map(() => ({ updatedRows: 1 })) } };
+        }
+      }
+    }
+  });
+
+  try {
+    // 6a. Update by row numbers [2, 3, 5]
+    const batchRes1 = await GoogleSheetsService.batchUpdateRows({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      rowNumbers: [2, 3, 5],
+      columnsMap: { City: 'Mumbai' },
+    });
+    assert(batchRes1.success && batchRes1.updatedRows === 3, 'Batch update updated 3 rows successfully');
+    assert(lastBatchPayload.data.length === 3, 'Sent single batch payload with 3 ranges');
+
+    // 6b. Update by Search Column (City=Vapi)
+    const batchRes2 = await GoogleSheetsService.batchUpdateRows({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      updateMode: 'searchColumn',
+      searchColumn: 'City',
+      searchValue: 'Vapi',
+      columnsMap: { City: 'Mumbai' },
+    });
+    assert(batchRes2.success && batchRes2.updatedRows === 3, 'Search column match updated all 3 Vapi rows to Mumbai');
+  } finally {
+    GoogleSheetsService.readRows = origReadRows6;
+    GoogleSheetsService.getSheetsClient = origGetSheetsClient;
+  }
+
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log('====================================================\n');

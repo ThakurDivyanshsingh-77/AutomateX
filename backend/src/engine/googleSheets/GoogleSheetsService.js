@@ -549,4 +549,163 @@ export class GoogleSheetsService {
       throw new Error(`Google Sheets API Clear Error: ${err.message}`);
     }
   }
+
+  /**
+   * Batch Update Rows using Google Sheets API spreadsheets.values.batchUpdate
+   * Updates multiple rows efficiently in a single HTTP request
+   */
+  static async batchUpdateRows({
+    credentialId,
+    userId,
+    spreadsheetId,
+    worksheetTitle = 'Sheet1',
+    updateMode = 'rowNumber', // 'rowNumber' or 'searchColumn'
+    rowNumbers = [],
+    searchColumn,
+    searchValue,
+    columnsMap = {},
+    items = [],
+    batchSize = 100,
+    continueOnError = true,
+  }) {
+    const startTime = Date.now();
+    console.log(`[GoogleSheetsService] 🚀 batchUpdateRows started for Spreadsheet: ${spreadsheetId}, Sheet: ${worksheetTitle}, Mode: ${updateMode}`);
+
+    if (!spreadsheetId) {
+      throw new Error('Spreadsheet ID is required for Batch Update operation.');
+    }
+
+    const headers = await this.getHeaders({ credentialId, userId, spreadsheetId, worksheetTitle });
+    const readResult = await this.readRows({ credentialId, userId, spreadsheetId, worksheetTitle, filterEmpty: false });
+    const existingRows = readResult.rows || [];
+
+    // Target rows list [{ rowNumber, dataMap }]
+    const targetUpdates = [];
+
+    // Mode A: Update by Search Column & Search Value
+    if (updateMode === 'searchColumn' && searchColumn && searchValue !== undefined) {
+      const matchVal = String(searchValue).toLowerCase().trim();
+      existingRows.forEach((r) => {
+        const cellVal = r[searchColumn] !== undefined ? String(r[searchColumn]).toLowerCase().trim() : '';
+        if (cellVal === matchVal) {
+          targetUpdates.push({
+            rowNumber: r._rowNumber,
+            dataMap: columnsMap,
+          });
+        }
+      });
+    }
+    // Mode B: Update by Array of Items or explicit Row Numbers
+    else if (Array.isArray(items) && items.length > 0) {
+      items.forEach((itemObj, idx) => {
+        const rNum = itemObj.rowNumber || itemObj._rowNumber || (Array.isArray(rowNumbers) ? rowNumbers[idx] : null);
+        const itemMap = { ...columnsMap, ...(typeof itemObj === 'object' ? itemObj : {}) };
+        if (rNum && !isNaN(parseInt(rNum, 10)) && parseInt(rNum, 10) >= 2) {
+          targetUpdates.push({
+            rowNumber: parseInt(rNum, 10),
+            dataMap: itemMap,
+          });
+        }
+      });
+    }
+    // Mode C: Explicit array of rowNumbers (e.g. [2, 5, 8])
+    else if (Array.isArray(rowNumbers) && rowNumbers.length > 0) {
+      rowNumbers.forEach((rn) => {
+        const parsed = parseInt(rn, 10);
+        if (!isNaN(parsed) && parsed >= 2) {
+          targetUpdates.push({
+            rowNumber: parsed,
+            dataMap: columnsMap,
+          });
+        }
+      });
+    }
+
+    if (targetUpdates.length === 0) {
+      console.warn(`[GoogleSheetsService] ⚠️ No valid target rows found for batch update.`);
+      return {
+        success: false,
+        message: 'No matching or valid rows found for batch update.',
+        count: 0,
+        updatedRows: [],
+        rows: [],
+        executionTime: Date.now() - startTime,
+      };
+    }
+
+    console.log(`[GoogleSheetsService] 📊 Identified ${targetUpdates.length} target row(s) for batch update`);
+
+    // Build value ranges payload for Google Sheets API spreadsheets.values.batchUpdate
+    const dataRanges = targetUpdates.map((update) => {
+      const targetRow = update.rowNumber;
+      const existingRow = existingRows.find((r) => r._rowNumber === targetRow) || {};
+
+      // Preserve unmapped columns
+      const rowVector = headers.map((h, cIdx) => {
+        if (update.dataMap[h] !== undefined) return update.dataMap[h];
+        return existingRow[h] !== undefined ? existingRow[h] : '';
+      });
+
+      return {
+        range: `'${worksheetTitle}'!A${targetRow}`,
+        values: [rowVector],
+      };
+    });
+
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    const updatedStatusList = [];
+
+    // Chunk requests into batches matching batchSize (default 100)
+    const effectiveBatchSize = Math.max(1, parseInt(batchSize || 100, 10));
+    for (let i = 0; i < dataRanges.length; i += effectiveBatchSize) {
+      const chunk = dataRanges.slice(i, i + effectiveBatchSize);
+      const chunkTargetUpdates = targetUpdates.slice(i, i + effectiveBatchSize);
+
+      try {
+        console.log(`[GoogleSheetsService] 📤 Executing spreadsheets.values.batchUpdate for ${chunk.length} range(s) (Batch ${Math.floor(i / effectiveBatchSize) + 1})`);
+        const response = await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            valueInputOption: 'USER_ENTERED',
+            data: chunk,
+          },
+        });
+
+        chunkTargetUpdates.forEach((up) => {
+          updatedStatusList.push({
+            row: up.rowNumber,
+            rowNumber: up.rowNumber,
+            status: 'success',
+          });
+        });
+      } catch (err) {
+        console.error(`[GoogleSheetsService] ❌ Batch update chunk failed: ${err.message}`);
+        if (!continueOnError) {
+          throw new Error(`Google Sheets Batch Update Failed: ${err.message}`);
+        }
+        chunkTargetUpdates.forEach((up) => {
+          updatedStatusList.push({
+            row: up.rowNumber,
+            rowNumber: up.rowNumber,
+            status: 'failed',
+            error: err.message,
+          });
+        });
+      }
+    }
+
+    const successfulRows = updatedStatusList.filter((s) => s.status === 'success').map((s) => s.row);
+    const executionTime = Date.now() - startTime;
+
+    console.log(`[GoogleSheetsService] 🎉 Batch update completed cleanly in ${executionTime}ms. Successfully updated ${successfulRows.length}/${targetUpdates.length} row(s)`);
+
+    return {
+      success: successfulRows.length > 0,
+      updatedRows: successfulRows.length,
+      count: successfulRows.length,
+      rows: successfulRows,
+      updatedRowStatusList: updatedStatusList,
+      executionTime,
+    };
+  }
 }

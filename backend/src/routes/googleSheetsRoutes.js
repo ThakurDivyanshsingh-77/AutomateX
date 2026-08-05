@@ -256,4 +256,41 @@ router.post('/sheets/clear', async (req, res, next) => {
   }
 });
 
+/**
+ * POST /api/v1/google/sheets/batch-update
+ */
+router.post('/sheets/batch-update', async (req, res, next) => {
+  try {
+    const { credentialId, spreadsheetId, worksheet, updateMode, rowNumbers, searchColumn, searchValue, columnsMap, items, batchSize, continueOnError } = req.body;
+
+    if (!spreadsheetId || !worksheet) {
+      return res.status(400).json({ success: false, message: 'Missing configuration: spreadsheetId and worksheet are required.' });
+    }
+
+    const result = await GoogleSheetsService.batchUpdateRows({
+      credentialId,
+      userId: req.user._id,
+      spreadsheetId,
+      worksheetTitle: worksheet,
+      updateMode,
+      rowNumbers,
+      searchColumn,
+      searchValue,
+      columnsMap,
+      items,
+      batchSize,
+      continueOnError,
+    });
+    return res.json(result);
+  } catch (err) {
+    if (err.message.includes('required') || err.message.includes('400')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('token') || err.message.includes('401') || err.message.includes('auth')) {
+      return res.status(401).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+});
+
 export default router;
