@@ -24,6 +24,24 @@ router.get('/sheets', async (req, res, next) => {
 });
 
 /**
+ * GET /api/v1/google-sheets/spreadsheets
+ * GET /api/v1/google/spreadsheets
+ */
+router.get('/spreadsheets', async (req, res, next) => {
+  try {
+    const { credentialId, q } = req.query;
+    const sheets = await GoogleSheetsService.listSpreadsheets({
+      credentialId,
+      userId: req.user._id,
+      query: q,
+    });
+    return res.json({ success: true, count: sheets.length, spreadsheets: sheets });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * GET /api/v1/google/sheets/:id/worksheets
  * Get all sheet tabs for a spreadsheet
  */

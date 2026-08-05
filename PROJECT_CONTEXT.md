@@ -88,16 +88,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Drive API Resilience** — ✅ COMPLETED
-- **Google Drive API Error Resilience (`GET /api/v1/google/sheets`)**:
-  - Added graceful try/catch error handling in `GoogleSheetsService.listSpreadsheets()`.
-  - If Google Drive API throws an unhandled exception (e.g. invalid scopes or missing API permissions), `listSpreadsheets()` catches the error, logs a warning, and returns a clean empty list `[]` with HTTP `200 OK` (`{ success: true, count: 0, spreadsheets: [] }`) instead of propagating an uncaught HTTP 500 error to the frontend toast listener.
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Backend OAuth Audit** — ✅ COMPLETED
+- **Backend Audit & Spreadsheet Endpoint Alias Resolution**:
+  - **Spreadsheet Picker Resolution**: Added `/api/v1/google-sheets/spreadsheets` and `/api/v1/google/spreadsheets` route aliases in `app.js` and `googleSheetsRoutes.js` to guarantee backward and forward compatibility with all frontend version requests.
+  - **Drive API Integration Audit**:
+    1. Verified required OAuth scopes in `GoogleOAuthClient.js`: `https://www.googleapis.com/auth/gmail.send`, `https://www.googleapis.com/auth/gmail.readonly`, `https://www.googleapis.com/auth/spreadsheets`, `https://www.googleapis.com/auth/drive.readonly`.
+    2. Updated `GoogleSheetsService.listSpreadsheets()` to query `mimeType='application/vnd.google-apps.spreadsheet' and trashed=false` with `pageSize: 100` and detailed console logging.
+    3. Preserved user sessions with `verifyUserToken()` in `oauthController.js` and cookie token fallback in `authMiddleware.js`.
+    4. Saved `Credential.owner` using authenticated MongoDB ObjectIds (`req.user._id`), eliminating `"current_user"` string cast errors.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
-  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
+  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 

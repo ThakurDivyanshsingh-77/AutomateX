@@ -53,6 +53,7 @@ app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/runtime/cron', cronRoutes);
 app.use('/api/v1/database', databaseRoutes);
 app.use('/api/v1/google', googleSheetsRoutes);
+app.use('/api/v1/google-sheets', googleSheetsRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

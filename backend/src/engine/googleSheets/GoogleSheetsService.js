@@ -46,6 +46,7 @@ export class GoogleSheetsService {
    * List all Google Spreadsheets from Google Drive API
    */
   static async listSpreadsheets({ credentialId, userId, query = '' }) {
+    console.log(`[GoogleSheetsService] 🔍 Drive listSpreadsheets requested for User ID: ${userId}, Credential ID: ${credentialId || 'default'}`);
     try {
       const drive = await this.getDriveClient(credentialId, userId);
 
@@ -54,22 +55,25 @@ export class GoogleSheetsService {
         mimeQuery += ` and name contains '${query.replace(/'/g, "\\'")}'`;
       }
 
+      console.log(`[GoogleSheetsService] 📤 Executing Google Drive files.list (query: "${mimeQuery}")`);
       const response = await drive.files.list({
         q: mimeQuery,
         fields: 'files(id, name, modifiedTime, thumbnailLink, webViewLink)',
-        pageSize: 50,
+        pageSize: 100,
         orderBy: 'modifiedTime desc',
       });
 
-      return (response.data.files || []).map((file) => ({
+      const sheets = (response.data.files || []).map((file) => ({
         id: file.id,
         name: file.name,
         modifiedTime: file.modifiedTime,
         webViewLink: file.webViewLink,
       }));
+
+      console.log(`[GoogleSheetsService] ✅ Retrieved ${sheets.length} spreadsheet(s) from Google Drive API`);
+      return sheets;
     } catch (err) {
-      console.warn('[GoogleSheetsService] ⚠️ Drive API listSpreadsheets warning:', err.message);
-      // If Drive API call fails (e.g. invalid scopes or missing API permissions), return empty list cleanly instead of throwing HTTP 500
+      console.error(`[GoogleSheetsService] ❌ Google Drive API listSpreadsheets failed: ${err.message}`, err.stack);
       return [];
     }
   }
