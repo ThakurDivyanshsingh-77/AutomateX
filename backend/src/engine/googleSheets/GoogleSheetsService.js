@@ -493,22 +493,60 @@ export class GoogleSheetsService {
 
   /**
    * Clear Range / Row
+   * Automatically prefixes worksheet title and enforces header preservation (Row 1 protection)
    */
-  static async clearRows({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', range = 'A2:ZZ100' }) {
-    const sheets = await this.getSheetsClient(credentialId, userId);
-    const fullRange = `'${worksheetTitle}'!${range}`;
+  static async clearRows({
+    credentialId,
+    userId,
+    spreadsheetId,
+    worksheetTitle = 'Sheet1',
+    range = 'A2:ZZ100',
+    allowHeaderClear = false,
+  }) {
+    console.log(`[GoogleSheetsService] 🧹 clearRows requested for Spreadsheet: ${spreadsheetId}, Sheet: ${worksheetTitle}, Raw Range: ${range}`);
 
-    const response = await sheets.spreadsheets.values.clear({
-      spreadsheetId,
-      range: fullRange,
-    });
+    if (!spreadsheetId) {
+      throw new Error('Spreadsheet ID is required for Clear Range operation.');
+    }
+    if (!range || !String(range).trim()) {
+      throw new Error('Cell Range is required for Clear Range operation.');
+    }
 
-    return {
-      success: true,
-      spreadsheetId,
-      worksheet: worksheetTitle,
-      rowsAffected: 1,
-      clearedRange: response.data.clearedRange,
-    };
+    let cleanRange = String(range).trim();
+
+    // Strip sheet title if user entered Sheet1!A2:C100
+    if (cleanRange.includes('!')) {
+      cleanRange = cleanRange.split('!')[1];
+    }
+
+    // Header Protection: Protect Row 1 unless allowHeaderClear is true
+    if (!allowHeaderClear) {
+      // Replace A1: or :1 with A2: or :2
+      cleanRange = cleanRange.replace(/([A-Za-z]+)1(?=:|$|-|\b)/g, '$12');
+    }
+
+    const fullRange = `'${worksheetTitle}'!${cleanRange}`;
+    console.log(`[GoogleSheetsService] 📤 Executing spreadsheets.values.clear on Range: ${fullRange}`);
+
+    try {
+      const sheets = await this.getSheetsClient(credentialId, userId);
+      const response = await sheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range: fullRange,
+      });
+
+      console.log(`[GoogleSheetsService] ✅ Range ${fullRange} cleared successfully`);
+      return {
+        success: true,
+        message: 'Range cleared successfully.',
+        spreadsheetId,
+        worksheet: worksheetTitle,
+        clearedRange: response.data.clearedRange || fullRange,
+        range: fullRange,
+      };
+    } catch (err) {
+      console.error(`[GoogleSheetsService] ❌ Google Sheets API clearRows failed for ${fullRange}: ${err.message}`);
+      throw new Error(`Google Sheets API Clear Error: ${err.message}`);
+    }
   }
 }

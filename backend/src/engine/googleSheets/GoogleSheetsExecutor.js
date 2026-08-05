@@ -148,15 +148,22 @@ export class GoogleSheetsExecutor {
       }
 
       case 'clearRange':
-      case 'googleSheetsClearRange':
+      case 'googleSheetsClearRange': {
+        let resolvedRange = config.range || 'A2:ZZ100';
+        if (typeof config.range === 'string' && context.resolveVariables) {
+          resolvedRange = context.resolveVariables(config.range);
+        }
+
         result = await GoogleSheetsService.clearRows({
           credentialId,
           userId,
           spreadsheetId,
           worksheetTitle: worksheet,
-          range: config.range || 'A2:ZZ100',
+          range: resolvedRange,
+          allowHeaderClear: config.allowHeaderClear === true,
         });
         break;
+      }
 
       default:
         // Default fallback to readRows

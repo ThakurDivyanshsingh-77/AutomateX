@@ -224,16 +224,34 @@ router.post('/sheets/delete', async (req, res, next) => {
  */
 router.post('/sheets/clear', async (req, res, next) => {
   try {
-    const { credentialId, spreadsheetId, worksheet, range } = req.body;
+    const { credentialId, spreadsheetId, worksheet, range, allowHeaderClear } = req.body;
+
+    if (!spreadsheetId || !worksheet) {
+      return res.status(400).json({ success: false, message: 'Missing configuration: spreadsheetId and worksheet are required.' });
+    }
+    if (!range || !String(range).trim()) {
+      return res.status(400).json({ success: false, message: 'Missing configuration: Cell range is required.' });
+    }
+
     const result = await GoogleSheetsService.clearRows({
       credentialId,
       userId: req.user._id,
       spreadsheetId,
       worksheetTitle: worksheet,
       range,
+      allowHeaderClear,
     });
     return res.json(result);
   } catch (err) {
+    if (err.message.includes('required') || err.message.includes('400')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('token') || err.message.includes('401') || err.message.includes('auth')) {
+      return res.status(401).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('not found') || err.message.includes('404')) {
+      return res.status(404).json({ success: false, message: err.message });
+    }
     next(err);
   }
 });

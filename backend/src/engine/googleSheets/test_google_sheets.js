@@ -183,6 +183,48 @@ async function runGoogleSheetsTestSuite() {
     GoogleSheetsService.getSheetsClient = origGetSheetsClient;
   }
 
+  // ----------------------------------------------------
+  // Test 5: Clear Range Operations & Header Protection
+  // ----------------------------------------------------
+  console.log('\n--- Test 5: Clear Range Operations & Header Protection ---');
+  let lastClearedRange = '';
+  GoogleSheetsService.getSheetsClient = async () => ({
+    spreadsheets: {
+      values: {
+        clear: async ({ range }) => {
+          lastClearedRange = range;
+          return { data: { clearedRange: range } };
+        }
+      }
+    }
+  });
+
+  try {
+    // 5a. Auto-prefix worksheet title & protect Row 1
+    const clearRes = await GoogleSheetsService.clearRows({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      range: 'A1:C100',
+    });
+    assert(clearRes.success, 'Clear range returned success: true');
+    assert(lastClearedRange === "'Sheet1'!A2:C100", 'A1:C100 automatically protected Row 1 and changed to Sheet1!A2:C100');
+
+    // 5b. Allow header clear when explicitly enabled
+    await GoogleSheetsService.clearRows({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      range: 'A1:C100',
+      allowHeaderClear: true,
+    });
+    assert(lastClearedRange === "'Sheet1'!A1:C100", 'allowHeaderClear: true permitted clearing A1:C100');
+  } finally {
+    GoogleSheetsService.getSheetsClient = origGetSheetsClient;
+  }
+
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log('====================================================\n');
