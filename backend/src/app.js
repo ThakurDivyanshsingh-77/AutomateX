@@ -12,6 +12,7 @@ import reliabilityRoutes from './routes/reliabilityRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import cronRoutes from './routes/cronRoutes.js';
 import databaseRoutes from './routes/v1/databaseRoutes.js';
+import googleSheetsRoutes from './routes/googleSheetsRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/v1/reliability', reliabilityRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/runtime/cron', cronRoutes);
 app.use('/api/v1/database', databaseRoutes);
+app.use('/api/v1/google', googleSheetsRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

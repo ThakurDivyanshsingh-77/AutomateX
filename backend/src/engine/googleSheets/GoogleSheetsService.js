@@ -1,57 +1,152 @@
 import { google } from 'googleapis';
 import { googleOAuthClient } from '../../oauth/GoogleOAuthClient.js';
-import { RetryEngine } from '../retry/RetryEngine.js';
+import { credentialService } from '../../credentials/credentialService.js';
 
 export class GoogleSheetsService {
   /**
-   * Helper to construct authenticated Google Sheets API client
+   * Helper to construct authenticated Google client from credential ID or raw OAuth data
    */
-  static async getSheetsClient(oauthData) {
-    const authClient = await googleOAuthClient.getAuthenticatedClient(oauthData);
-    return google.sheets({ version: 'v4', auth: authClient });
+  static async getAuthClient(credentialId, userId = null) {
+    let oauthData = null;
+
+    if (credentialId) {
+      const cred = await credentialService.getCredentialById(credentialId, userId);
+      if (cred && cred.data) {
+        oauthData = cred.data;
+      }
+    }
+
+    if (!oauthData) {
+      oauthData = {
+        accessToken: process.env.GOOGLE_ACCESS_TOKEN,
+        refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+      };
+    }
+
+    return await googleOAuthClient.getAuthenticatedClient(oauthData);
   }
 
   /**
-   * Read Rows from Spreadsheet
+   * Helper to get Google Sheets API v4 instance
    */
-  static async readRows({ oauthData, spreadsheetId, range = 'A1:Z100', headerRow = 1, filterEmpty = true, limit = 0, offset = 0 }) {
-    const sheets = await this.getSheetsClient(oauthData);
-    
+  static async getSheetsClient(credentialId, userId = null) {
+    const auth = await this.getAuthClient(credentialId, userId);
+    return google.sheets({ version: 'v4', auth });
+  }
+
+  /**
+   * Helper to get Google Drive API v3 instance
+   */
+  static async getDriveClient(credentialId, userId = null) {
+    const auth = await this.getAuthClient(credentialId, userId);
+    return google.drive({ version: 'v3', auth });
+  }
+
+  /**
+   * List all Google Spreadsheets from Google Drive API
+   */
+  static async listSpreadsheets({ credentialId, userId, query = '' }) {
+    const drive = await this.getDriveClient(credentialId, userId);
+
+    let mimeQuery = "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+    if (query) {
+      mimeQuery += ` and name contains '${query.replace(/'/g, "\\'")}'`;
+    }
+
+    const response = await drive.files.list({
+      q: mimeQuery,
+      fields: 'files(id, name, modifiedTime, thumbnailLink, webViewLink)',
+      pageSize: 50,
+      orderBy: 'modifiedTime desc',
+    });
+
+    return (response.data.files || []).map((file) => ({
+      id: file.id,
+      name: file.name,
+      modifiedTime: file.modifiedTime,
+      webViewLink: file.webViewLink,
+    }));
+  }
+
+  /**
+   * Get Worksheets (Sheet Tabs) for a given Spreadsheet
+   */
+  static async getWorksheets({ credentialId, userId, spreadsheetId }) {
+    const sheets = await this.getSheetsClient(credentialId, userId);
+
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId,
+      fields: 'sheets(properties(sheetId, title, index, gridProperties))',
+    });
+
+    return (response.data.sheets || []).map((s) => ({
+      sheetId: s.properties.sheetId,
+      title: s.properties.title,
+      index: s.properties.index,
+      rowCount: s.properties.gridProperties?.rowCount || 0,
+      columnCount: s.properties.gridProperties?.columnCount || 0,
+    }));
+  }
+
+  /**
+   * Automatically Read Header Columns from First Row of Worksheet
+   */
+  static async getHeaders({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', headerRow = 1 }) {
+    const sheets = await this.getSheetsClient(credentialId, userId);
+
+    const rowNum = Math.max(1, parseInt(headerRow || 1, 10));
+    const range = `'${worksheetTitle}'!A${rowNum}:ZZ${rowNum}`;
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const headerValues = response.data.values?.[0] || [];
+    return headerValues.map((h, idx) => (h && String(h).trim() ? String(h).trim() : `Column_${idx + 1}`));
+  }
+
+  /**
+   * Read Rows with Limit, Offset, Filtering, and Header mapping
+   */
+  static async readRows({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', headerRow = 1, limit = 0, offset = 0, filterEmpty = true }) {
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    const range = `'${worksheetTitle}'!A1:ZZ100000`;
+
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
     });
 
     const rawValues = response.data.values || [];
-    if (rawValues.length === 0) return { rows: [], totalRows: 0 };
+    if (rawValues.length === 0) {
+      return { success: true, spreadsheetId, worksheet: worksheetTitle, rowsAffected: 0, rows: [] };
+    }
 
     const headersIndex = Math.max(0, parseInt(headerRow || 1, 10) - 1);
-    const headers = rawValues[headersIndex] || [];
+    const headers = (rawValues[headersIndex] || []).map((h, idx) => (h && String(h).trim() ? String(h).trim() : `Column_${idx + 1}`));
     const dataRows = rawValues.slice(headersIndex + 1);
 
     let rows = dataRows.map((row, rIdx) => {
       const rowObj = { _rowNumber: headersIndex + 2 + rIdx };
       headers.forEach((h, cIdx) => {
-        rowObj[h || `Column_${cIdx + 1}`] = row[cIdx] !== undefined ? row[cIdx] : '';
+        rowObj[h] = row[cIdx] !== undefined ? row[cIdx] : '';
       });
       return rowObj;
     });
 
     if (filterEmpty) {
-      rows = rows.filter((r) => Object.values(r).some((v) => String(v).trim().length > 0));
+      rows = rows.filter((r) => Object.entries(r).some(([k, v]) => k !== '_rowNumber' && String(v).trim().length > 0));
     }
 
-    if (offset > 0) {
-      rows = rows.slice(offset);
-    }
-
-    if (limit > 0) {
-      rows = rows.slice(0, limit);
-    }
+    if (offset > 0) rows = rows.slice(offset);
+    if (limit > 0) rows = rows.slice(0, limit);
 
     return {
       success: true,
-      affectedRows: rows.length,
+      spreadsheetId,
+      worksheet: worksheetTitle,
+      rowsAffected: rows.length,
       totalRows: rows.length,
       rows,
       headers,
@@ -59,124 +154,139 @@ export class GoogleSheetsService {
   }
 
   /**
-   * Append Row to Spreadsheet
+   * Append Row using Column Mappings object
    */
-  static async appendRow({ oauthData, spreadsheetId, range = 'Sheet1!A1', values = [] }) {
-    const sheets = await this.getSheetsClient(oauthData);
+  static async appendRow({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', columnsMap = {} }) {
+    const headers = await this.getHeaders({ credentialId, userId, spreadsheetId, worksheetTitle });
+    const sheets = await this.getSheetsClient(credentialId, userId);
 
+    // Build row array in correct column order matching sheet headers
+    const rowValues = headers.map((header) => {
+      return columnsMap[header] !== undefined ? columnsMap[header] : '';
+    });
+
+    const range = `'${worksheetTitle}'!A1`;
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
       valueInputOption: 'USER_ENTERED',
+      insertDataOption: 'INSERT_ROWS',
       requestBody: {
-        values: [values],
+        values: [rowValues],
       },
     });
 
     const updatedRange = response.data.updates?.updatedRange || '';
-    const updatedRows = response.data.updates?.updatedRows || 1;
+    const match = updatedRange.match(/!A?(\d+)/);
+    const rowNumber = match ? parseInt(match[1], 10) : null;
 
     return {
       success: true,
-      affectedRows: updatedRows,
-      updatedRange,
+      spreadsheetId,
+      worksheet: worksheetTitle,
+      rowsAffected: 1,
+      rowNumber,
+      values: columnsMap,
     };
   }
 
   /**
-   * Update Row in Spreadsheet
+   * Update Row by Row Number or Search Column Value
    */
-  static async updateRow({ oauthData, spreadsheetId, range, values = [] }) {
-    const sheets = await this.getSheetsClient(oauthData);
+  static async updateRow({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', rowNumber, searchColumn, searchValue, columnsMap = {} }) {
+    const headers = await this.getHeaders({ credentialId, userId, spreadsheetId, worksheetTitle });
+    let targetRow = rowNumber ? parseInt(rowNumber, 10) : null;
 
-    const response = await sheets.spreadsheets.values.update({
+    if (!targetRow && searchColumn && searchValue) {
+      const findResult = await this.findRow({ credentialId, userId, spreadsheetId, worksheetTitle, searchColumn, searchValue, matchType: 'equals' });
+      if (findResult.foundRow) {
+        targetRow = findResult.foundRow._rowNumber;
+      }
+    }
+
+    if (!targetRow) {
+      throw new Error(`Row to update could not be identified (Row Number or Search Column match required).`);
+    }
+
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    
+    // Read existing row values first to preserve unmapped columns
+    const existingRange = `'${worksheetTitle}'!A${targetRow}:ZZ${targetRow}`;
+    const existingRes = await sheets.spreadsheets.values.get({ spreadsheetId, range: existingRange });
+    const existingRow = existingRes.data.values?.[0] || [];
+
+    const updatedRow = headers.map((header, idx) => {
+      if (columnsMap[header] !== undefined) return columnsMap[header];
+      return existingRow[idx] !== undefined ? existingRow[idx] : '';
+    });
+
+    const updateRange = `'${worksheetTitle}'!A${targetRow}`;
+    await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range,
+      range: updateRange,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
-        values: [values],
+        values: [updatedRow],
       },
     });
 
     return {
       success: true,
-      affectedRows: response.data.updatedRows || 1,
-      updatedRange: response.data.updatedRange,
+      spreadsheetId,
+      worksheet: worksheetTitle,
+      rowsAffected: 1,
+      rowNumber: targetRow,
+      values: columnsMap,
     };
   }
 
   /**
-   * Delete / Clear Row in Spreadsheet
+   * Find Row by Condition (equals, contains, startsWith, endsWith, regex)
    */
-  static async clearRange({ oauthData, spreadsheetId, range }) {
-    const sheets = await this.getSheetsClient(oauthData);
+  static async findRow({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', searchColumn, searchValue, matchType = 'equals' }) {
+    const readResult = await this.readRows({ credentialId, userId, spreadsheetId, worksheetTitle, filterEmpty: false });
+    const rows = readResult.rows || [];
+
+    const targetVal = String(searchValue).toLowerCase();
+
+    const foundRow = rows.find((r) => {
+      const cellVal = String(r[searchColumn] || '').toLowerCase();
+      if (matchType === 'equals') return cellVal === targetVal;
+      if (matchType === 'contains') return cellVal.includes(targetVal);
+      if (matchType === 'startsWith') return cellVal.startsWith(targetVal);
+      if (matchType === 'endsWith') return cellVal.endsWith(targetVal);
+      if (matchType === 'regex') return new RegExp(searchValue, 'i').test(String(r[searchColumn] || ''));
+      return cellVal === targetVal;
+    });
+
+    return {
+      success: true,
+      spreadsheetId,
+      worksheet: worksheetTitle,
+      rowsAffected: foundRow ? 1 : 0,
+      foundRow: foundRow || null,
+      rowNumber: foundRow ? foundRow._rowNumber : null,
+    };
+  }
+
+  /**
+   * Clear Range / Row
+   */
+  static async clearRows({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', range = 'A2:ZZ100' }) {
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    const fullRange = `'${worksheetTitle}'!${range}`;
 
     const response = await sheets.spreadsheets.values.clear({
       spreadsheetId,
-      range,
+      range: fullRange,
     });
 
     return {
       success: true,
-      clearedRange: response.data.clearedRange,
-    };
-  }
-
-  /**
-   * Create Spreadsheet
-   */
-  static async createSpreadsheet({ oauthData, title = 'Untitled Spreadsheet', sheetName = 'Sheet1' }) {
-    const sheets = await this.getSheetsClient(oauthData);
-
-    const response = await sheets.spreadsheets.create({
-      requestBody: {
-        properties: {
-          title,
-        },
-        sheets: [
-          {
-            properties: {
-              title: sheetName,
-            },
-          },
-        ],
-      },
-    });
-
-    return {
-      success: true,
-      spreadsheetId: response.data.spreadsheetId,
-      spreadsheetUrl: response.data.spreadsheetUrl,
-    };
-  }
-
-  /**
-   * Create Worksheet inside existing Spreadsheet
-   */
-  static async createWorksheet({ oauthData, spreadsheetId, title = 'New Sheet' }) {
-    const sheets = await this.getSheetsClient(oauthData);
-
-    const response = await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
-      requestBody: {
-        requests: [
-          {
-            addSheet: {
-              properties: {
-                title,
-              },
-            },
-          },
-        ],
-      },
-    });
-
-    const reply = response.data.replies?.[0]?.addSheet;
-
-    return {
-      success: true,
-      sheetId: reply?.properties?.sheetId,
-      title: reply?.properties?.title,
+      worksheet: worksheetTitle,
+      rowsAffected: 1,
+      clearedRange: response.data.clearedRange,
     };
   }
 }

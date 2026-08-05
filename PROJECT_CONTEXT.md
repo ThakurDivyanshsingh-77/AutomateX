@@ -88,18 +88,23 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Node Palette Category** — ✅ COMPLETED
-- **Backend Subsystem** (`backend/src/engine/googleSheets/`):
-  - `GoogleSheetsService.js`: Wrapper around `googleapis` v4 Sheets API providing high-throughput `readRows` (with offset, limit, filter empty), `appendRow`, `updateRow`, `clearRange`, `createSpreadsheet`, and `createWorksheet`.
-  - `GoogleSheetsExecutor.js`: Integrated executor registered under `googleSheets` node type in `ExecutorRegistry.js`. Maps credential vault tokens and node operations dynamically.
-  - Integration with `RetryEngine`: Automatically retries Google API rate limits (`429`) and server errors (`500`, `502`, `503`, `504`) with exponential backoff.
-- **Frontend Components & Visual Data Mapper**:
-  - `GoogleSheetsNodeRegistry.js`: 13 Google Sheets node definitions (`googleSheetsTriggerWatchRows`, `googleSheetsReadRows`, `googleSheetsFindRow`, `googleSheetsAppendRow`, `googleSheetsUpdateRow`, `googleSheetsDeleteRow`, `googleSheetsClearRange`, `googleSheetsBatchUpdate`, `googleSheetsCreateSpreadsheet`, `googleSheetsCreateWorksheet`, `googleSheetsDuplicateWorksheet`, `googleSheetsDeleteWorksheet`, `googleSheetsGetSpreadsheetInfo`).
-  - `GoogleSheetsIcons.jsx`: SVG green spreadsheet brand icon (`#34A853`).
-  - `NodeSidebar.jsx` & `nodeRegistry.js`: Automatic registration of **📊 Google Sheets** category in Node Palette immediately following Gmail and before Storage.
-  - `ColumnDataMapper.jsx`: Interactive column mapping component allowing visual drag & drop expression assignment (`Sheet.Name ──► {{http.user.name}}`).
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & REST Subsystem** — ✅ COMPLETED
+- **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
+  - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
+  - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
+  - Google OAuth Scopes: Updated `GoogleOAuthClient.js` with `https://www.googleapis.com/auth/spreadsheets` and `https://www.googleapis.com/auth/drive.readonly`.
+  - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
+- **Frontend Node Configuration Panel & Auto-Mapper**:
+  - `GoogleSheetsProperties.jsx`: n8n-style step-by-step node configuration panel:
+    1. Connected Google Account dropdown (with 1-click OAuth connect button).
+    2. Drive API Spreadsheet selector dropdown.
+    3. Worksheet (sheet tab) selector dropdown.
+    4. Automatic header detector populating column input mapping cards (`Sheet.Name ──► {{item.name}}`).
+    5. Test Connection & Live Data Preview button rendering JSON payload preview.
+  - `googleSheetsValidator.js`: Client-side validator enforcing credential, spreadsheet, and worksheet tab selections.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 - **Backend Core Loop Subsystem** (`backend/src/engine/loop/`):

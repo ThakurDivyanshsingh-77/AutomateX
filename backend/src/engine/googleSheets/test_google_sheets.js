@@ -26,9 +26,9 @@ async function runGoogleSheetsTestSuite() {
   assert(typeof GoogleSheetsService.readRows === 'function', 'readRows declared');
   assert(typeof GoogleSheetsService.appendRow === 'function', 'appendRow declared');
   assert(typeof GoogleSheetsService.updateRow === 'function', 'updateRow declared');
-  assert(typeof GoogleSheetsService.clearRange === 'function', 'clearRange declared');
-  assert(typeof GoogleSheetsService.createSpreadsheet === 'function', 'createSpreadsheet declared');
-  assert(typeof GoogleSheetsService.createWorksheet === 'function', 'createWorksheet declared');
+  assert(typeof GoogleSheetsService.clearRows === 'function', 'clearRows declared');
+  assert(typeof GoogleSheetsService.listSpreadsheets === 'function', 'listSpreadsheets declared');
+  assert(typeof GoogleSheetsService.getWorksheets === 'function', 'getWorksheets declared');
 
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

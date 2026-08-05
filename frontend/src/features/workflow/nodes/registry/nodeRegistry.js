@@ -16,6 +16,7 @@ import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
 import { validateLogNode } from '../validators/logValidator';
 import { gmailValidator } from '../validators/gmailValidator';
+import { googleSheetsValidator } from '../googleSheets/googleSheetsValidator';
 
 import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
 
@@ -119,6 +120,12 @@ export const nodeValidators = {
   [NODE_TYPES.MONGO_COUNT]: databaseValidator,
   [NODE_TYPES.MONGO_AGGREGATE]: databaseValidator,
   [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest.validate,
+  [NODE_TYPES.READ_ROWS]: googleSheetsValidator,
+  [NODE_TYPES.APPEND_ROW]: googleSheetsValidator,
+  [NODE_TYPES.UPDATE_ROW]: googleSheetsValidator,
+  [NODE_TYPES.FIND_ROW]: googleSheetsValidator,
+  [NODE_TYPES.DELETE_ROW]: googleSheetsValidator,
+  [NODE_TYPES.CLEAR_RANGE]: googleSheetsValidator,
 };
 
 // Helper: Get definition by node type

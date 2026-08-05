@@ -1,42 +1,40 @@
 import { GoogleSheetsService } from './GoogleSheetsService.js';
-import { credentialVaultService } from '../../services/CredentialVaultService.js';
 
 export class GoogleSheetsExecutor {
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
-    const operation = config.operation || 'readRows';
+    const operation = config.operation || node.type || 'readRows';
 
-    // 1. Resolve Credential
     const credentialId = config.credentialId;
-    let oauthData = null;
-
-    if (credentialId) {
-      const cred = await credentialVaultService.getCredentialById(credentialId, context.userId);
-      if (cred && cred.data) {
-        oauthData = cred.data;
-      }
-    }
-
-    if (!oauthData) {
-      // Fallback to environment credentials if available
-      oauthData = {
-        accessToken: process.env.GOOGLE_ACCESS_TOKEN,
-        refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-      };
-    }
-
     const spreadsheetId = config.spreadsheetId;
-    const range = config.range || 'Sheet1!A1:Z100';
+    const worksheet = config.worksheet || config.sheetName || 'Sheet1';
+    const userId = context.userId;
+
+    if (!spreadsheetId) {
+      throw new Error(`Google Sheets Execution Error: Spreadsheet selection is required for node "${node.id}".`);
+    }
 
     const startTime = Date.now();
     let result = null;
 
+    // Convert columnsMap array or object if passed from frontend Mapper
+    let columnsMap = {};
+    if (Array.isArray(config.mappings)) {
+      config.mappings.forEach((m) => {
+        if (m.column) columnsMap[m.column] = m.value;
+      });
+    } else if (config.columnsMap && typeof config.columnsMap === 'object') {
+      columnsMap = config.columnsMap;
+    }
+
     switch (operation) {
       case 'readRows':
+      case 'googleSheetsReadRows':
         result = await GoogleSheetsService.readRows({
-          oauthData,
+          credentialId,
+          userId,
           spreadsheetId,
-          range,
+          worksheetTitle: worksheet,
           headerRow: config.headerRow || 1,
           limit: config.limit || 0,
           offset: config.offset || 0,
@@ -45,51 +43,63 @@ export class GoogleSheetsExecutor {
         break;
 
       case 'appendRow':
-        const rowValues = Array.isArray(config.values) ? config.values : Object.values(config.values || {});
+      case 'googleSheetsAppendRow':
         result = await GoogleSheetsService.appendRow({
-          oauthData,
+          credentialId,
+          userId,
           spreadsheetId,
-          range,
-          values: rowValues,
+          worksheetTitle: worksheet,
+          columnsMap,
         });
         break;
 
       case 'updateRow':
-        const updateValues = Array.isArray(config.values) ? config.values : Object.values(config.values || {});
+      case 'googleSheetsUpdateRow':
         result = await GoogleSheetsService.updateRow({
-          oauthData,
+          credentialId,
+          userId,
           spreadsheetId,
-          range: config.targetRange || range,
-          values: updateValues,
+          worksheetTitle: worksheet,
+          rowNumber: config.rowNumber,
+          searchColumn: config.searchColumn,
+          searchValue: config.searchValue,
+          columnsMap,
+        });
+        break;
+
+      case 'findRow':
+      case 'googleSheetsFindRow':
+        result = await GoogleSheetsService.findRow({
+          credentialId,
+          userId,
+          spreadsheetId,
+          worksheetTitle: worksheet,
+          searchColumn: config.searchColumn,
+          searchValue: config.searchValue,
+          matchType: config.matchType || 'equals',
         });
         break;
 
       case 'clearRange':
-        result = await GoogleSheetsService.clearRange({
-          oauthData,
+      case 'googleSheetsClearRange':
+        result = await GoogleSheetsService.clearRows({
+          credentialId,
+          userId,
           spreadsheetId,
-          range,
-        });
-        break;
-
-      case 'createSpreadsheet':
-        result = await GoogleSheetsService.createSpreadsheet({
-          oauthData,
-          title: config.title || 'New Workflow Spreadsheet',
-          sheetName: config.sheetName || 'Sheet1',
-        });
-        break;
-
-      case 'createWorksheet':
-        result = await GoogleSheetsService.createWorksheet({
-          oauthData,
-          spreadsheetId,
-          title: config.sheetName || 'Worksheet',
+          worksheetTitle: worksheet,
+          range: config.range || 'A2:ZZ100',
         });
         break;
 
       default:
-        throw new Error(`Unsupported Google Sheets operation: '${operation}'`);
+        // Default fallback to readRows
+        result = await GoogleSheetsService.readRows({
+          credentialId,
+          userId,
+          spreadsheetId,
+          worksheetTitle: worksheet,
+        });
+        break;
     }
 
     const executionTime = Date.now() - startTime;
@@ -97,11 +107,12 @@ export class GoogleSheetsExecutor {
     return {
       output: {
         success: true,
-        affectedRows: result.affectedRows || result.rows?.length || 0,
-        executionTime,
         spreadsheetId,
-        sheetId: result.sheetId || '',
-        rows: result.rows || [],
+        worksheet,
+        rowsAffected: result.rowsAffected || 1,
+        rowNumber: result.rowNumber || null,
+        values: result.values || result.rows || [],
+        executionTime,
         ...result,
       },
     };
