@@ -8,6 +8,9 @@ import { ConditionExecutor } from '../executors/ConditionExecutor.js';
 import { TryCatchExecutor } from '../executors/TryCatchExecutor.js';
 import { DatabaseExecutor } from '../database/DatabaseExecutor.js';
 import { PdfGeneratorExecutor } from '../executors/PdfGeneratorExecutor.js';
+import { GoogleSheetsExecutor } from '../googleSheets/GoogleSheetsExecutor.js';
+
+const googleSheetsExecutor = new GoogleSheetsExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -35,6 +38,22 @@ export class ExecutorRegistry {
     ['mongoCount', DatabaseExecutor],
     ['mongoAggregate', DatabaseExecutor],
     ['pdfGenerator', new PdfGeneratorExecutor()],
+
+    // Google Sheets Node Executors (Exact matching string registration)
+    ['googleSheets', googleSheetsExecutor],
+    ['googleSheetsTriggerWatchRows', googleSheetsExecutor],
+    ['googleSheetsReadRows', googleSheetsExecutor],
+    ['googleSheetsFindRow', googleSheetsExecutor],
+    ['googleSheetsAppendRow', googleSheetsExecutor],
+    ['googleSheetsUpdateRow', googleSheetsExecutor],
+    ['googleSheetsDeleteRow', googleSheetsExecutor],
+    ['googleSheetsClearRange', googleSheetsExecutor],
+    ['googleSheetsBatchUpdate', googleSheetsExecutor],
+    ['googleSheetsCreateSpreadsheet', googleSheetsExecutor],
+    ['googleSheetsCreateWorksheet', googleSheetsExecutor],
+    ['googleSheetsDuplicateWorksheet', googleSheetsExecutor],
+    ['googleSheetsDeleteWorksheet', googleSheetsExecutor],
+    ['googleSheetsGetSpreadsheetInfo', googleSheetsExecutor],
   ]);
 
   static getExecutor(nodeType) {

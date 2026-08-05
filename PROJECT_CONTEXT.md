@@ -88,25 +88,31 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Authorization Resolution** — ✅ COMPLETED
-- **"Not authorized, no token present" Error Resolution**:
-  - **Root Cause Identified**: In `GoogleSheetsProperties.jsx`, `handleTestOperation()` executed a raw unauthenticated browser `fetch('/api/v1/google/sheets/read')`:
-    ```javascript
-    const res = await fetch('/api/v1/google/sheets/read', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credentialId, spreadsheetId, worksheet, limit: 3 }),
-    });
-    ```
-    Because raw `fetch()` does NOT attach the `Authorization: Bearer <token>` header, backend `authMiddleware.js` rejected the test call with HTTP `401 Unauthorized` ("Not authorized, no token present").
-  - **Fix Implemented**: Replaced raw `fetch()` in `handleTestOperation()` with authenticated `api.post('/google/sheets/read')`, which automatically attaches the `Authorization: Bearer ${token}` header and sends HttpOnly cookies (`withCredentials: true`), returning HTTP `200 OK` with preview rows.
-  - **Credential Audit Logging**: Added credential resolution logs (`[GoogleSheetsService] 🔐 Resolving Google Auth Client`, `[GoogleSheetsService] 💳 Credential loaded successfully. Access Token Present: true, Refresh Token Present: true`).
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Executor Registration** — ✅ COMPLETED
+- **Workflow Executor Registration Resolution (`googleSheetsAppendRow`)**:
+  - **Root Cause Identified**: `ExecutorRegistry.js` (`backend/src/engine/registry/ExecutorRegistry.js`) imported `GoogleSheetsExecutor` only in the legacy `backend/src/engine/ExecutorRegistry.js` file, but the active runtime engine `WorkflowEngine.js` imports from `backend/src/engine/registry/ExecutorRegistry.js`. Because `googleSheetsAppendRow` was missing from `ExecutorRegistry.executors` Map, running workflows containing Google Sheets nodes threw `No executor registered for node type: "googleSheetsAppendRow"`.
+  - **Fix Implemented**: Imported `GoogleSheetsExecutor` in `backend/src/engine/registry/ExecutorRegistry.js` and registered all 13 Google Sheets node types with exact matching string keys:
+    - `googleSheets`
+    - `googleSheetsTriggerWatchRows`
+    - `googleSheetsReadRows`
+    - `googleSheetsFindRow`
+    - `googleSheetsAppendRow`
+    - `googleSheetsUpdateRow`
+    - `googleSheetsDeleteRow`
+    - `googleSheetsClearRange`
+    - `googleSheetsBatchUpdate`
+    - `googleSheetsCreateSpreadsheet`
+    - `googleSheetsCreateWorksheet`
+    - `googleSheetsDuplicateWorksheet`
+    - `googleSheetsDeleteWorksheet`
+    - `googleSheetsGetSpreadsheetInfo`
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
-  - Passed automated test suite in `test_google_sheets.js`.
+  - Passed automated test suite in `test_google_sheets.js` (8/8 assertions passed).
+
 
 
 

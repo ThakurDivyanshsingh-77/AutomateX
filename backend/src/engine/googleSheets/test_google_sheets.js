@@ -20,15 +20,19 @@ async function runGoogleSheetsTestSuite() {
   }
 
   // ----------------------------------------------------
-  // Test 1: Service API Structure
+  // Test 1: Service API Structure & Executor Registration
   // ----------------------------------------------------
-  console.log('--- Test 1: GoogleSheetsService Method Declarations ---');
+  console.log('--- Test 1: GoogleSheetsService & Executor Registry ---');
   assert(typeof GoogleSheetsService.readRows === 'function', 'readRows declared');
   assert(typeof GoogleSheetsService.appendRow === 'function', 'appendRow declared');
   assert(typeof GoogleSheetsService.updateRow === 'function', 'updateRow declared');
   assert(typeof GoogleSheetsService.clearRows === 'function', 'clearRows declared');
   assert(typeof GoogleSheetsService.listSpreadsheets === 'function', 'listSpreadsheets declared');
   assert(typeof GoogleSheetsService.getWorksheets === 'function', 'getWorksheets declared');
+
+  const { ExecutorRegistry } = await import('../registry/ExecutorRegistry.js');
+  assert(!!ExecutorRegistry.getExecutor('googleSheetsAppendRow'), 'googleSheetsAppendRow executor registered');
+  assert(!!ExecutorRegistry.getExecutor('googleSheetsReadRows'), 'googleSheetsReadRows executor registered');
 
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
