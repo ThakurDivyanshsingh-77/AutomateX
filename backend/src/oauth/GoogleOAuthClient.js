@@ -101,9 +101,13 @@ export class GoogleOAuthClient {
     // Auto-refresh if token is expired or close to expiry (within 5 min)
     const now = Date.now();
     const expiryDate = oauthData.expiryDate || 0;
-    if (expiryDate < now + 5 * 60 * 1000) {
-      const { credentials } = await oauth2Client.refreshAccessToken();
-      oauth2Client.setCredentials(credentials);
+    if (oauthData.refreshToken && (expiryDate < now + 5 * 60 * 1000)) {
+      try {
+        const { credentials } = await oauth2Client.refreshAccessToken();
+        oauth2Client.setCredentials(credentials);
+      } catch (err) {
+        console.warn('[GoogleOAuthClient] ⚠️ Access token refresh warning:', err.message);
+      }
     }
 
     return oauth2Client;
