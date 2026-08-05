@@ -71,12 +71,12 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     }
   }, [credentialId]);
 
-  // 3. Fetch Worksheets when Spreadsheet Changes
+  // 3. Fetch Worksheets when Spreadsheet or Credential Changes
   useEffect(() => {
-    if (spreadsheetId) {
-      fetchWorksheets(spreadsheetId);
+    if (spreadsheetId && credentialId) {
+      fetchWorksheets(spreadsheetId, credentialId);
     }
-  }, [spreadsheetId]);
+  }, [spreadsheetId, credentialId]);
 
   // 4. Auto Detect Headers when Worksheet Changes
   useEffect(() => {
@@ -141,15 +141,21 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     }
   };
 
-  const fetchWorksheets = async (spId) => {
+  const fetchWorksheets = async (spId, credId = credentialId) => {
+    if (!spId) return;
     setLoadingWorksheets(true);
     try {
-      const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${credentialId}`);
+      const targetCred = credId || credentialId;
+      const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${targetCred}`);
       if (res.data.success) {
-        setWorksheets(res.data.worksheets || []);
-        if (res.data.worksheets.length > 0 && !worksheet) {
-          setWorksheet(res.data.worksheets[0].title);
-          updateConfig({ worksheet: res.data.worksheets[0].title });
+        const fetchedWorksheets = res.data.worksheets || [];
+        setWorksheets(fetchedWorksheets);
+        if (fetchedWorksheets.length > 0) {
+          const firstTitle = fetchedWorksheets[0].title;
+          if (!worksheet) {
+            setWorksheet(firstTitle);
+            updateConfig({ worksheet: firstTitle });
+          }
         }
       }
     } catch (err) {
@@ -330,22 +336,32 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
           {loadingWorksheets && <Loader2 className="w-3 h-3 text-emerald-400 animate-spin" />}
         </label>
 
-        <select
-          value={worksheet}
-          onChange={(e) => {
-            setWorksheet(e.target.value);
-            updateConfig({ worksheet: e.target.value });
-          }}
-          disabled={loadingWorksheets || !spreadsheetId}
-          className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
-        >
-          <option value="">Select Worksheet Tab...</option>
-          {worksheets.map((w) => (
-            <option key={w.sheetId} value={w.title}>
-              {w.title} ({w.rowCount} rows)
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <select
+            value={worksheet}
+            onChange={(e) => {
+              setWorksheet(e.target.value);
+              updateConfig({ worksheet: e.target.value });
+            }}
+            disabled={loadingWorksheets || !spreadsheetId}
+            className="flex-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+          >
+            <option value="">Select Worksheet Tab...</option>
+            {worksheets.map((w, idx) => (
+              <option key={w.sheetId || w.id || idx} value={w.title}>
+                {w.title} {w.rowCount ? `(${w.rowCount} rows)` : ''}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            onClick={() => spreadsheetId && fetchWorksheets(spreadsheetId, credentialId)}
+            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* 4. Visual Column Mapper */}
