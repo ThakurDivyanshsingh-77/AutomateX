@@ -280,30 +280,83 @@ export class GoogleSheetsService {
 
   /**
    * Find Row by Condition (equals, contains, startsWith, endsWith, regex)
+   * Supports returnMode ('first', 'all'), limit, and caseSensitive
    */
-  static async findRow({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', searchColumn, searchValue, matchType = 'equals' }) {
+  static async findRow({
+    credentialId,
+    userId,
+    spreadsheetId,
+    worksheetTitle = 'Sheet1',
+    searchColumn,
+    searchValue,
+    matchType = 'equals',
+    returnMode = 'first',
+    limit = 1,
+    caseSensitive = false,
+  }) {
+    console.log(`[GoogleSheetsService] 🔍 findRow requested for Spreadsheet: ${spreadsheetId}, Sheet: ${worksheetTitle}, Col: ${searchColumn}, Val: ${searchValue}, Match: ${matchType}, Mode: ${returnMode}`);
+
     const readResult = await this.readRows({ credentialId, userId, spreadsheetId, worksheetTitle, filterEmpty: false });
     const rows = readResult.rows || [];
 
-    const targetVal = String(searchValue).toLowerCase();
+    if (!searchColumn) {
+      throw new Error('Search column is required for Find Row operation');
+    }
 
-    const foundRow = rows.find((r) => {
-      const cellVal = String(r[searchColumn] || '').toLowerCase();
-      if (matchType === 'equals') return cellVal === targetVal;
-      if (matchType === 'contains') return cellVal.includes(targetVal);
-      if (matchType === 'startsWith') return cellVal.startsWith(targetVal);
-      if (matchType === 'endsWith') return cellVal.endsWith(targetVal);
-      if (matchType === 'regex') return new RegExp(searchValue, 'i').test(String(r[searchColumn] || ''));
-      return cellVal === targetVal;
+    const targetValStr = searchValue !== undefined && searchValue !== null ? String(searchValue) : '';
+    const matchVal = caseSensitive ? targetValStr : targetValStr.toLowerCase();
+
+    const matchedRows = rows.filter((r) => {
+      const cellValRaw = r[searchColumn] !== undefined && r[searchColumn] !== null ? String(r[searchColumn]) : '';
+      const cellVal = caseSensitive ? cellValRaw : cellValRaw.toLowerCase();
+
+      switch (matchType) {
+        case 'contains':
+          return cellVal.includes(matchVal);
+        case 'startsWith':
+          return cellVal.startsWith(matchVal);
+        case 'endsWith':
+          return cellVal.endsWith(matchVal);
+        case 'regex':
+          return new RegExp(targetValStr, caseSensitive ? '' : 'i').test(cellValRaw);
+        case 'equals':
+        default:
+          return cellVal === matchVal;
+      }
     });
 
+    console.log(`[GoogleSheetsService] 🔎 findRow found ${matchedRows.length} matching row(s)`);
+
+    if (returnMode === 'all') {
+      const parsedLimit = parseInt(limit, 10);
+      const maxLimit = parsedLimit > 0 ? parsedLimit : matchedRows.length;
+      const finalRows = matchedRows.slice(0, maxLimit);
+      return {
+        success: finalRows.length > 0,
+        spreadsheetId,
+        worksheet: worksheetTitle,
+        count: finalRows.length,
+        rows: finalRows,
+        foundRow: finalRows[0] || null,
+        rowNumber: finalRows[0] ? finalRows[0]._rowNumber : null,
+        values: finalRows[0] || null,
+        item: finalRows[0] || null,
+      };
+    }
+
+    // Default returnMode === 'first'
+    const firstMatch = matchedRows[0] || null;
     return {
-      success: true,
+      success: !!firstMatch,
       spreadsheetId,
       worksheet: worksheetTitle,
-      rowsAffected: foundRow ? 1 : 0,
-      foundRow: foundRow || null,
-      rowNumber: foundRow ? foundRow._rowNumber : null,
+      count: firstMatch ? 1 : 0,
+      foundRow: firstMatch,
+      rowNumber: firstMatch ? firstMatch._rowNumber : null,
+      values: firstMatch || null,
+      item: firstMatch || null,
+      rows: firstMatch ? [firstMatch] : [],
+      message: firstMatch ? 'Matching row found.' : 'No matching row found.',
     };
   }
 

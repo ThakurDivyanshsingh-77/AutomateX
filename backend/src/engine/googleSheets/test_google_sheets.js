@@ -33,6 +33,73 @@ async function runGoogleSheetsTestSuite() {
   const { ExecutorRegistry } = await import('../registry/ExecutorRegistry.js');
   assert(!!ExecutorRegistry.getExecutor('googleSheetsAppendRow'), 'googleSheetsAppendRow executor registered');
   assert(!!ExecutorRegistry.getExecutor('googleSheetsReadRows'), 'googleSheetsReadRows executor registered');
+  assert(!!ExecutorRegistry.getExecutor('googleSheetsFindRow'), 'googleSheetsFindRow executor registered');
+
+  // ----------------------------------------------------
+  // Test 2: Find Row Search Logic & Operators
+  // ----------------------------------------------------
+  console.log('\n--- Test 2: Find Row Search Logic & Operators ---');
+  const mockReadResult = {
+    rows: [
+      { _rowNumber: 2, Name: 'Divyansh', Email: 'divyansh@gmail.com', City: 'Vapi' },
+      { _rowNumber: 3, Name: 'Alex', Email: 'alex@example.com', City: 'New York' },
+      { _rowNumber: 4, Name: 'Divyansh Singh', Email: 'divyansh.singh@gmail.com', City: 'Mumbai' },
+    ]
+  };
+
+  const origReadRows = GoogleSheetsService.readRows;
+  GoogleSheetsService.readRows = async () => mockReadResult;
+
+  try {
+    // 2a. Equals search
+    const eqResult = await GoogleSheetsService.findRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      searchColumn: 'Name',
+      searchValue: 'Divyansh',
+      matchType: 'equals',
+    });
+    assert(eqResult.success && eqResult.foundRow.City === 'Vapi', 'Equals match succeeded');
+
+    // 2b. Contains search
+    const containsResult = await GoogleSheetsService.findRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      searchColumn: 'Email',
+      searchValue: 'gmail',
+      matchType: 'contains',
+      returnMode: 'all',
+      limit: 100,
+    });
+    assert(containsResult.count === 2, 'Contains match returned all 2 gmail rows');
+
+    // 2c. StartsWith search
+    const startsResult = await GoogleSheetsService.findRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      searchColumn: 'Name',
+      searchValue: 'Div',
+      matchType: 'startsWith',
+    });
+    assert(startsResult.foundRow._rowNumber === 2, 'StartsWith match succeeded');
+
+    // 2d. Case sensitive check
+    const caseResult = await GoogleSheetsService.findRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      searchColumn: 'Name',
+      searchValue: 'divyansh',
+      matchType: 'equals',
+      caseSensitive: true,
+    });
+    assert(!caseResult.success, 'Case sensitive match correctly rejected lowercase "divyansh"');
+  } finally {
+    GoogleSheetsService.readRows = origReadRows;
+  }
 
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);

@@ -68,17 +68,27 @@ export class GoogleSheetsExecutor {
         break;
 
       case 'findRow':
-      case 'googleSheetsFindRow':
+      case 'googleSheetsFindRow': {
+        // Resolve expression variables (e.g. {{item.email}}, {{trigger.email}})
+        let resolvedValue = config.searchValue;
+        if (typeof config.searchValue === 'string' && context.resolveVariables) {
+          resolvedValue = context.resolveVariables(config.searchValue);
+        }
+
         result = await GoogleSheetsService.findRow({
           credentialId,
           userId,
           spreadsheetId,
           worksheetTitle: worksheet,
           searchColumn: config.searchColumn,
-          searchValue: config.searchValue,
-          matchType: config.matchType || 'equals',
+          searchValue: resolvedValue,
+          matchType: config.matchType || config.operator || 'equals',
+          returnMode: config.returnMode || 'first',
+          limit: config.limit || 1,
+          caseSensitive: config.caseSensitive === true,
         });
         break;
+      }
 
       case 'clearRange':
       case 'googleSheetsClearRange':

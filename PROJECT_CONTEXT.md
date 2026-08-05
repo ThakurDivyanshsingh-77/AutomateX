@@ -88,30 +88,29 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Executor Registration** — ✅ COMPLETED
-- **Workflow Executor Registration Resolution (`googleSheetsAppendRow`)**:
-  - **Root Cause Identified**: `ExecutorRegistry.js` (`backend/src/engine/registry/ExecutorRegistry.js`) imported `GoogleSheetsExecutor` only in the legacy `backend/src/engine/ExecutorRegistry.js` file, but the active runtime engine `WorkflowEngine.js` imports from `backend/src/engine/registry/ExecutorRegistry.js`. Because `googleSheetsAppendRow` was missing from `ExecutorRegistry.executors` Map, running workflows containing Google Sheets nodes threw `No executor registered for node type: "googleSheetsAppendRow"`.
-  - **Fix Implemented**: Imported `GoogleSheetsExecutor` in `backend/src/engine/registry/ExecutorRegistry.js` and registered all 13 Google Sheets node types with exact matching string keys:
-    - `googleSheets`
-    - `googleSheetsTriggerWatchRows`
-    - `googleSheetsReadRows`
-    - `googleSheetsFindRow`
-    - `googleSheetsAppendRow`
-    - `googleSheetsUpdateRow`
-    - `googleSheetsDeleteRow`
-    - `googleSheetsClearRange`
-    - `googleSheetsBatchUpdate`
-    - `googleSheetsCreateSpreadsheet`
-    - `googleSheetsCreateWorksheet`
-    - `googleSheetsDuplicateWorksheet`
-    - `googleSheetsDeleteWorksheet`
-    - `googleSheetsGetSpreadsheetInfo`
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Find Row Node Overhaul** — ✅ COMPLETED
+- **Google Sheets Find Row Node Overhaul (n8n/Zapier Parity)**:
+  - **Dedicated UI Configuration (`GoogleSheetsProperties.jsx`)**: Replaced Column Auto-Mapper with custom controls when `isFindRowNode` is selected:
+    1. **Search Column (Dropdown)**: Auto-populates detected sheet headers (e.g. `Name`, `Email`, `City`).
+    2. **Search Operator**: Dropdown options (`Equals`, `Contains`, `Starts With`, `Ends With`, `Regex Pattern`).
+    3. **Search Value**: Supports static values and variable expressions (e.g., `{{item.email}}`, `{{trigger.email}}`).
+    4. **Return Mode & Limit**: Option to return `First Match` or `All Matches` with configurable `Limit`.
+    5. **Case Sensitive Toggle**: Configurable case-sensitive vs case-insensitive matching.
+  - **Backend Search Service & Expression Resolution (`GoogleSheetsService.js` & `GoogleSheetsExecutor.js`)**:
+    1. `GoogleSheetsService.findRow()` filters sheet rows by requested operator (`equals`, `contains`, `startsWith`, `endsWith`, `regex`), case sensitivity, return mode (`first` / `all`), and limit.
+    2. Returns standardized workflow output objects compatible with downstream nodes (`Update Row`, `Delete Row`, `If`, `Loop`):
+       - `item`: `{ _rowNumber: 2, Name: 'Divyansh', Email: 'divyansh@gmail.com', City: 'Vapi' }`
+       - `foundRow`: `{ _rowNumber: 2, ... }`
+       - `rows`: array of matched row objects
+    3. `GoogleSheetsExecutor.js` automatically resolves expression variables using `context.resolveVariables(config.searchValue)`.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
-  - Passed automated test suite in `test_google_sheets.js` (8/8 assertions passed).
+  - Passed automated test suite in `test_google_sheets.js` (13/13 assertions passed).
+
+
 
 
 
