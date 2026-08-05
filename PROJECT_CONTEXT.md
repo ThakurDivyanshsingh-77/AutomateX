@@ -88,20 +88,25 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Cookie-Based OAuth Session Preservation** — ✅ COMPLETED
-- **Exact Line Bug Analysis & Resolution (`GET /api/v1/credentials` 401)**:
-  - **Root Cause Identified**: In `GoogleSheetsProperties.jsx`, line 112 executed a raw browser `fetch('/api/v1/credentials')`:
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Drive API Auth Resolution** — ✅ COMPLETED
+- **HTTP 500 Error Resolution on `GET /api/v1/google/sheets?credentialId=...`**:
+  - **Root Cause Identified**: `GoogleSheetsService.getAuthClient()` attempted to read `cred.data` (`if (cred && cred.data)`). However, `credentialService.getCredentialById()` decrypts and returns the parsed JSON object directly (`{ accessToken, refreshToken, expiryDate, userEmail }`) without a `.data` wrapper property. `oauthData` remained `null`, falling back to unpopulated process environment variables and throwing an unhandled exception inside Google Drive API (`drive.files.list`).
+  - **Fix Implemented**: Updated `GoogleSheetsService.getAuthClient()` to unpack `cred.data || cred` directly:
     ```javascript
-    const res = await fetch('/api/v1/credentials');
+    if (credentialId) {
+      const cred = await credentialService.getCredentialById(credentialId, userId);
+      if (cred) {
+        oauthData = cred.data || cred;
+      }
+    }
     ```
-    Raw `fetch()` calls do NOT send the `Authorization: Bearer <token>` header stored in `localStorage`. When Google OAuth completed and returned to the canvas builder, `GoogleSheetsProperties` executed `fetchCredentials()`. Backend `authMiddleware.js` rejected this unauthenticated request with HTTP `401 Unauthorized`. The response interceptor in `api.js` received HTTP 401, cleared `localStorage.getItem('token')`, and triggered `window.location.href = '/login'`.
-  - **Fix Implemented**: Replaced line 112 in `GoogleSheetsProperties.jsx` with `api.get('/credentials')`, which automatically attaches the `Authorization: Bearer ${token}` header and sends HttpOnly cookies (`withCredentials: true`), returning HTTP `200 OK`.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 

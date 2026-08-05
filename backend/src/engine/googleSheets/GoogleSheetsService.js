@@ -11,12 +11,12 @@ export class GoogleSheetsService {
 
     if (credentialId) {
       const cred = await credentialService.getCredentialById(credentialId, userId);
-      if (cred && cred.data) {
-        oauthData = cred.data;
+      if (cred) {
+        oauthData = cred.data || cred;
       }
     }
 
-    if (!oauthData) {
+    if (!oauthData || (!oauthData.refreshToken && !oauthData.accessToken)) {
       oauthData = {
         accessToken: process.env.GOOGLE_ACCESS_TOKEN,
         refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
