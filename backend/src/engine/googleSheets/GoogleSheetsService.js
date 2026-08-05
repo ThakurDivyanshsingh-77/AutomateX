@@ -82,20 +82,42 @@ export class GoogleSheetsService {
    * Get Worksheets (Sheet Tabs) for a given Spreadsheet
    */
   static async getWorksheets({ credentialId, userId, spreadsheetId }) {
-    const sheets = await this.getSheetsClient(credentialId, userId);
+    console.log(`[GoogleSheetsService] 🔍 getWorksheets requested for Spreadsheet ID: ${spreadsheetId}, User ID: ${userId}, Credential ID: ${credentialId || 'default'}`);
 
-    const response = await sheets.spreadsheets.get({
-      spreadsheetId,
-      fields: 'sheets(properties(sheetId, title, index, gridProperties))',
-    });
+    if (!spreadsheetId) {
+      throw new Error('Spreadsheet ID is required to fetch worksheets');
+    }
 
-    return (response.data.sheets || []).map((s) => ({
-      sheetId: s.properties.sheetId,
-      title: s.properties.title,
-      index: s.properties.index,
-      rowCount: s.properties.gridProperties?.rowCount || 0,
-      columnCount: s.properties.gridProperties?.columnCount || 0,
-    }));
+    try {
+      const sheets = await this.getSheetsClient(credentialId, userId);
+
+      console.log(`[GoogleSheetsService] 📤 Executing Google Sheets API spreadsheets.get for ID: ${spreadsheetId}`);
+      const response = await sheets.spreadsheets.get({
+        spreadsheetId,
+        fields: 'sheets(properties(sheetId, title, index, gridProperties))',
+      });
+
+      const rawSheets = response.data.sheets || [];
+      console.log(`[GoogleSheetsService] 📥 Received ${rawSheets.length} sheet tab(s) from Google Sheets API`);
+
+      if (rawSheets.length === 0) {
+        console.warn(`[GoogleSheetsService] ⚠️ Google Sheets API returned 0 worksheets for spreadsheet: ${spreadsheetId}`);
+      }
+
+      const worksheets = rawSheets.map((s) => ({
+        id: s.properties.sheetId,
+        sheetId: s.properties.sheetId,
+        title: s.properties.title,
+        index: s.properties.index,
+        rowCount: s.properties.gridProperties?.rowCount || 0,
+        columnCount: s.properties.gridProperties?.columnCount || 0,
+      }));
+
+      return worksheets;
+    } catch (err) {
+      console.error(`[GoogleSheetsService] ❌ Google Sheets API getWorksheets failed for ${spreadsheetId}: ${err.message}`, err.stack);
+      throw new Error(`Failed to load worksheets from Google Sheets API: ${err.message}`);
+    }
   }
 
   /**
