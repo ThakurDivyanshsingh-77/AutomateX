@@ -33,12 +33,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
       if (
         !window.location.pathname.includes('/login') &&
         !window.location.pathname.includes('/register') &&
+        !window.location.pathname.includes('/oauth/callback') &&
         window.location.pathname !== '/'
       ) {
+        localStorage.removeItem('token');
         window.location.href = '/login';
       }
     }

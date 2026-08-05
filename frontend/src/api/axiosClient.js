@@ -19,8 +19,8 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Don't auto-redirect if checking auth or on login page
-      if (!window.location.pathname.includes('/login')) {
+      // Don't auto-redirect if checking auth or on login / oauth callback page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/oauth/callback')) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }

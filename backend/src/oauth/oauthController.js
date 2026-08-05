@@ -165,10 +165,11 @@ export const handleGoogleCallback = asyncHandler(async (req, res) => {
 
   console.log(`[GoogleOAuth] 🎉 Credential created successfully (ID: ${credential._id}, Owner: ${authenticatedUserId})`);
 
-  res.redirect(
-    `${frontendUrl}/oauth/callback?status=success&credentialId=${credential._id}&email=${encodeURIComponent(
-      userEmail
-    )}&name=${encodeURIComponent(name || 'Google Account')}`
-  );
+  const redirectTarget = `${frontendUrl}/oauth/callback?status=success&credentialId=${credential._id}&email=${encodeURIComponent(
+    userEmail
+  )}&name=${encodeURIComponent(name || 'Google Account')}`;
+  
+  console.log(`[GoogleOAuth] 🔀 Redirecting browser to destination: ${redirectTarget}`);
+  res.redirect(redirectTarget);
 });
 
