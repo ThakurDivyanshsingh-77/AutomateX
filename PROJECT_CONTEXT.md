@@ -88,17 +88,22 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & OAuth Fix** — ✅ COMPLETED
-- **OAuth Callback ObjectId Bug Resolution**:
-  - Identified root cause of `Cast to ObjectId failed for value "current_user" at path "owner"`: `GoogleSheetsProperties.jsx` had fallback `localStorage.getItem('userId') || 'current_user'`, passing literal string `"current_user"` into OAuth redirect URLs when unauthenticated or when `userId` key was absent.
-  - Updated `GoogleSheetsProperties.jsx` to consume `user._id` from `AuthContext` and execute centered popup flow matching `GmailProperties.jsx`.
-  - Upgraded `credentialService.js`, `Credential.js`, `oauthController.js`, and `credentialController.js`: Enforced `mongoose.Types.ObjectId.isValid(ownerId)` check across all credential creation routines. Returns HTTP `401 Unauthorized` instead of attempting to save non-ObjectId owner strings.
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & OAuth Session Preservation** — ✅ COMPLETED
+- **OAuth Session Preservation & JWT State Resolution**:
+  - Identified root cause of logouts during Google OAuth: Initiating OAuth redirects lost session context because the bearer token was not preserved across cross-domain redirects to Google.
+  - Updated `oauthController.js` (`initiateGoogleOAuth` and `handleGoogleCallback`):
+    1. Encodes the authenticated user's JWT bearer token and user ObjectId inside the base64-encoded `statePayload`.
+    2. Implemented `verifyUserToken()` in `oauthController.js` to verify the JWT signature upon initiation and callback.
+    3. Added detailed logging for JWT verification (`[GoogleOAuth] 🔑 JWT token verified`), Google OAuth callback handling, and `Credential` document creation.
+    4. Automatically returns an HTTP `401 Unauthorized` status or redirects to `/oauth/callback?status=error` if authentication fails, preventing accidental logouts.
+  - Updated `OAuthCallback.jsx`: Redirects full-page browser flows directly to `/credentials` or `/builder` upon authorization.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 
