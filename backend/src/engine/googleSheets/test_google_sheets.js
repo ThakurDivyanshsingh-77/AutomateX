@@ -101,6 +101,41 @@ async function runGoogleSheetsTestSuite() {
     GoogleSheetsService.readRows = origReadRows;
   }
 
+  // ----------------------------------------------------
+  // Test 3: Update Row Operations & Mappings
+  // ----------------------------------------------------
+  console.log('\n--- Test 3: Update Row Operations & Mappings ---');
+  const origGetHeaders = GoogleSheetsService.getHeaders;
+  const origGetSheetsClient = GoogleSheetsService.getSheetsClient;
+
+  GoogleSheetsService.getHeaders = async () => ['Name', 'Email', 'City'];
+  GoogleSheetsService.getSheetsClient = async () => ({
+    spreadsheets: {
+      values: {
+        get: async () => ({ data: { values: [['Divyansh', 'divyansh@gmail.com', 'Vapi']] } }),
+        update: async ({ range, requestBody }) => ({ data: { updatedRange: range, updatedValues: requestBody.values } }),
+      }
+    }
+  });
+
+  try {
+    const updateRes = await GoogleSheetsService.updateRow({
+      credentialId: 'test',
+      userId: 'test',
+      spreadsheetId: 'sp1',
+      worksheetTitle: 'Sheet1',
+      rowNumber: 2,
+      columnsMap: { City: 'Mumbai' },
+    });
+
+    assert(updateRes.success && updateRes.updatedRow === 2, 'Update row returned success & rowNumber 2');
+    assert(updateRes.values.City === 'Mumbai', 'Updated City mapped to Mumbai');
+    assert(updateRes.values.Name === 'Divyansh', 'Unmapped Name preserved as Divyansh');
+  } finally {
+    GoogleSheetsService.getHeaders = origGetHeaders;
+    GoogleSheetsService.getSheetsClient = origGetSheetsClient;
+  }
+
   console.log('\n====================================================');
   console.log(`🎉 ALL ${passedTests}/${totalTests} TESTS PASSED SUCCESSFULLY!`);
   console.log('====================================================\n');

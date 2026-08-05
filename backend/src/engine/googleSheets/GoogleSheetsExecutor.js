@@ -54,18 +54,40 @@ export class GoogleSheetsExecutor {
         break;
 
       case 'updateRow':
-      case 'googleSheetsUpdateRow':
+      case 'googleSheetsUpdateRow': {
+        // Resolve rowNumber expression (e.g. {{item._rowNumber}}, {{steps.findRow._rowNumber}}, 2)
+        let resolvedRow = config.rowNumber;
+        if (typeof config.rowNumber === 'string' && context.resolveVariables) {
+          resolvedRow = context.resolveVariables(config.rowNumber);
+        }
+
+        // Resolve expression variables for each mapped column value
+        const resolvedColumnsMap = {};
+        Object.entries(columnsMap).forEach(([col, val]) => {
+          let resolvedVal = val;
+          if (typeof val === 'string' && context.resolveVariables) {
+            resolvedVal = context.resolveVariables(val);
+          }
+          resolvedColumnsMap[col] = resolvedVal;
+        });
+
+        let resolvedSearchVal = config.searchValue;
+        if (typeof config.searchValue === 'string' && context.resolveVariables) {
+          resolvedSearchVal = context.resolveVariables(config.searchValue);
+        }
+
         result = await GoogleSheetsService.updateRow({
           credentialId,
           userId,
           spreadsheetId,
           worksheetTitle: worksheet,
-          rowNumber: config.rowNumber,
+          rowNumber: resolvedRow,
           searchColumn: config.searchColumn,
-          searchValue: config.searchValue,
-          columnsMap,
+          searchValue: resolvedSearchVal,
+          columnsMap: resolvedColumnsMap,
         });
         break;
+      }
 
       case 'findRow':
       case 'googleSheetsFindRow': {

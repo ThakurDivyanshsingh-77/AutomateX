@@ -232,8 +232,10 @@ export class GoogleSheetsService {
    * Update Row by Row Number or Search Column Value
    */
   static async updateRow({ credentialId, userId, spreadsheetId, worksheetTitle = 'Sheet1', rowNumber, searchColumn, searchValue, columnsMap = {} }) {
+    console.log(`[GoogleSheetsService] ✏️ updateRow requested for Spreadsheet: ${spreadsheetId}, Sheet: ${worksheetTitle}, RowNum: ${rowNumber}`);
+
     const headers = await this.getHeaders({ credentialId, userId, spreadsheetId, worksheetTitle });
-    let targetRow = rowNumber ? parseInt(rowNumber, 10) : null;
+    let targetRow = rowNumber !== undefined && rowNumber !== null ? parseInt(rowNumber, 10) : null;
 
     if (!targetRow && searchColumn && searchValue) {
       const findResult = await this.findRow({ credentialId, userId, spreadsheetId, worksheetTitle, searchColumn, searchValue, matchType: 'equals' });
@@ -242,23 +244,30 @@ export class GoogleSheetsService {
       }
     }
 
-    if (!targetRow) {
-      throw new Error(`Row to update could not be identified (Row Number or Search Column match required).`);
+    if (!targetRow || isNaN(targetRow) || targetRow < 1) {
+      throw new Error(`Row to update could not be identified (valid Row Number >= 1 required). Received: ${rowNumber}`);
     }
 
     const sheets = await this.getSheetsClient(credentialId, userId);
-    
+
     // Read existing row values first to preserve unmapped columns
     const existingRange = `'${worksheetTitle}'!A${targetRow}:ZZ${targetRow}`;
-    const existingRes = await sheets.spreadsheets.values.get({ spreadsheetId, range: existingRange });
-    const existingRow = existingRes.data.values?.[0] || [];
+    let existingRow = [];
+    try {
+      const existingRes = await sheets.spreadsheets.values.get({ spreadsheetId, range: existingRange });
+      existingRow = existingRes.data.values?.[0] || [];
+    } catch (err) {
+      console.warn(`[GoogleSheetsService] ⚠️ Unable to read existing row ${targetRow}: ${err.message}`);
+    }
 
+    // Build updated row vector preserving unmapped columns
     const updatedRow = headers.map((header, idx) => {
       if (columnsMap[header] !== undefined) return columnsMap[header];
       return existingRow[idx] !== undefined ? existingRow[idx] : '';
     });
 
     const updateRange = `'${worksheetTitle}'!A${targetRow}`;
+    console.log(`[GoogleSheetsService] 📤 Executing spreadsheets.values.update on range: ${updateRange}`);
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: updateRange,
@@ -268,13 +277,23 @@ export class GoogleSheetsService {
       },
     });
 
+    // Build resulting value object matching header names
+    const finalValuesObj = {};
+    headers.forEach((h, idx) => {
+      finalValuesObj[h] = updatedRow[idx] !== undefined ? updatedRow[idx] : '';
+    });
+
+    console.log(`[GoogleSheetsService] ✅ Row ${targetRow} updated successfully`);
     return {
       success: true,
+      updatedRow: targetRow,
+      rowNumber: targetRow,
       spreadsheetId,
       worksheet: worksheetTitle,
       rowsAffected: 1,
-      rowNumber: targetRow,
-      values: columnsMap,
+      values: finalValuesObj,
+      updatedValues: columnsMap,
+      item: { _rowNumber: targetRow, ...finalValuesObj },
     };
   }
 

@@ -366,7 +366,53 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
-      </div>
+      {/* 3.5 Row Selection Mode (Update Row Node Only) */}
+      {(currentType === 'googleSheetsUpdateRow' || currentType === 'updateRow' || config.operation === 'updateRow') && (
+        <div className="space-y-3 pt-2 border-t border-slate-800/80">
+          <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            Row Selection Mode
+          </label>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => updateConfig({ rowSelectionMode: 'manual' })}
+              className={`p-2 rounded-xl text-xs font-semibold border transition-all ${
+                (config.rowSelectionMode || 'manual') === 'manual'
+                  ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Manual Row Number
+            </button>
+            <button
+              type="button"
+              onClick={() => updateConfig({ rowSelectionMode: 'previousNode', rowNumber: '{{item._rowNumber}}' })}
+              className={`p-2 rounded-xl text-xs font-semibold border transition-all ${
+                config.rowSelectionMode === 'previousNode'
+                  ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              From Previous Node
+            </button>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] text-slate-400 flex items-center justify-between">
+              <span>Row Number to Update</span>
+              <span className="text-[9px] text-emerald-400 font-mono">e.g. 2 or {{item._rowNumber}}</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 2 or {{item._rowNumber}}"
+              value={config.rowNumber !== undefined ? config.rowNumber : ''}
+              onChange={(e) => updateConfig({ rowNumber: e.target.value })}
+              className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono focus:outline-none focus:border-emerald-500 text-xs"
+            />
+          </div>
+        </div>
+      )}
 
       {/* 4. Conditional Controls: Find Row vs Mapper */}
       {isFindRowNode ? (
