@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "cron-parser": "^5.7.0",
     "cronstrue": "^3.24.0",
