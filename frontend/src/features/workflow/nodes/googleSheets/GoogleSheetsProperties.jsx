@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { AuthContext } from '../../../../context/AuthContext';
 import { credentialService } from '../../../../services/credentialService';
+import api from '../../../../services/api';
 import toast from 'react-hot-toast';
 
 export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeConfig, onUpdateNodeData, onChange }) => {
@@ -126,13 +127,12 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const fetchSpreadsheets = async (credId) => {
     setLoadingSpreadsheets(true);
     try {
-      const res = await fetch(`/api/v1/google/sheets?credentialId=${credId}`);
-      const data = await res.json();
-      if (data.success) {
-        setSpreadsheets(data.spreadsheets || []);
-        if (data.spreadsheets.length > 0 && !spreadsheetId) {
-          setSpreadsheetId(data.spreadsheets[0].id);
-          updateConfig({ credentialId: credId, spreadsheetId: data.spreadsheets[0].id });
+      const res = await api.get(`/google/sheets?credentialId=${credId}`);
+      if (res.data.success) {
+        setSpreadsheets(res.data.spreadsheets || []);
+        if (res.data.spreadsheets.length > 0 && !spreadsheetId) {
+          setSpreadsheetId(res.data.spreadsheets[0].id);
+          updateConfig({ credentialId: credId, spreadsheetId: res.data.spreadsheets[0].id });
         }
       }
     } catch (err) {
@@ -145,13 +145,12 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const fetchWorksheets = async (spId) => {
     setLoadingWorksheets(true);
     try {
-      const res = await fetch(`/api/v1/google/sheets/${spId}/worksheets?credentialId=${credentialId}`);
-      const data = await res.json();
-      if (data.success) {
-        setWorksheets(data.worksheets || []);
-        if (data.worksheets.length > 0 && !worksheet) {
-          setWorksheet(data.worksheets[0].title);
-          updateConfig({ worksheet: data.worksheets[0].title });
+      const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${credentialId}`);
+      if (res.data.success) {
+        setWorksheets(res.data.worksheets || []);
+        if (res.data.worksheets.length > 0 && !worksheet) {
+          setWorksheet(res.data.worksheets[0].title);
+          updateConfig({ worksheet: res.data.worksheets[0].title });
         }
       }
     } catch (err) {
@@ -164,13 +163,12 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const fetchHeaders = async (spId, wsTitle) => {
     setLoadingHeaders(true);
     try {
-      const res = await fetch(`/api/v1/google/sheets/${spId}/headers?credentialId=${credentialId}&worksheet=${encodeURIComponent(wsTitle)}&headerRow=${headerRow}`);
-      const data = await res.json();
-      if (data.success && data.headers) {
-        setHeaders(data.headers);
+      const res = await api.get(`/google/sheets/${spId}/headers?credentialId=${credentialId}&worksheet=${encodeURIComponent(wsTitle)}&headerRow=${headerRow}`);
+      if (res.data.success && res.data.headers) {
+        setHeaders(res.data.headers);
         // Pre-populate empty mappings if none exist
         if (!config.mappings || config.mappings.length === 0) {
-          const autoMappings = data.headers.map((h) => ({
+          const autoMappings = res.data.headers.map((h) => ({
             column: h,
             value: `{{item.${h.toLowerCase().replace(/\s+/g, '_')}}}`,
           }));

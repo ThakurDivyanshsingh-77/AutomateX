@@ -89,24 +89,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
 ### **Phase 17 Complete — Production-Grade Google Sheets Integration & OAuth Session Preservation** — ✅ COMPLETED
-- **OAuth Callback Session Preservation Resolution**:
-  - Identified root cause of post-OAuth logouts:
-    1. Cross-domain Google OAuth browser redirects do not carry Authorization bearer headers, causing backend OAuth callbacks to fail identity checks if the session token is not preserved across redirects.
-    2. Frontend Axios interceptors in `api.js` and `axiosClient.js` were intercepting transient 401s on `/oauth/callback`, purging `localStorage.getItem('token')` and forcing `window.location.href = '/login'`.
-  - **Backend Fixes**:
-    - Updated `oauthController.js`: Encodes the user's JWT bearer token and user ObjectId into the base64-encoded `statePayload`.
-    - Added `verifyUserToken()` in `oauthController.js` to verify the JWT signature on initiation and callback.
-    - Saved `Credential.owner` using `req.user._id` (authenticated MongoDB ObjectId).
-    - Added comprehensive debug logs for JWT verification, cookies/headers, authenticated user ObjectId, credential creation, and redirect destinations.
-  - **Frontend Fixes**:
-    - Updated `credentialService.js` to pass `token` in URLSearchParams when initiating OAuth.
-    - Excluded `/oauth/callback` from 401 token clearing interceptors in `api.js` and `axiosClient.js`.
+- **Root Cause Identified & Resolved (Post-OAuth Logout Bug)**:
+  - **Exact Bug Line Identified**: In `GoogleSheetsProperties.jsx`, lines 129, 148, and 167 used raw browser `fetch()` calls:
+    ```javascript
+    fetch(`/api/v1/google/sheets?credentialId=${credId}`)
+    ```
+  - **Why Logout Occurred**: Raw `fetch()` calls do NOT attach the `Authorization: Bearer <token>` header stored in `localStorage`. After Google OAuth completed, `GoogleSheetsProperties` executed `fetchSpreadsheets()`, `fetchWorksheets()`, and `fetchHeaders()`. Because these raw fetch calls lacked Authorization headers, backend `authMiddleware.js` returned HTTP `401 Unauthorized`. The frontend response interceptor in `api.js` received this HTTP 401, cleared `localStorage.getItem('token')`, and triggered a hard browser redirect (`window.location.href = '/login'`).
+  - **Fix Implemented**: Replaced all raw `fetch()` calls in `GoogleSheetsProperties.jsx` with the configured `api` helper (`api.get('/google/sheets...')`), which automatically attaches `Authorization: Bearer ${token}` on every request.
+  - **Auth Middleware Enhancement**: Enhanced `authMiddleware.js` to inspect Authorization headers, `req.cookies.token`, and `req.query.token`. Added comprehensive request logging (`[AuthMiddleware] 🔍 Path: GET /api/v1/google/sheets`, `[AuthMiddleware] 🔑 Header Authorization`, `[AuthMiddleware] ✅ Token verified for User ID`).
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 
