@@ -88,18 +88,23 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `CompareVersionsModal.jsx`: Side-by-side diff viewer modal with node/edge diff cards and stats summary.
   - `WorkflowCanvas.jsx` & `WorkflowCard.jsx`: Integrated **Version History** button, **Publish** button, version tag badge (`v1.2.0`), and draft indicator.
 
-### **Phase 17 Complete — Production-Grade Google Sheets Integration & Batch Update Implementation** — ✅ COMPLETED
-- **Google Sheets Batch Update Implementation (n8n/Zapier Parity)**:
+### **Phase 17 Complete — Production-Grade Google Sheets Integration & Batch Update Node Overhaul** — ✅ COMPLETED
+- **Google Sheets Batch Update Node Overhaul (n8n/Zapier Parity)**:
+  - **Dynamic UI Section Controls (`GoogleSheetsProperties.jsx`)**:
+    1. **Update Mode Dropdown**: Options for `Update by Row Number` vs `Update by Search Column`.
+    2. **Dynamic UI Rendering**:
+       - When `Update by Row Number` is selected: Hides search fields and displays `Row Numbers` input (supports `2, 5, 8` or `{{items}}`).
+       - When `Update by Search Column` is selected: Hides row number fields and displays `Search Column` header dropdown and `Search Value` input (`{{item.email}}`).
+    3. **Batch Size & Error Policy**: Configurable `Batch Size` (default 100) and `Continue On Error` toggle.
+    4. **Column Auto-Mapper**: Auto-detects headers and maps fields (`Name → {{item.name}}`, `Email → {{item.email}}`, `City → {{item.city}}`).
   - **High-Performance Batch Updating (`GoogleSheetsService.js`)**:
-    1. `GoogleSheetsService.batchUpdateRows()` supports two update modes:
-       - **Update by Row Number**: Accepts arrays of explicit row numbers (`[2, 5, 8]`) or item arrays (`{{items}}`).
-       - **Update by Search Column**: Matches rows dynamically by search column & search value (e.g. `City = 'Vapi'`).
-    2. Builds a single `spreadsheets.values.batchUpdate` payload with multiple range vectors while preserving unmapped columns.
-    3. Respects `batchSize` limits (default 100 rows per batch) and `continueOnError` toggles.
+    1. `GoogleSheetsService.batchUpdateRows()` builds a single `spreadsheets.values.batchUpdate` request payload containing range vectors (`'Sheet1'!A2`, `'Sheet1'!A5`, `'Sheet1'!A8`) with `USER_ENTERED` formatting.
+    2. Does NOT call `update()` in a loop; uses single batch HTTP requests.
+    3. Respects `batchSize` limits and `continueOnError` error policies.
     4. Outputs structured workflow summaries:
        `{ success: true, count: 3, updatedRows: 3, rows: [2, 5, 8], updatedRowStatusList: [{ row: 2, status: 'success' }, { row: 5, status: 'success' }, { row: 8, status: 'success' }], executionTime: 42 }`.
   - **REST API & HTTP Status Mappings (`googleSheetsRoutes.js`)**:
-    - Mounted `POST /api/v1/google/sheets/batch-update` with HTTP error handling (400, 401, 404, 500).
+    - Mounted `POST /api/v1/google/sheets/batch-update` with explicit HTTP status code error handling (400, 401, 404, 500).
   - **Workflow Engine & Executor (`GoogleSheetsExecutor.js` & `ExecutorRegistry.js`)**:
     - Resolves expression variables (`{{items}}`, `{{item.email}}`, `{{trigger.city}}`).
     - Fully registered under node type `googleSheetsBatchUpdate`.
@@ -107,8 +112,10 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `deleteRow`, `clearRows`, `batchUpdateRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` & `/api/v1/google-sheets` (`GET /sheets`, `GET /spreadsheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/delete`, `POST /sheets/clear`, `POST /sheets/batch-update`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
-- **Automated Verification**:
-  - Passed automated test suite in `test_google_sheets.js` (24/24 assertions passed).
+- **Automated Verification & UI Polish**:
+  - Passed automated test suite in `test_google_sheets.js` (25/25 assertions passed).
+  - Fixed JSX text node syntax error in `GoogleSheetsProperties.jsx` by wrapping unescaped `{{item.email}}` variable placeholders in JavaScript string expressions (`{"{{item.email}}"}`).
+
 
 
 
@@ -207,6 +214,9 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `pdfGeneratorManifest.js`: Defined under **Output** category with purple theme (`#8b5cf6`), default inputs/outputs, and client-side validator.
   - `GmailProperties.jsx`: Added Attachment input field with 1-click **📄 Attach PDF** shortcut button (`{{pdfGenerator.attachment}}`).
 - **Automated Test Suite**: Passed **36/36** automated unit and integration tests in `test_phase15_1_pdf_generator.js`, including dedicated Handlebars compilation and custom HTML override tests.
+
+### **Bug Fix — Google Sheets Properties JSX Syntax Error** — ✅ COMPLETED
+- **Frontend Syntax Repair**: Fixed `',' expected` JSX parsing error in [GoogleSheetsProperties.jsx](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/frontend/src/features/workflow/nodes/googleSheets/GoogleSheetsProperties.jsx#L430) where unquoted double curly braces (`e.g. {{item.email}}`) were improperly evaluated by JSX parser as an invalid JavaScript object literal instead of literal string expression (`e.g. {"{{item.email}}"}`).
 
 ---
 

@@ -366,50 +366,104 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
-      {/* 3.5 Row Selection Mode (Update Row Node Only) */}
-      {(currentType === 'googleSheetsUpdateRow' || currentType === 'updateRow' || config.operation === 'updateRow') && (
+      </div>
+      {/* 3.6 Batch Update Node Configuration */}
+      {(currentType === 'googleSheetsBatchUpdate' || currentType === 'batchUpdate' || config.operation === 'batchUpdate') && (
         <div className="space-y-3 pt-2 border-t border-slate-800/80">
           <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            Row Selection Mode
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+            Batch Update Configuration
           </label>
 
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => updateConfig({ rowSelectionMode: 'manual' })}
-              className={`p-2 rounded-xl text-xs font-semibold border transition-all ${
-                (config.rowSelectionMode || 'manual') === 'manual'
-                  ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
+          {/* Update Mode Selection Dropdown */}
+          <div className="space-y-1">
+            <label className="text-[10px] text-slate-400">Update Mode</label>
+            <select
+              value={config.updateMode || 'rowNumber'}
+              onChange={(e) => updateConfig({ updateMode: e.target.value })}
+              className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs font-semibold"
             >
-              Manual Row Number
-            </button>
-            <button
-              type="button"
-              onClick={() => updateConfig({ rowSelectionMode: 'previousNode', rowNumber: '{{item._rowNumber}}' })}
-              className={`p-2 rounded-xl text-xs font-semibold border transition-all ${
-                config.rowSelectionMode === 'previousNode'
-                  ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              From Previous Node
-            </button>
+              <option value="rowNumber">Update by Row Number</option>
+              <option value="searchColumn">Update by Search Column</option>
+            </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 flex items-center justify-between">
-              <span>Row Number to Update</span>
-              <span className="text-[9px] text-emerald-400 font-mono">e.g. 2 or {{item._rowNumber}}</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 2 or {{item._rowNumber}}"
-              value={config.rowNumber !== undefined ? config.rowNumber : ''}
-              onChange={(e) => updateConfig({ rowNumber: e.target.value })}
-              className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono focus:outline-none focus:border-emerald-500 text-xs"
-            />
+          {/* Conditional Field A: Row Numbers */}
+          {(config.updateMode || 'rowNumber') === 'rowNumber' && (
+            <div className="space-y-1">
+              <label className="text-[10px] text-slate-400 flex items-center justify-between">
+                <span>Row Numbers</span>
+                <span className="text-[9px] text-emerald-400 font-mono">e.g. 2, 5, 8 or {{items}}</span>
+              </label>
+              <input
+                type="text"
+                placeholder="2, 5, 8 or {{items}}"
+                value={config.rowNumbers !== undefined ? (Array.isArray(config.rowNumbers) ? config.rowNumbers.join(', ') : config.rowNumbers) : ''}
+                onChange={(e) => updateConfig({ rowNumbers: e.target.value })}
+                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono focus:outline-none focus:border-emerald-500 text-xs"
+              />
+            </div>
+          )}
+
+          {/* Conditional Field B: Search Column & Search Value */}
+          {config.updateMode === 'searchColumn' && (
+            <>
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400">Search Column</label>
+                <select
+                  value={config.searchColumn || ''}
+                  onChange={(e) => updateConfig({ searchColumn: e.target.value })}
+                  className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs"
+                >
+                  <option value="">Select Column Header...</option>
+                  {headers.map((h, idx) => (
+                    <option key={idx} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-400 flex items-center justify-between">
+                  <span>Search Value</span>
+                  <span className="text-[9px] text-emerald-400 font-mono">e.g. {"{{item.email}}"}</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search value or {{item.email}}"
+                  value={config.searchValue !== undefined ? config.searchValue : ''}
+                  onChange={(e) => updateConfig({ searchValue: e.target.value })}
+                  className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono focus:outline-none focus:border-emerald-500 text-xs"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Batch Size & Continue On Error Controls */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="space-y-1">
+              <label className="text-[10px] text-slate-400">Batch Size</label>
+              <input
+                type="number"
+                min="1"
+                max="1000"
+                value={config.batchSize || 100}
+                onChange={(e) => updateConfig({ batchSize: parseInt(e.target.value, 10) || 100 })}
+                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs"
+              />
+            </div>
+            <div className="space-y-1 flex flex-col justify-end">
+              <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer p-2 rounded-xl bg-slate-950 border border-slate-800">
+                <input
+                  type="checkbox"
+                  checked={config.continueOnError !== false}
+                  onChange={(e) => updateConfig({ continueOnError: e.target.checked })}
+                  className="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0"
+                />
+                <span className="text-[10px] font-semibold">Continue On Error</span>
+              </label>
+            </div>
           </div>
         </div>
       )}
@@ -459,7 +513,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 flex items-center justify-between">
               <span>Search Value</span>
-              <span className="text-[9px] text-emerald-400 font-mono">e.g. {{item.email}}</span>
+              <span className="text-[9px] text-emerald-400 font-mono">e.g. {"{{item.email}}"}</span>
             </label>
             <input
               type="text"
