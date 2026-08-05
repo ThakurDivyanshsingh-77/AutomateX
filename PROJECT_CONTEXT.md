@@ -90,15 +90,24 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ### **Phase 17 Complete — Production-Grade Google Sheets Integration & OAuth Session Preservation** — ✅ COMPLETED
 - **OAuth Callback Session Preservation Resolution**:
-  - Identified root cause of post-OAuth logouts: Axios response interceptors in `frontend/src/services/api.js` and `frontend/src/api/axiosClient.js` automatically intercepted any transient `401` status (or unauthenticated query assets) on `/oauth/callback` routes, invoking `localStorage.removeItem('token')` and forcing `window.location.href = '/login'`.
-  - Excluded `/oauth/callback` from 401 token clearing interceptors in `api.js` and `axiosClient.js`.
-  - Added logging in `oauthController.js` (`[GoogleOAuth] 🔀 Redirecting browser to destination: ...`) tracking redirect destinations back to `/credentials` or `/builder`.
+  - Identified root cause of post-OAuth logouts:
+    1. Cross-domain Google OAuth browser redirects do not carry Authorization bearer headers, causing backend OAuth callbacks to fail identity checks if the session token is not preserved across redirects.
+    2. Frontend Axios interceptors in `api.js` and `axiosClient.js` were intercepting transient 401s on `/oauth/callback`, purging `localStorage.getItem('token')` and forcing `window.location.href = '/login'`.
+  - **Backend Fixes**:
+    - Updated `oauthController.js`: Encodes the user's JWT bearer token and user ObjectId into the base64-encoded `statePayload`.
+    - Added `verifyUserToken()` in `oauthController.js` to verify the JWT signature on initiation and callback.
+    - Saved `Credential.owner` using `req.user._id` (authenticated MongoDB ObjectId).
+    - Added comprehensive debug logs for JWT verification, cookies/headers, authenticated user ObjectId, credential creation, and redirect destinations.
+  - **Frontend Fixes**:
+    - Updated `credentialService.js` to pass `token` in URLSearchParams when initiating OAuth.
+    - Excluded `/oauth/callback` from 401 token clearing interceptors in `api.js` and `axiosClient.js`.
 - **Backend Subsystem & REST APIs** (`backend/src/engine/googleSheets/` & `backend/src/routes/googleSheetsRoutes.js`):
   - `GoogleSheetsService.js`: Full Google Sheets v4 & Drive v3 API implementation. Features Drive API spreadsheet list picker (`listSpreadsheets`), sheet tabs loader (`getWorksheets`), auto-header detector (`getHeaders`), and n8n/Zapier-style data operations (`readRows`, `appendRow`, `updateRow`, `findRow`, `clearRows`).
   - `googleSheetsRoutes.js`: Mounted REST API endpoints under `/api/v1/google` (`GET /sheets`, `GET /sheets/:id/worksheets`, `GET /sheets/:id/headers`, `POST /sheets/read`, `POST /sheets/append`, `POST /sheets/update`, `POST /sheets/find`, `POST /sheets/clear`).
   - `GoogleSheetsExecutor.js`: Integrated workflow executor resolving AES-256 encrypted vault tokens.
 - **Automated Verification**:
   - Passed automated test suite in `test_google_sheets.js`.
+
 
 
 

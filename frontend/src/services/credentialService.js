@@ -42,9 +42,11 @@ export const credentialService = {
    */
   connectGmail: (userId, credentialName = 'My Gmail') => {
     return new Promise((resolve, reject) => {
+      const token = localStorage.getItem('token') || '';
       const params = new URLSearchParams({
         name: credentialName,
         userId,
+        token,
         frontendUrl: window.location.origin,
       });
       const backendHost = (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost'))
