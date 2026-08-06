@@ -16,6 +16,23 @@ export class GoogleSheetsTriggerScheduler {
   static activeJobs = new Map();
 
   /**
+   * Helper to identify Google Sheets trigger nodes across all property structures and node type variants
+   */
+  static isGoogleSheetsTriggerNode(node) {
+    if (!node) return false;
+    const type = String(node.type || node.data?.type || '').toLowerCase();
+    const operation = String(node.config?.operation || node.data?.config?.operation || '').toLowerCase();
+
+    return (
+      type === 'googlesheetstrigger' ||
+      type === 'googlesheetstriggerwatchrows' ||
+      type === 'googlesheetswatchrows' ||
+      type === 'googlesheets_trigger' ||
+      (type.includes('googlesheets') && (operation.includes('trigger') || operation.includes('watch')))
+    );
+  }
+
+  /**
    * Helper to parse polling interval string or number to milliseconds
    */
   static parseIntervalMs(interval) {
@@ -23,7 +40,7 @@ export class GoogleSheetsTriggerScheduler {
     if (typeof interval === 'number') return Math.max(5000, interval);
 
     const str = String(interval).trim().toLowerCase();
-    if (str === '30s' || str === '30 seconds' || str === '30s') return 30000;
+    if (str === '30s' || str === '30 seconds') return 30000;
     if (str === '1m' || str === '1 minute') return 60000;
     if (str === '5m' || str === '5 minutes') return 300000;
     if (str === '15m' || str === '15 minutes') return 900000;
@@ -45,7 +62,7 @@ export class GoogleSheetsTriggerScheduler {
 
     this.isRunning = true;
     this.startedAt = new Date();
-    console.log('🟢 [GoogleSheetsTriggerScheduler]: Polling Scheduler Service started.');
+    console.log('🟢 [GoogleSheetsTriggerScheduler]: Enterprise Google Sheets Polling Scheduler started.');
 
     await this.reloadPublishedWorkflows();
   }
@@ -77,8 +94,8 @@ export class GoogleSheetsTriggerScheduler {
 
       let registeredCount = 0;
       for (const workflow of publishedWorkflows) {
-        const triggerNodes = (workflow.definition?.nodes || []).filter(
-          (n) => n.type === 'googleSheetsTrigger' || n.type === 'googleSheetsTriggerWatchRows'
+        const triggerNodes = (workflow.definition?.nodes || []).filter((n) =>
+          this.isGoogleSheetsTriggerNode(n)
         );
         if (triggerNodes.length > 0) {
           const count = this.registerWorkflow(workflow);
@@ -86,7 +103,7 @@ export class GoogleSheetsTriggerScheduler {
         }
       }
 
-      console.log(`🟢 [GoogleSheetsTriggerScheduler]: Successfully registered ${registeredCount} Google Sheets polling trigger(s).`);
+      console.log(`🟢 [GoogleSheetsTriggerScheduler]: Successfully registered ${registeredCount} active Google Sheets polling trigger(s).`);
     } catch (err) {
       console.error('🟢 [GoogleSheetsTriggerScheduler]: Error reloading workflows:', err.message);
     }
@@ -102,8 +119,8 @@ export class GoogleSheetsTriggerScheduler {
     // First unregister existing jobs for this workflow
     this.unregisterWorkflow(workflowId);
 
-    const triggerNodes = (workflow.definition?.nodes || []).filter(
-      (n) => n.type === 'googleSheetsTrigger' || n.type === 'googleSheetsTriggerWatchRows'
+    const triggerNodes = (workflow.definition?.nodes || []).filter((n) =>
+      this.isGoogleSheetsTriggerNode(n)
     );
 
     if (triggerNodes.length === 0) return 0;
@@ -112,7 +129,13 @@ export class GoogleSheetsTriggerScheduler {
 
     for (const node of triggerNodes) {
       const nodeId = node.id;
-      const config = node.config || node.data?.config || {};
+      // Merge all possible config placements safely
+      const config = {
+        ...(node.data || {}),
+        ...(node.data?.config || {}),
+        ...(node.config || {}),
+      };
+
       const intervalMs = this.parseIntervalMs(config.pollingInterval || config.interval || '30s');
       const jobKey = `${workflowId}_${nodeId}`;
 
@@ -128,7 +151,7 @@ export class GoogleSheetsTriggerScheduler {
         timer: null,
       };
 
-      // Set background interval
+      // Set background polling interval
       jobState.timer = setInterval(async () => {
         await this.executePollTick(jobState, workflow);
       }, intervalMs);
@@ -136,12 +159,12 @@ export class GoogleSheetsTriggerScheduler {
       this.activeJobs.set(jobKey, jobState);
       registered++;
 
-      console.log(`🟢 [GoogleSheetsTriggerScheduler]: Registered Trigger | Workflow: "${workflow.name}" (${workflowId}) | Node: ${nodeId} | Interval: ${intervalMs / 1000}s`);
+      console.log(`🟢 [GoogleSheetsTriggerScheduler]: Registered Polling Job | Key: ${jobKey} | Workflow: "${workflow.name}" (${workflowId}) | Node: ${nodeId} | Interval: ${intervalMs / 1000}s`);
 
       // Run initial poll tick asynchronously after small delay (1s)
       setTimeout(() => {
         this.executePollTick(jobState, workflow).catch((err) => {
-          console.error(`🟢 [GoogleSheetsTriggerScheduler]: Error during initial poll tick: ${err.message}`);
+          console.error(`🟢 [GoogleSheetsTriggerScheduler]: Error during initial poll tick for ${jobKey}: ${err.message}`);
         });
       }, 1000);
     }
@@ -203,21 +226,22 @@ export class GoogleSheetsTriggerScheduler {
 
       // If changes were detected, fire workflow execution for each change item
       if (pollResult.success && pollResult.changesDetected > 0) {
-        console.log(`🚀 [GoogleSheetsTriggerScheduler]: Firing ${pollResult.changesDetected} workflow execution(s) for Workflow ${jobState.workflowId}`);
+        console.log(`🚀 [GoogleSheetsTriggerScheduler]: Changes detected! Firing ${pollResult.changesDetected} automatic execution(s) for Workflow "${workflow.name}" (${jobState.workflowId})`);
 
         for (const changePayload of pollResult.changes) {
-          await RuntimeManager.triggerExecution('googleSheetsTrigger', workflow, changePayload);
+          const triggerRes = await RuntimeManager.triggerExecution('googleSheetsTrigger', workflow, changePayload);
+          console.log(`🚀 [GoogleSheetsTriggerScheduler]: Queued Trigger Execution ${triggerRes.executionId} (Status: ${triggerRes.status}, TriggerType: googleSheetsTrigger)`);
         }
       }
     } catch (err) {
-      console.error(`🟢 [GoogleSheetsTriggerScheduler]: Polling failed for ${jobState.workflowId}_${jobState.nodeId}: ${err.message}`);
+      console.error(`🟢 [GoogleSheetsTriggerScheduler]: Polling tick error for ${jobState.workflowId}_${jobState.nodeId}: ${err.message}`);
     } finally {
       jobState.isPolling = false;
     }
   }
 
   /**
-   * Status overview
+   * Status overview for monitoring
    */
   static getStatus() {
     return {

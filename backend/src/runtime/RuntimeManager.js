@@ -19,11 +19,14 @@ export class RuntimeManager {
 
     let executionId = 'exec_' + Date.now();
 
-    // 3. Create Execution record with status = 'queued'
+    // 3. Create Execution record with status = 'queued' and correct triggerType
     if (mongoose.connection.readyState === 1) {
       const executionRecord = await Execution.create({
         workflow: workflow._id,
+        workflowName: workflow.name || 'Untitled Workflow',
         owner: workflow.owner,
+        triggerType: triggerType,
+        triggerPayload: formattedEvent,
         status: 'queued',
         startedAt: new Date(),
       });
