@@ -142,6 +142,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Dedicated Node Executor (`GoogleSheetsCreateWorksheetExecutor.js`)**: Resolves expression variables, validates required inputs, invokes service layer, and outputs structured logs (`Loading credentials...`, `Validating spreadsheet...`, `Creating worksheet...`, `Worksheet created successfully.`, `Finished.`).
 - **Registrations & REST Routes**: Registered `googleSheetsCreateWorksheet` in `ExecutorRegistry.js` and `nodeRegistry.js`. Mounted `POST /api/v1/google/sheets/worksheets/create` & `POST /api/v1/google-sheets/worksheets/create` in `googleSheetsRoutes.js`.
 - **Frontend Properties Panel**: Added UI input fields in `GoogleSheetsProperties.jsx` for **New Worksheet Name** (required), **Row Count** (optional, default: 1000), and **Column Count** (optional, default: 26).
+- **UI Scoping & Cleanup**: Guarded `isCreateWorksheetNode` across `useEffect` (preventing unwanted `fetchWorksheets` execution) and `updateConfig` (pruning `worksheet`, `range`, `headerRow`, and `mappings` from node config). Removed existing Worksheet selector, Column Auto-Mapper, and Live Test buttons for Create Worksheet node.
 - **Automated Verification**: Passed 7/7 assertions in `test_create_worksheet.js` (verified creation of "Orders", "Customers", and exact error on duplicate "Orders").
 
 

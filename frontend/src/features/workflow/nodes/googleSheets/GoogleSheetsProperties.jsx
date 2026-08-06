@@ -25,8 +25,8 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const currentType = nodeType || currentNode?.type || 'googleSheetsAppendRow';
   const config = currentNode?.data?.config || nodeData?.config || {};
   const isFindRowNode = currentType === 'googleSheetsFindRow' || currentType === 'findRow' || config.operation === 'findRow';
-  const isCreateSpreadsheetNode = currentType === 'googleSheetsCreateSpreadsheet' || currentType === 'createSpreadsheet' || config.operation === 'createSpreadsheet';
-  const isCreateWorksheetNode = currentType === 'googleSheetsCreateWorksheet' || currentType === 'createWorksheet' || config.operation === 'createWorksheet';
+  const isCreateSpreadsheetNode = currentType === 'googleSheetsCreateSpreadsheet' || currentNode?.type === 'googleSheetsCreateSpreadsheet' || nodeType === 'googleSheetsCreateSpreadsheet' || currentType === 'createSpreadsheet' || config.operation === 'createSpreadsheet';
+  const isCreateWorksheetNode = currentType === 'googleSheetsCreateWorksheet' || currentNode?.type === 'googleSheetsCreateWorksheet' || nodeType === 'googleSheetsCreateWorksheet' || currentType === 'createWorksheet' || config.operation === 'createWorksheet';
 
   // Form State
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
@@ -66,7 +66,10 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     if (config.range !== undefined) setRange(config.range);
     if (config.headerRow !== undefined) setHeaderRow(config.headerRow);
     if (config.mappings !== undefined) setMappings(config.mappings);
-  }, [currentNode?.id, config.credentialId, config.spreadsheetId, config.worksheet]);
+    if (config.worksheetName || config.newWorksheetName) setNewWorksheetName(config.worksheetName || config.newWorksheetName);
+    if (config.rowCount !== undefined) setRowCount(config.rowCount);
+    if (config.columnCount !== undefined) setColumnCount(config.columnCount);
+  }, [currentNode?.id, config.credentialId, config.spreadsheetId, config.worksheet, config.worksheetName, config.newWorksheetName, config.rowCount, config.columnCount]);
 
   // 1. Fetch User Google Credentials on mount
   useEffect(() => {
@@ -82,10 +85,10 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
 
   // 3. Fetch Worksheets when Spreadsheet or Credential Changes (ONLY for existing spreadsheet operations)
   useEffect(() => {
-    if (spreadsheetId && credentialId && !isCreateSpreadsheetNode) {
+    if (spreadsheetId && credentialId && !isCreateSpreadsheetNode && !isCreateWorksheetNode) {
       fetchWorksheets(spreadsheetId, credentialId);
     }
-  }, [spreadsheetId, credentialId, isCreateSpreadsheetNode]);
+  }, [spreadsheetId, credentialId, isCreateSpreadsheetNode, isCreateWorksheetNode]);
 
   // 4. Auto Detect Headers when Worksheet Changes (ONLY for existing worksheet operations)
   useEffect(() => {
@@ -95,25 +98,55 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   }, [spreadsheetId, worksheet, isCreateSpreadsheetNode, isCreateWorksheetNode]);
 
   const updateConfig = (newFields) => {
-    const nextConfig = {
+    const baseConfig = {
       ...config,
       credentialId,
       spreadsheetId,
-      worksheet,
-      operation,
-      range,
-      headerRow,
-      mappings,
-      title,
-      spreadsheetName: title,
-      initialWorksheetName,
-      worksheetTitle: initialWorksheetName,
-      worksheetName: newWorksheetName,
-      newWorksheetName,
-      rowCount,
-      columnCount,
       ...newFields,
     };
+
+    let nextConfig = {};
+
+    if (isCreateWorksheetNode) {
+      const activeWorksheetName = newFields.worksheetName || newFields.newWorksheetName || newWorksheetName;
+      const activeRowCount = newFields.rowCount !== undefined ? newFields.rowCount : rowCount;
+      const activeColumnCount = newFields.columnCount !== undefined ? newFields.columnCount : columnCount;
+
+      nextConfig = {
+        ...baseConfig,
+        operation: 'createWorksheet',
+        worksheetName: activeWorksheetName,
+        newWorksheetName: activeWorksheetName,
+        rowCount: activeRowCount,
+        columnCount: activeColumnCount,
+      };
+      delete nextConfig.worksheet;
+      delete nextConfig.range;
+      delete nextConfig.headerRow;
+      delete nextConfig.mappings;
+    } else if (isCreateSpreadsheetNode) {
+      const activeTitle = newFields.title || newFields.spreadsheetName || title;
+      const activeInitialWs = newFields.initialWorksheetName || newFields.worksheetTitle || initialWorksheetName;
+
+      nextConfig = {
+        ...baseConfig,
+        operation: 'createSpreadsheet',
+        title: activeTitle,
+        spreadsheetName: activeTitle,
+        initialWorksheetName: activeInitialWs,
+        worksheetTitle: activeInitialWs,
+      };
+      delete nextConfig.worksheet;
+    } else {
+      nextConfig = {
+        ...baseConfig,
+        worksheet,
+        operation,
+        range,
+        headerRow,
+        mappings,
+      };
+    }
 
     if (onUpdateNodeConfig) {
       onUpdateNodeConfig(nextConfig);
