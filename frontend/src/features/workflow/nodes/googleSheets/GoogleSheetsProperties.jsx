@@ -208,7 +208,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     if (isCreateSpreadsheetNode || !spId) return;
     setLoadingWorksheets(true);
     try {
-      const targetCred = credId || credentialId;
+      const targetCred = credId || credentialId || (credentials.length > 0 ? credentials[0]._id : '');
       console.log('Fetching worksheets...');
       const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${targetCred}&_t=${Date.now()}`);
       if (res.data.success) {

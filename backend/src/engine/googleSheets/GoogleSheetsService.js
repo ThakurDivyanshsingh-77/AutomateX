@@ -11,10 +11,30 @@ export class GoogleSheetsService {
 
     console.log(`[GoogleSheetsService] 🔐 Resolving Google Auth Client for Credential ID: ${credentialId || 'default'}, User ID: ${userId}`);
     if (credentialId) {
-      const cred = await credentialService.getCredentialById(credentialId, userId);
-      if (cred) {
-        oauthData = cred.data || cred;
-        console.log(`[GoogleSheetsService] 💳 Credential loaded successfully. Access Token Present: ${!!oauthData.accessToken}, Refresh Token Present: ${!!oauthData.refreshToken}, Expiry Date: ${oauthData.expiryDate || 'N/A'}`);
+      try {
+        const cred = await credentialService.getCredentialById(credentialId, userId);
+        if (cred) {
+          oauthData = cred.data || cred;
+          console.log(`[GoogleSheetsService] 💳 Credential loaded successfully. Access Token Present: ${!!oauthData.accessToken}, Refresh Token Present: ${!!oauthData.refreshToken}`);
+        }
+      } catch (err) {
+        console.warn(`[GoogleSheetsService] ⚠️ Could not load credential by ID (${credentialId}): ${err.message}`);
+      }
+    }
+
+    if (!oauthData && userId) {
+      try {
+        const googleCreds = await credentialService.getGoogleOAuthCredentials(userId);
+        if (googleCreds && googleCreds.length > 0) {
+          const defaultCred = googleCreds[0];
+          const cred = await credentialService.getCredentialById(defaultCred._id, userId);
+          if (cred) {
+            oauthData = cred.data || cred;
+            console.log(`[GoogleSheetsService] 💳 Auto-resolved fallback user Google OAuth credential: ${defaultCred._id}`);
+          }
+        }
+      } catch (err) {
+        console.warn(`[GoogleSheetsService] ⚠️ Fallback Google OAuth resolution failed: ${err.message}`);
       }
     }
 
