@@ -141,11 +141,12 @@ export class GoogleSheetsTriggerExecutor {
     const {
       credentialId,
       spreadsheetId,
-      worksheetTitle = 'Sheet1',
       triggerEvent = 'newRow',
       ignoreExistingRows = true,
       maxRows = 100,
     } = config;
+
+    const worksheetTitle = config.worksheetTitle || config.worksheet || 'Sheet1';
 
     console.log(`[GoogleSheetsTriggerExecutor] 📊 Poll Started | Spreadsheet: ${spreadsheetId} | Worksheet: ${worksheetTitle} | Event: ${triggerEvent} | Workflow: ${workflowId}`);
 
@@ -166,7 +167,7 @@ export class GoogleSheetsTriggerExecutor {
     const currentRows = readResult.rows || [];
     console.log(`[GoogleSheetsTriggerExecutor] 📥 Fetched ${currentRows.length} current row(s) from Google Sheets`);
 
-    // 2. Load previous DB snapshot
+    // 2. Load previous DB snapshot BEFORE comparing
     let isInitialRun = false;
     let previousRows = [];
     const isValidWorkflowId = workflowId && mongoose.Types.ObjectId.isValid(workflowId);
@@ -183,7 +184,7 @@ export class GoogleSheetsTriggerExecutor {
       isInitialRun = true;
     }
 
-    // 3. Perform Change Detection
+    // 3. Perform Change Detection against previous snapshot
     const changes = this.compareSnapshots(
       previousRows,
       currentRows,
@@ -195,23 +196,30 @@ export class GoogleSheetsTriggerExecutor {
     const executionTime = Date.now() - startTime;
     console.log(`[GoogleSheetsTriggerExecutor] 🔍 Changes Detected: ${changes.length} | Rows Before: ${previousRows.length} | Rows After: ${currentRows.length} | Exec Time: ${executionTime}ms`);
 
-    // 4. Update or save persistent DB Snapshot
-    if (isValidWorkflowId && nodeId && mongoose.connection.readyState === 1) {
-      await TriggerSnapshot.findOneAndUpdate(
-        { workflowId, nodeId },
-        {
-          workflowId,
-          nodeId,
-          spreadsheetId,
-          worksheetTitle,
-          triggerEvent,
-          rowCount: currentRows.length,
-          rows: currentRows,
-          lastPolledAt: new Date(),
-        },
-        { upsert: true, new: true }
-      );
-      console.log(`[GoogleSheetsTriggerExecutor] 💾 Updated DB TriggerSnapshot for (Workflow: ${workflowId}, Node: ${nodeId})`);
+    // 4. Helper to commit snapshot to DB
+    const commitSnapshot = async () => {
+      if (isValidWorkflowId && nodeId && mongoose.connection.readyState === 1) {
+        await TriggerSnapshot.findOneAndUpdate(
+          { workflowId, nodeId },
+          {
+            workflowId,
+            nodeId,
+            spreadsheetId,
+            worksheetTitle,
+            triggerEvent,
+            rowCount: currentRows.length,
+            rows: currentRows,
+            lastPolledAt: new Date(),
+          },
+          { upsert: true, new: true }
+        );
+        console.log(`[GoogleSheetsTriggerExecutor] 💾 Committed DB TriggerSnapshot for (Workflow: ${workflowId}, Node: ${nodeId})`);
+      }
+    };
+
+    // If initial run or no changes detected, commit baseline immediately
+    if (isInitialRun || changes.length === 0) {
+      await commitSnapshot();
     }
 
     return {
@@ -221,6 +229,7 @@ export class GoogleSheetsTriggerExecutor {
       rowsBefore: previousRows.length,
       rowsAfter: currentRows.length,
       executionTime,
+      commitSnapshot,
     };
   }
 

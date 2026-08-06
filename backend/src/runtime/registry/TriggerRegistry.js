@@ -15,6 +15,9 @@ export class TriggerRegistry {
     ['googlesheetstriggerwatchrows', googleSheetsTrigger],
     ['googleSheetsTrigger', googleSheetsTrigger],
     ['googleSheetsTriggerWatchRows', googleSheetsTrigger],
+    ['google_sheets', googleSheetsTrigger],
+    ['google_sheets_trigger', googleSheetsTrigger],
+    ['GOOGLE_SHEETS', googleSheetsTrigger],
   ]);
 
   static isTrigger(type) {

@@ -229,8 +229,13 @@ export class GoogleSheetsTriggerScheduler {
         console.log(`🚀 [GoogleSheetsTriggerScheduler]: Changes detected! Firing ${pollResult.changesDetected} automatic execution(s) for Workflow "${workflow.name}" (${jobState.workflowId})`);
 
         for (const changePayload of pollResult.changes) {
-          const triggerRes = await RuntimeManager.triggerExecution('googleSheetsTrigger', workflow, changePayload);
-          console.log(`🚀 [GoogleSheetsTriggerScheduler]: Queued Trigger Execution ${triggerRes.executionId} (Status: ${triggerRes.status}, TriggerType: googleSheetsTrigger)`);
+          const triggerRes = await RuntimeManager.triggerExecution('GOOGLE_SHEETS', workflow, changePayload);
+          console.log(`🚀 [GoogleSheetsTriggerScheduler]: Queued Automatic Execution ${triggerRes.executionId} (Status: ${triggerRes.status}, TriggerType: GOOGLE_SHEETS)`);
+        }
+
+        // Commit snapshot DB state ONLY AFTER successful execution dispatch
+        if (typeof pollResult.commitSnapshot === 'function') {
+          await pollResult.commitSnapshot();
         }
       }
     } catch (err) {
