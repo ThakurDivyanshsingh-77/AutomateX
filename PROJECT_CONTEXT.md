@@ -137,6 +137,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Independent Parameter Fix**: Updated `GoogleSheetsService.js`, `GoogleSheetsCreateSpreadsheetExecutor.js`, and `GoogleSheetsProperties.jsx` so `spreadsheetName` controls `spreadsheet.properties.title` (file title) and `initialWorksheetName` controls `sheets[0].properties.title` (first tab title, defaulting to `'Sheet1'` if empty). Passed 4/4 assertions in `test_create_spreadsheet.js`.
 - **Worksheet Rename Verification**: Included `{ sheetId: 0, title: finalWorksheet }` inside `requestBody.sheets` of `spreadsheets.create` call and added automated `batchUpdate` `updateSheetProperties` fallback verification to guarantee initial worksheet tab is named as requested in Google Drive.
 
+### **Phase 17.5 Complete — Google Sheets Create Worksheet Node (`googleSheetsCreateWorksheet`)** — ✅ COMPLETED
+- **Service Layer (`GoogleSheetsService.createWorksheet`)**: Google Sheets API v4 `spreadsheets.batchUpdate()` integration with `addSheet` request payload (supporting custom `rowCount` and `columnCount`). Includes duplicate tab name validation returning `"Worksheet '<name>' already exists."`.
+- **Dedicated Node Executor (`GoogleSheetsCreateWorksheetExecutor.js`)**: Resolves expression variables, validates required inputs, invokes service layer, and outputs structured logs (`Loading credentials...`, `Validating spreadsheet...`, `Creating worksheet...`, `Worksheet created successfully.`, `Finished.`).
+- **Registrations & REST Routes**: Registered `googleSheetsCreateWorksheet` in `ExecutorRegistry.js` and `nodeRegistry.js`. Mounted `POST /api/v1/google/sheets/worksheets/create` & `POST /api/v1/google-sheets/worksheets/create` in `googleSheetsRoutes.js`.
+- **Frontend Properties Panel**: Added UI input fields in `GoogleSheetsProperties.jsx` for **New Worksheet Name** (required), **Row Count** (optional, default: 1000), and **Column Count** (optional, default: 26).
+- **Automated Verification**: Passed 7/7 assertions in `test_create_worksheet.js` (verified creation of "Orders", "Customers", and exact error on duplicate "Orders").
+
 
 
 

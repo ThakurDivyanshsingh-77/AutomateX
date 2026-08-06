@@ -26,6 +26,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const config = currentNode?.data?.config || nodeData?.config || {};
   const isFindRowNode = currentType === 'googleSheetsFindRow' || currentType === 'findRow' || config.operation === 'findRow';
   const isCreateSpreadsheetNode = currentType === 'googleSheetsCreateSpreadsheet' || currentType === 'createSpreadsheet' || config.operation === 'createSpreadsheet';
+  const isCreateWorksheetNode = currentType === 'googleSheetsCreateWorksheet' || currentType === 'createWorksheet' || config.operation === 'createWorksheet';
 
   // Form State
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
@@ -36,6 +37,9 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const [headerRow, setHeaderRow] = useState(config.headerRow || 1);
   const [title, setTitle] = useState(config.title || config.spreadsheetName || '');
   const [initialWorksheetName, setInitialWorksheetName] = useState(config.worksheetTitle || config.initialWorksheetName || 'Sheet1');
+  const [newWorksheetName, setNewWorksheetName] = useState(config.worksheetName || config.newWorksheetName || 'Orders');
+  const [rowCount, setRowCount] = useState(config.rowCount || 1000);
+  const [columnCount, setColumnCount] = useState(config.columnCount || 26);
 
   // Auto-detected Columns & Data Mappings
   const [headers, setHeaders] = useState([]);
@@ -85,10 +89,10 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
 
   // 4. Auto Detect Headers when Worksheet Changes (ONLY for existing worksheet operations)
   useEffect(() => {
-    if (spreadsheetId && worksheet && !isCreateSpreadsheetNode) {
+    if (spreadsheetId && worksheet && !isCreateSpreadsheetNode && !isCreateWorksheetNode) {
       fetchHeaders(spreadsheetId, worksheet);
     }
-  }, [spreadsheetId, worksheet, isCreateSpreadsheetNode]);
+  }, [spreadsheetId, worksheet, isCreateSpreadsheetNode, isCreateWorksheetNode]);
 
   const updateConfig = (newFields) => {
     const nextConfig = {
@@ -104,6 +108,10 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
       spreadsheetName: title,
       initialWorksheetName,
       worksheetTitle: initialWorksheetName,
+      worksheetName: newWorksheetName,
+      newWorksheetName,
+      rowCount,
+      columnCount,
       ...newFields,
     };
 
@@ -382,8 +390,68 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         </>
       )}
 
-      {/* 3. Worksheet Picker (for existing spreadsheet operations) */}
-      {(currentType !== 'googleSheetsCreateSpreadsheet' && operation !== 'createSpreadsheet') && (
+      {/* 3. Create Worksheet Node Configuration */}
+      {isCreateWorksheetNode ? (
+        <div className="space-y-3 pt-2 border-t border-slate-800/80">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              New Worksheet Name <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={newWorksheetName}
+              onChange={(e) => {
+                const val = e.target.value;
+                setNewWorksheetName(val);
+                updateConfig({ worksheetName: val, newWorksheetName: val });
+              }}
+              placeholder="e.g. Orders or Customers"
+              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 font-mono text-xs"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Row Count (Optional)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="100000"
+                value={rowCount}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10) || 1000;
+                  setRowCount(val);
+                  updateConfig({ rowCount: val });
+                }}
+                placeholder="1000"
+                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Column Count (Optional)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="1000"
+                value={columnCount}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10) || 26;
+                  setColumnCount(val);
+                  updateConfig({ columnCount: val });
+                }}
+                placeholder="26"
+                className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs"
+              />
+            </div>
+          </div>
+        </div>
+      ) : (currentType !== 'googleSheetsCreateSpreadsheet' && operation !== 'createSpreadsheet') && (
         <div className="space-y-1.5">
           <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span className="flex items-center gap-1.5">
@@ -614,7 +682,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <span>Case Sensitive Match</span>
           </label>
         </div>
-      ) : isCreateSpreadsheetNode ? null : (
+      ) : (isCreateSpreadsheetNode || isCreateWorksheetNode) ? null : (
         /* Standard Column Auto-Mapper for Append/Update */
         <div className="space-y-3 pt-2 border-t border-slate-800/80">
           <div className="flex items-center justify-between">
@@ -668,8 +736,8 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         </div>
       )}
 
-      {/* 5. Live Test & Preview Button (ONLY for existing spreadsheet operations) */}
-      {!isCreateSpreadsheetNode && (
+      {/* 5. Live Test & Preview Button (ONLY for existing worksheet operations) */}
+      {(!isCreateSpreadsheetNode && !isCreateWorksheetNode) && (
         <div className="pt-2 border-t border-slate-800/80 space-y-2">
           <button
             type="button"

@@ -37,6 +37,17 @@ export class GoogleSheetsExecutor {
           worksheetTitle: config.worksheetTitle || config.worksheet || config.initialWorksheetName || 'Sheet1',
         });
         break;
+      case 'createWorksheet':
+      case 'googleSheetsCreateWorksheet':
+        result = await GoogleSheetsService.createWorksheet({
+          credentialId,
+          userId,
+          spreadsheetId,
+          worksheetName: config.worksheetName || config.newWorksheetName || config.worksheetTitle || 'New Sheet',
+          rowCount: config.rowCount || 1000,
+          columnCount: config.columnCount || 26,
+        });
+        break;
       case 'readRows':
       case 'googleSheetsReadRows':
         result = await GoogleSheetsService.readRows({

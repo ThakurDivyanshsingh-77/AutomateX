@@ -11,10 +11,12 @@ import { PdfGeneratorExecutor } from '../executors/PdfGeneratorExecutor.js';
 import { GoogleSheetsExecutor } from '../googleSheets/GoogleSheetsExecutor.js';
 import { GoogleSheetsTriggerExecutor } from '../googleSheets/GoogleSheetsTriggerExecutor.js';
 import { GoogleSheetsCreateSpreadsheetExecutor } from '../googleSheets/GoogleSheetsCreateSpreadsheetExecutor.js';
+import { GoogleSheetsCreateWorksheetExecutor } from '../googleSheets/GoogleSheetsCreateWorksheetExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
 const googleSheetsCreateSpreadsheetExecutor = new GoogleSheetsCreateSpreadsheetExecutor();
+const googleSheetsCreateWorksheetExecutor = new GoogleSheetsCreateWorksheetExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -55,7 +57,7 @@ export class ExecutorRegistry {
     ['googleSheetsClearRange', googleSheetsExecutor],
     ['googleSheetsBatchUpdate', googleSheetsExecutor],
     ['googleSheetsCreateSpreadsheet', googleSheetsCreateSpreadsheetExecutor],
-    ['googleSheetsCreateWorksheet', googleSheetsExecutor],
+    ['googleSheetsCreateWorksheet', googleSheetsCreateWorksheetExecutor],
     ['googleSheetsDuplicateWorksheet', googleSheetsExecutor],
     ['googleSheetsDeleteWorksheet', googleSheetsExecutor],
     ['googleSheetsGetSpreadsheetInfo', googleSheetsExecutor],

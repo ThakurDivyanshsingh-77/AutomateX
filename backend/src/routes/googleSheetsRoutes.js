@@ -368,4 +368,38 @@ const handleCreateSpreadsheet = async (req, res, next) => {
 router.post('/sheets/create', handleCreateSpreadsheet);
 router.post('/spreadsheets/create', handleCreateSpreadsheet);
 
+/**
+ * POST /api/v1/google/sheets/worksheets/create
+ * POST /api/v1/google-sheets/worksheets/create
+ * Create a new worksheet tab inside an existing Google Spreadsheet
+ */
+const handleCreateWorksheet = async (req, res, next) => {
+  try {
+    const { credentialId, spreadsheetId, worksheetName, newWorksheetName, rowCount, columnCount } = req.body;
+    const result = await GoogleSheetsService.createWorksheet({
+      credentialId,
+      userId: req.user._id,
+      spreadsheetId,
+      worksheetName: worksheetName || newWorksheetName,
+      rowCount,
+      columnCount,
+    });
+    return res.json(result);
+  } catch (err) {
+    if (err.message.includes('required') || err.message.includes('Missing')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('already exists')) {
+      return res.status(409).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('token') || err.message.includes('401') || err.message.includes('OAuth')) {
+      return res.status(401).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+};
+
+router.post('/sheets/worksheets/create', handleCreateWorksheet);
+router.post('/worksheets/create', handleCreateWorksheet);
+
 export default router;

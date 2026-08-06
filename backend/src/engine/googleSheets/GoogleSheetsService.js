@@ -805,4 +805,83 @@ export class GoogleSheetsService {
       throw err;
     }
   }
+
+  /**
+   * Create a new worksheet (tab) inside an existing Google Spreadsheet
+   */
+  static async createWorksheet({ credentialId, userId, spreadsheetId, worksheetName, rowCount = 1000, columnCount = 26, log = console.log }) {
+    log('Loading credentials...');
+    if (!spreadsheetId) {
+      throw new Error('Missing required configuration: Spreadsheet ID is required.');
+    }
+
+    const cleanName = String(worksheetName || '').trim();
+    if (!cleanName) {
+      throw new Error('Missing required configuration: New Worksheet Name is required.');
+    }
+
+    const parsedRows = parseInt(rowCount, 10) || 1000;
+    const parsedCols = parseInt(columnCount, 10) || 26;
+
+    log('Validating spreadsheet...');
+    const existingWorksheets = await this.getWorksheets({ credentialId, userId, spreadsheetId });
+
+    // Duplicate worksheet name check
+    const duplicate = existingWorksheets.find((w) => String(w.title).trim().toLowerCase() === cleanName.toLowerCase());
+    if (duplicate) {
+      throw new Error(`Worksheet '${cleanName}' already exists.`);
+    }
+
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    log('Creating worksheet...');
+
+    try {
+      const response = await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              addSheet: {
+                properties: {
+                  title: cleanName,
+                  gridProperties: {
+                    rowCount: parsedRows,
+                    columnCount: parsedCols,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      });
+
+      const addedSheetProps = response.data.replies?.[0]?.addSheet?.properties || {};
+      const worksheetId = String(addedSheetProps.sheetId ?? '');
+      const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${worksheetId}`;
+
+      log('Worksheet created successfully.');
+      log('Finished.');
+
+      return {
+        success: true,
+        spreadsheetId,
+        worksheetId,
+        worksheetName: cleanName,
+        spreadsheetUrl,
+        message: 'Worksheet created successfully.',
+        raw: response.data,
+      };
+    } catch (err) {
+      if (err.message.includes('already exists')) {
+        throw err;
+      }
+      if (err.message.includes('invalid_grant') || err.message.includes('Token') || err.status === 401) {
+        throw new Error('Google OAuth token invalid or expired. Please reconnect your Google account.');
+      }
+      if (err.status === 403 || err.message.includes('permission')) {
+        throw new Error('Permission denied by Google Drive API. Please check OAuth scopes.');
+      }
+      throw err;
+    }
+  }
 }

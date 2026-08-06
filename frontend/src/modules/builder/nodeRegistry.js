@@ -26,6 +26,7 @@ export const NODE_TYPES = {
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
   GOOGLE_SHEETS_CREATE_SPREADSHEET: 'googleSheetsCreateSpreadsheet',
+  GOOGLE_SHEETS_CREATE_WORKSHEET: 'googleSheetsCreateWorksheet',
   GOOGLE_SHEETS_READ_ROWS: 'googleSheetsReadRows',
   GOOGLE_SHEETS_APPEND_ROW: 'googleSheetsAppendRow',
   GOOGLE_SHEETS_UPDATE_ROW: 'googleSheetsUpdateRow',
@@ -168,6 +169,16 @@ export const NODE_REGISTRY = {
     color: 'emerald',
     badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     defaultConfig: { title: 'New Spreadsheet', worksheetTitle: 'Sheet1' },
+  },
+  [NODE_TYPES.GOOGLE_SHEETS_CREATE_WORKSHEET]: {
+    type: NODE_TYPES.GOOGLE_SHEETS_CREATE_WORKSHEET,
+    category: 'Google Sheets',
+    label: 'Google Sheets Create Worksheet',
+    description: 'Create a new worksheet tab inside an existing Google Spreadsheet',
+    icon: Layers,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: { worksheetName: 'New Sheet', rowCount: 1000, columnCount: 26 },
   },
   [NODE_TYPES.GOOGLE_SHEETS_READ_ROWS]: {
     type: NODE_TYPES.GOOGLE_SHEETS_READ_ROWS,
