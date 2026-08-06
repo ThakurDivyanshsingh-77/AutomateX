@@ -105,39 +105,47 @@ export class GoogleSheetsService {
    * Get Worksheets (Sheet Tabs) for a given Spreadsheet
    */
   static async getWorksheets({ credentialId, userId, spreadsheetId }) {
-    console.log(`Loading worksheets...\nSpreadsheet ID: ${spreadsheetId}`);
+    console.log(`[GoogleSheetsService] 📥 Incoming Spreadsheet ID: ${spreadsheetId}`);
+    console.log(`[GoogleSheetsService] 👤 Authenticated User ID: ${userId}`);
+    console.log(`[GoogleSheetsService] 💳 Credential ID: ${credentialId || 'default'}`);
 
     if (!spreadsheetId || spreadsheetId === 'undefined' || spreadsheetId === 'null') {
-      console.warn('[GoogleSheetsService] ⚠️ Invalid spreadsheet ID passed to getWorksheets');
-      return [{ sheetId: 0, title: 'Sheet1', index: 0 }];
+      throw new Error('Spreadsheet ID is required to fetch worksheets');
     }
 
     try {
       const sheets = await this.getSheetsClient(credentialId, userId);
 
+      console.log(`[GoogleSheetsService] 📤 Before Google API call: spreadsheetId = ${spreadsheetId}`);
       const response = await sheets.spreadsheets.get({
         spreadsheetId,
-        fields: 'sheets(properties(sheetId, title, index))',
       });
 
       const rawSheets = response.data.sheets || [];
+      console.log('[GoogleSheetsService] 📥 Google API response:');
+      console.log(
+        rawSheets.map((s) => ({
+          sheetId: s.properties.sheetId,
+          title: s.properties.title,
+        }))
+      );
 
-      const worksheets = rawSheets.map((s) => ({
+      const mappedWorksheets = rawSheets.map((s) => ({
         sheetId: s.properties.sheetId,
         title: s.properties.title,
-        index: s.properties.index,
+        index: s.properties.index ?? 0,
       }));
 
-      console.log('\nFound worksheets:\n');
-      console.log(JSON.stringify(worksheets, null, 2));
-      console.log(`\nDropdown loaded:\n${worksheets.length} worksheets\n`);
+      console.log('[GoogleSheetsService] 🗺️ After mapping:');
+      console.log(mappedWorksheets);
 
-      return worksheets;
+      console.log(`[GoogleSheetsService] 📦 Before sending response: (${mappedWorksheets.length} worksheets)`);
+      console.log(mappedWorksheets);
+
+      return mappedWorksheets;
     } catch (err) {
-      console.error(`[GoogleSheetsService] ⚠️ Google Sheets API getWorksheets error for ${spreadsheetId}: ${err.message}`);
-      return [
-        { sheetId: 0, title: 'Sheet1', index: 0 }
-      ];
+      console.error(`[GoogleSheetsService] ❌ Google Sheets API getWorksheets error for ${spreadsheetId}: ${err.message}`, err.stack);
+      throw err;
     }
   }
 

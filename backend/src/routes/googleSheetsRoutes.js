@@ -47,63 +47,61 @@ router.get('/spreadsheets', async (req, res, next) => {
  * GET /api/v1/google-sheets/spreadsheets/:id/worksheets
  * Get all sheet tabs for a spreadsheet
  */
-router.get('/sheets/:id/worksheets', async (req, res) => {
+router.get('/sheets/:id/worksheets', async (req, res, next) => {
   try {
     const { credentialId } = req.query;
     const spreadsheetId = req.params.id;
 
+    console.log(`[googleSheetsRoutes] 📥 Incoming Spreadsheet ID: ${spreadsheetId}`);
+    console.log(`[googleSheetsRoutes] 👤 Authenticated User ID: ${req.user?._id}`);
+    console.log(`[googleSheetsRoutes] 💳 Credential ID: ${credentialId || 'default'}`);
+
     if (!spreadsheetId || spreadsheetId === 'undefined' || spreadsheetId === 'null') {
-      return res.json({
-        success: true,
-        count: 1,
-        worksheets: [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }],
-      });
+      return res.status(400).json({ success: false, message: 'Spreadsheet ID is required' });
     }
 
     const worksheets = await GoogleSheetsService.getWorksheets({
       credentialId,
-      userId: req.user?._id,
+      userId: req.user._id,
       spreadsheetId,
     });
+
+    console.log('[googleSheetsRoutes] 📦 Before sending response:');
+    console.log(worksheets);
+
     return res.json({ success: true, count: worksheets.length, worksheets });
   } catch (err) {
-    console.error('[googleSheetsRoutes] Worksheets route error:', err.message);
-    return res.json({
-      success: true,
-      count: 1,
-      worksheets: [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }],
-      warning: err.message,
-    });
+    console.error('[googleSheetsRoutes] ❌ Worksheets route error:', err.message);
+    next(err);
   }
 });
 
-router.get('/spreadsheets/:id/worksheets', async (req, res) => {
+router.get('/spreadsheets/:id/worksheets', async (req, res, next) => {
   try {
     const { credentialId } = req.query;
     const spreadsheetId = req.params.id;
 
+    console.log(`[googleSheetsRoutes] 📥 Incoming Spreadsheet ID: ${spreadsheetId}`);
+    console.log(`[googleSheetsRoutes] 👤 Authenticated User ID: ${req.user?._id}`);
+    console.log(`[googleSheetsRoutes] 💳 Credential ID: ${credentialId || 'default'}`);
+
     if (!spreadsheetId || spreadsheetId === 'undefined' || spreadsheetId === 'null') {
-      return res.json({
-        success: true,
-        count: 1,
-        worksheets: [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }],
-      });
+      return res.status(400).json({ success: false, message: 'Spreadsheet ID is required' });
     }
 
     const worksheets = await GoogleSheetsService.getWorksheets({
       credentialId,
-      userId: req.user?._id,
+      userId: req.user._id,
       spreadsheetId,
     });
+
+    console.log('[googleSheetsRoutes] 📦 Before sending response:');
+    console.log(worksheets);
+
     return res.json({ success: true, count: worksheets.length, worksheets });
   } catch (err) {
-    console.error('[googleSheetsRoutes] Worksheets route error:', err.message);
-    return res.json({
-      success: true,
-      count: 1,
-      worksheets: [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }],
-      warning: err.message,
-    });
+    console.error('[googleSheetsRoutes] ❌ Worksheets route error:', err.message);
+    next(err);
   }
 });
 

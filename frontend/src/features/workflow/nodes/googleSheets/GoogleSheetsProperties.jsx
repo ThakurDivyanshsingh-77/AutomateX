@@ -209,14 +209,17 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     setLoadingWorksheets(true);
     try {
       const targetCred = credId || credentialId || (credentials.length > 0 ? credentials[0]._id : '');
-      console.log(`Loading worksheets...\nSpreadsheet ID: ${spId}`);
-      const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${targetCred}&_t=${Date.now()}`);
+      const apiUrl = `/google/sheets/${spId}/worksheets?credentialId=${targetCred}&_t=${Date.now()}`;
+      
+      console.log(`[GoogleSheetsProperties] Selected Spreadsheet ID: ${spId}`);
+      console.log(`[GoogleSheetsProperties] API URL: ${apiUrl}`);
+
+      const res = await api.get(apiUrl);
+      console.log('[GoogleSheetsProperties] API Response:', res.data);
+
       if (res.data.success) {
         const fetchedWorksheets = res.data.worksheets || [];
-        const formattedDto = fetchedWorksheets.map((w) => ({ sheetId: w.sheetId ?? w.id ?? 0, title: w.title }));
-        console.log('\nFound worksheets:\n');
-        console.log(JSON.stringify(formattedDto, null, 2));
-        console.log(`\nDropdown loaded:\n${fetchedWorksheets.length} worksheets\n`);
+        console.log('[GoogleSheetsProperties] Frontend after fetch:', fetchedWorksheets);
 
         setWorksheets(fetchedWorksheets);
 
@@ -513,6 +516,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
           </label>
 
           <div className="flex items-center gap-2">
+            {console.log('[GoogleSheetsProperties] Before rendering dropdown (dropdownItems):', worksheets)}
             <select
               value={worksheet}
               onChange={(e) => {
