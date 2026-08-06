@@ -332,6 +332,25 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     }
   };
 
+  const handleTestGetInfo = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await api.get(`/google/sheets/${spreadsheetId}/info?credentialId=${credentialId}&bypassCache=true`);
+      const data = res.data;
+      setTestResult(data);
+      if (data.success) {
+        toast.success(`Metadata loaded! Worksheets: ${data.worksheetCount || 0}`);
+      } else {
+        toast.error(data.message || 'Failed to load spreadsheet info');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error fetching spreadsheet info');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <div className="space-y-4 font-sans text-xs text-slate-200">
       {/* 1. Google Account Credential */}
