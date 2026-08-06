@@ -46,6 +46,21 @@ async function runTests() {
   GoogleSheetsService.getSheetsClient = async () => {
     return {
       spreadsheets: {
+        get: async ({ spreadsheetId }) => {
+          return {
+            data: {
+              spreadsheetId,
+              properties: { title: 'AutomateX Test' },
+              sheets: mockWorksheetsStore.map((w) => ({
+                properties: {
+                  sheetId: w.id !== undefined ? w.id : (w.sheetId !== undefined ? w.sheetId : 0),
+                  title: w.title,
+                  index: w.index ?? 0,
+                },
+              })),
+            },
+          };
+        },
         batchUpdate: async ({ spreadsheetId, requestBody }) => {
           deleteSheetPayloads.push({ spreadsheetId, requestBody });
           const delSheetId = requestBody.requests?.[0]?.deleteSheet?.sheetId;

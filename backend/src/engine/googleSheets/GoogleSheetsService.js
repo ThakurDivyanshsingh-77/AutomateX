@@ -913,7 +913,8 @@ export class GoogleSheetsService {
    */
   static async deleteWorksheet({ credentialId, userId, spreadsheetId, worksheetTitle, worksheetName, worksheet, log = console.log }) {
     log('Loading credentials...');
-    if (!spreadsheetId) {
+    const cleanSpreadsheetId = String(spreadsheetId || '').trim();
+    if (!cleanSpreadsheetId) {
       throw new Error('Missing required configuration: Spreadsheet ID is required.');
     }
 
@@ -923,29 +924,47 @@ export class GoogleSheetsService {
     }
 
     log('Fetching spreadsheet...');
-    const worksheets = await this.getWorksheets({ credentialId, userId, spreadsheetId });
+    const sheetsClient = await this.getSheetsClient(credentialId, userId);
+
+    const spreadsheet = await sheetsClient.spreadsheets.get({
+      spreadsheetId: cleanSpreadsheetId,
+    });
+
+    const rawSheets = spreadsheet.data.sheets || [];
+    console.log('Spreadsheet ID:', cleanSpreadsheetId);
+    console.log('Spreadsheet title:', spreadsheet.data.properties?.title || 'N/A');
+    console.log('Number of sheets:', rawSheets.length);
+
+    const sheetDetails = rawSheets.map((s) => ({
+      sheetId: s.properties.sheetId,
+      title: s.properties.title,
+      index: s.properties.index ?? 0,
+    }));
+
+    console.log('Sheets found:', sheetDetails.length);
+    console.log(JSON.stringify(sheetDetails, null, 2));
+
+    console.log("Total worksheets:", rawSheets.length);
 
     log('Locating worksheet...');
-    const targetSheet = worksheets.find(
-      (w) => String(w.title).trim().toLowerCase() === targetTitle.toLowerCase()
+    const targetSheet = rawSheets.find(
+      (s) => String(s.properties.title).trim().toLowerCase() === targetTitle.toLowerCase()
     );
 
     if (!targetSheet) {
       throw new Error(`Worksheet '${targetTitle}' not found.`);
     }
 
-    if (worksheets.length <= 1) {
+    if (rawSheets.length <= 1) {
       throw new Error('Cannot delete the last worksheet in a spreadsheet.');
     }
 
-    const targetSheetId = targetSheet.id !== undefined ? targetSheet.id : targetSheet.sheetId;
+    const targetSheetId = targetSheet.properties.sheetId;
 
-    const sheets = await this.getSheetsClient(credentialId, userId);
     log('Deleting worksheet...');
-
     try {
-      const response = await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
+      const response = await sheetsClient.spreadsheets.batchUpdate({
+        spreadsheetId: cleanSpreadsheetId,
         requestBody: {
           requests: [
             {
@@ -962,8 +981,9 @@ export class GoogleSheetsService {
 
       return {
         success: true,
-        spreadsheetId,
-        deletedWorksheet: targetSheet.title,
+        spreadsheetId: cleanSpreadsheetId,
+        deletedWorksheet: targetTitle,
+        sheetId: targetSheetId,
         message: 'Worksheet deleted successfully.',
         raw: response.data,
       };
