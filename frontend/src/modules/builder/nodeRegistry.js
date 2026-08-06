@@ -25,6 +25,7 @@ export const NODE_TYPES = {
   PDF_GENERATOR: 'pdfGenerator',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
+  GOOGLE_SHEETS_CREATE_SPREADSHEET: 'googleSheetsCreateSpreadsheet',
   GOOGLE_SHEETS_READ_ROWS: 'googleSheetsReadRows',
   GOOGLE_SHEETS_APPEND_ROW: 'googleSheetsAppendRow',
   GOOGLE_SHEETS_UPDATE_ROW: 'googleSheetsUpdateRow',
@@ -157,6 +158,16 @@ export const NODE_REGISTRY = {
     color: 'emerald',
     badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     defaultConfig: { worksheetTitle: 'Sheet1', triggerEvent: 'newRow', pollingInterval: '30s', ignoreExistingRows: true, maxRows: 100 },
+  },
+  [NODE_TYPES.GOOGLE_SHEETS_CREATE_SPREADSHEET]: {
+    type: NODE_TYPES.GOOGLE_SHEETS_CREATE_SPREADSHEET,
+    category: 'Google Sheets',
+    label: 'Google Sheets Create Spreadsheet',
+    description: 'Create a brand-new Google Spreadsheet in Google Drive with initial worksheet',
+    icon: FileOutput,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: { title: 'New Spreadsheet', worksheetTitle: 'Sheet1' },
   },
   [NODE_TYPES.GOOGLE_SHEETS_READ_ROWS]: {
     type: NODE_TYPES.GOOGLE_SHEETS_READ_ROWS,

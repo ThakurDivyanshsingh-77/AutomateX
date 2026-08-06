@@ -10,7 +10,7 @@ export class GoogleSheetsExecutor {
     const worksheet = config.worksheet || config.sheetName || 'Sheet1';
     const userId = context.userId;
 
-    if (!spreadsheetId) {
+    if (!spreadsheetId && operation !== 'createSpreadsheet' && operation !== 'googleSheetsCreateSpreadsheet') {
       throw new Error(`Google Sheets Execution Error: Spreadsheet selection is required for node "${node.id}".`);
     }
 
@@ -28,6 +28,15 @@ export class GoogleSheetsExecutor {
     }
 
     switch (operation) {
+      case 'createSpreadsheet':
+      case 'googleSheetsCreateSpreadsheet':
+        result = await GoogleSheetsService.createSpreadsheet({
+          credentialId,
+          userId,
+          title: config.title || config.spreadsheetName || 'Untitled Spreadsheet',
+          worksheetTitle: config.worksheetTitle || config.worksheet || config.initialWorksheetName || 'Sheet1',
+        });
+        break;
       case 'readRows':
       case 'googleSheetsReadRows':
         result = await GoogleSheetsService.readRows({

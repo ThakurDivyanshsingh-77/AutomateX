@@ -33,6 +33,8 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const [operation, setOperation] = useState(config.operation || currentType || 'appendRow');
   const [range, setRange] = useState(config.range || 'A1:Z100');
   const [headerRow, setHeaderRow] = useState(config.headerRow || 1);
+  const [title, setTitle] = useState(config.title || config.spreadsheetName || '');
+  const [initialWorksheetName, setInitialWorksheetName] = useState(config.worksheetTitle || config.initialWorksheetName || 'Sheet1');
 
   // Auto-detected Columns & Data Mappings
   const [headers, setHeaders] = useState([]);
@@ -292,81 +294,124 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         </select>
       </div>
 
-      {/* 2. Spreadsheet Picker */}
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-          <span className="flex items-center gap-1.5">
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-            Spreadsheet
-          </span>
-          {loadingSpreadsheets && <Loader2 className="w-3 h-3 text-emerald-400 animate-spin" />}
-        </label>
+      {/* Create Spreadsheet Node Fields */}
+      {(currentType === 'googleSheetsCreateSpreadsheet' || operation === 'createSpreadsheet') ? (
+        <div className="space-y-3 pt-1 border-t border-slate-800">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              Spreadsheet Name <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                updateConfig({ title: e.target.value, spreadsheetName: e.target.value });
+              }}
+              placeholder="e.g. AutomateX Report {{now}}"
+              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 font-mono text-xs"
+            />
+          </div>
 
-        <div className="flex items-center gap-2">
-          <select
-            value={spreadsheetId}
-            onChange={(e) => {
-              setSpreadsheetId(e.target.value);
-              updateConfig({ spreadsheetId: e.target.value });
-            }}
-            disabled={loadingSpreadsheets || !credentialId}
-            className="flex-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
-          >
-            <option value="">Select Spreadsheet...</option>
-            {spreadsheets.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.id.slice(0, 8)}...)
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            onClick={() => credentialId && fetchSpreadsheets(credentialId)}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              Initial Worksheet Name (Optional)
+            </label>
+            <input
+              type="text"
+              value={initialWorksheetName}
+              onChange={(e) => {
+                setInitialWorksheetName(e.target.value);
+                updateConfig({ worksheetTitle: e.target.value, initialWorksheetName: e.target.value, worksheet: e.target.value });
+              }}
+              placeholder="e.g. Sheet1 or Data"
+              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 font-mono text-xs"
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* 2. Spreadsheet Picker */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                Spreadsheet
+              </span>
+              {loadingSpreadsheets && <Loader2 className="w-3 h-3 text-emerald-400 animate-spin" />}
+            </label>
 
-      {/* 3. Worksheet Picker */}
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-          <span className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-emerald-400" />
-            Worksheet (Tab)
-          </span>
-          {loadingWorksheets && <Loader2 className="w-3 h-3 text-emerald-400 animate-spin" />}
-        </label>
+            <div className="flex items-center gap-2">
+              <select
+                value={spreadsheetId}
+                onChange={(e) => {
+                  setSpreadsheetId(e.target.value);
+                  updateConfig({ spreadsheetId: e.target.value });
+                }}
+                disabled={loadingSpreadsheets || !credentialId}
+                className="flex-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+              >
+                <option value="">Select Spreadsheet...</option>
+                {spreadsheets.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.id.slice(0, 8)}...)
+                  </option>
+                ))}
+              </select>
 
-        <div className="flex items-center gap-2">
-          <select
-            value={worksheet}
-            onChange={(e) => {
-              setWorksheet(e.target.value);
-              updateConfig({ worksheet: e.target.value });
-            }}
-            disabled={loadingWorksheets || !spreadsheetId}
-            className="flex-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
-          >
-            <option value="">Select Worksheet Tab...</option>
-            {worksheets.map((w, idx) => (
-              <option key={w.sheetId || w.id || idx} value={w.title}>
-                {w.title} {w.rowCount ? `(${w.rowCount} rows)` : ''}
-              </option>
-            ))}
-          </select>
+              <button
+                type="button"
+                onClick={() => credentialId && fetchSpreadsheets(credentialId)}
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
-          <button
-            type="button"
-            onClick={() => spreadsheetId && fetchWorksheets(spreadsheetId, credentialId)}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+      {/* 3. Worksheet Picker (for existing spreadsheet operations) */}
+      {(currentType !== 'googleSheetsCreateSpreadsheet' && operation !== 'createSpreadsheet') && (
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              Worksheet (Tab)
+            </span>
+            {loadingWorksheets && <Loader2 className="w-3 h-3 text-emerald-400 animate-spin" />}
+          </label>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={worksheet}
+              onChange={(e) => {
+                setWorksheet(e.target.value);
+                updateConfig({ worksheet: e.target.value });
+              }}
+              disabled={loadingWorksheets || !spreadsheetId}
+              className="flex-1 p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+            >
+              <option value="">Select Worksheet Tab...</option>
+              {worksheets.map((w, idx) => (
+                <option key={w.sheetId || w.id || idx} value={w.title}>
+                  {w.title} {w.rowCount ? `(${w.rowCount} rows)` : ''}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => spreadsheetId && fetchWorksheets(spreadsheetId, credentialId)}
+              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       {/* 3.6 Batch Update Node Configuration */}
       {(currentType === 'googleSheetsBatchUpdate' || currentType === 'batchUpdate' || config.operation === 'batchUpdate') && (
         <div className="space-y-3 pt-2 border-t border-slate-800/80">

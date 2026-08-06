@@ -708,4 +708,64 @@ export class GoogleSheetsService {
       executionTime,
     };
   }
+
+  /**
+   * Create a new Google Spreadsheet using Google Sheets API v4
+   */
+  static async createSpreadsheet({ credentialId, userId, title, worksheetTitle = 'Sheet1', log = console.log }) {
+    log('[CreateSpreadsheet] Loading OAuth credentials...');
+    if (!title || !String(title).trim()) {
+      throw new Error('Missing required configuration: Spreadsheet Name (title) is required.');
+    }
+
+    const cleanTitle = String(title).trim();
+    const cleanWorksheet = String(worksheetTitle || 'Sheet1').trim() || 'Sheet1';
+
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    log('[CreateSpreadsheet] Access token validated.');
+    log('[CreateSpreadsheet] Creating spreadsheet...');
+
+    try {
+      const response = await sheets.spreadsheets.create({
+        requestBody: {
+          properties: {
+            title: cleanTitle,
+          },
+          sheets: [
+            {
+              properties: {
+                title: cleanWorksheet,
+              },
+            },
+          ],
+        },
+      });
+
+      const data = response.data;
+      const spreadsheetId = data.spreadsheetId;
+      const spreadsheetUrl = data.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
+
+      log('[CreateSpreadsheet] Spreadsheet created successfully.');
+      log(`[CreateSpreadsheet] Spreadsheet ID: ${spreadsheetId}`);
+      log('[CreateSpreadsheet] Finished.');
+
+      return {
+        success: true,
+        spreadsheetId,
+        spreadsheetUrl,
+        title: cleanTitle,
+        worksheet: cleanWorksheet,
+        raw: data,
+      };
+    } catch (err) {
+      log(`[CreateSpreadsheet] ❌ Error creating spreadsheet: ${err.message}`);
+      if (err.message.includes('invalid_grant') || err.message.includes('Token') || err.status === 401) {
+        throw new Error('Google OAuth token invalid or expired. Please reconnect your Google account.');
+      }
+      if (err.status === 403 || err.message.includes('permission')) {
+        throw new Error('Permission denied by Google Drive API. Please check OAuth scopes.');
+      }
+      throw err;
+    }
+  }
 }

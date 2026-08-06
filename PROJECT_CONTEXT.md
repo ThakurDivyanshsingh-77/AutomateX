@@ -127,6 +127,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Backend Audit & Fix — Automatic Execution & Trigger Labeling**: Fixed `RuntimeManager.js` where `Execution.create` omitted `triggerType` (causing executions to default to `MANUAL` in execution history). Added `isGoogleSheetsTriggerNode()` helper in `GoogleSheetsTriggerScheduler.js` to match all node type variants (`googleSheetsTrigger`, `googleSheetsTriggerWatchRows`, operation `watchRows`) and merged node configs safely across `node.data`, `node.data.config`, and `node.config`. Passed 9/9 backend audit assertions in `test_google_sheets_trigger.js`.
 - **Backend Audit & Fix — Snapshot Read/Write Order & GOOGLE_SHEETS Labeling**: Updated `GoogleSheetsTriggerExecutor.js` and `GoogleSheetsTriggerScheduler.js` so that `TriggerSnapshot` baseline is committed **ONLY AFTER** automatic execution dispatch finishes, ensuring zero lost changes. Configured `triggerType` as `GOOGLE_SHEETS` so executions are correctly labeled in Execution History.
 
+### **Phase 17.4 Complete — Google Sheets Create Spreadsheet Node (`googleSheetsCreateSpreadsheet`)** — ✅ COMPLETED
+- **Service Layer (`GoogleSheetsService.createSpreadsheet`)**: Google Sheets API v4 integration creating a new spreadsheet in Google Drive with initial worksheet name formatting and automatic OAuth access token refresh.
+- **Dedicated Node Executor (`GoogleSheetsCreateSpreadsheetExecutor.js`)**: Resolves expression variables (e.g. `{{steps.http.title}}`, `{{now}}`), validates required inputs, invokes service layer, and captures step-by-step execution logs (`[CreateSpreadsheet] ...`).
+- **Registrations & REST Routes**: Registered `googleSheetsCreateSpreadsheet` in `ExecutorRegistry.js` and `nodeRegistry.js`. Mounted `POST /api/v1/google/sheets/create` & `POST /api/v1/google-sheets/spreadsheets/create` in `googleSheetsRoutes.js`.
+- **Frontend Properties Panel**: Added dynamic form fields in `GoogleSheetsProperties.jsx` for **Spreadsheet Name** and **Initial Worksheet Name**.
+- **Automated Verification**: Passed 3/3 assertions in `test_create_spreadsheet.js`.
+
 
 
 

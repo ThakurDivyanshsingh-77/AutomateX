@@ -10,9 +10,11 @@ import { DatabaseExecutor } from '../database/DatabaseExecutor.js';
 import { PdfGeneratorExecutor } from '../executors/PdfGeneratorExecutor.js';
 import { GoogleSheetsExecutor } from '../googleSheets/GoogleSheetsExecutor.js';
 import { GoogleSheetsTriggerExecutor } from '../googleSheets/GoogleSheetsTriggerExecutor.js';
+import { GoogleSheetsCreateSpreadsheetExecutor } from '../googleSheets/GoogleSheetsCreateSpreadsheetExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
+const googleSheetsCreateSpreadsheetExecutor = new GoogleSheetsCreateSpreadsheetExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -52,7 +54,7 @@ export class ExecutorRegistry {
     ['googleSheetsDeleteRow', googleSheetsExecutor],
     ['googleSheetsClearRange', googleSheetsExecutor],
     ['googleSheetsBatchUpdate', googleSheetsExecutor],
-    ['googleSheetsCreateSpreadsheet', googleSheetsExecutor],
+    ['googleSheetsCreateSpreadsheet', googleSheetsCreateSpreadsheetExecutor],
     ['googleSheetsCreateWorksheet', googleSheetsExecutor],
     ['googleSheetsDuplicateWorksheet', googleSheetsExecutor],
     ['googleSheetsDeleteWorksheet', googleSheetsExecutor],
