@@ -128,8 +128,14 @@ export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, workfl
   const fetchWorksheets = async (sheetId, credId) => {
     setLoadingWorksheets(true);
     try {
-      const res = await api.get(`/google/sheets/${sheetId}/worksheets?credentialId=${credId}`);
+      console.log(`Loading worksheets...\nSpreadsheet ID: ${sheetId}`);
+      const res = await api.get(`/google/sheets/${sheetId}/worksheets?credentialId=${credId}&_t=${Date.now()}`);
       const tabs = res.data?.worksheets || [];
+      const formattedDto = tabs.map((w) => ({ sheetId: w.sheetId ?? w.id ?? 0, title: w.title }));
+      console.log('\nFound worksheets:\n');
+      console.log(JSON.stringify(formattedDto, null, 2));
+      console.log(`\nDropdown loaded:\n${tabs.length} worksheets\n`);
+
       setWorksheets(tabs);
       if (tabs.length > 0 && (!worksheetTitle || !tabs.some((t) => t.title === worksheetTitle))) {
         setWorksheetTitle(tabs[0].title);
@@ -298,9 +304,9 @@ export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, workfl
           className="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 text-xs disabled:opacity-50"
         >
           <option value="">{loadingWorksheets ? 'Loading worksheet tabs...' : 'Select Sheet Tab...'}</option>
-          {worksheets.map((w) => (
-            <option key={w.sheetId || w.title} value={w.title}>
-              {w.title} ({w.rowCount} rows)
+          {worksheets.map((w, idx) => (
+            <option key={w.sheetId ?? w.id ?? w.title ?? idx} value={w.title}>
+              {w.title}
             </option>
           ))}
         </select>

@@ -105,45 +105,38 @@ export class GoogleSheetsService {
    * Get Worksheets (Sheet Tabs) for a given Spreadsheet
    */
   static async getWorksheets({ credentialId, userId, spreadsheetId }) {
-    console.log(`[GoogleSheetsService] 🔍 getWorksheets requested for Spreadsheet ID: ${spreadsheetId}, User ID: ${userId}, Credential ID: ${credentialId || 'default'}`);
+    console.log(`Loading worksheets...\nSpreadsheet ID: ${spreadsheetId}`);
 
     if (!spreadsheetId || spreadsheetId === 'undefined' || spreadsheetId === 'null') {
       console.warn('[GoogleSheetsService] ⚠️ Invalid spreadsheet ID passed to getWorksheets');
-      return [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }];
+      return [{ sheetId: 0, title: 'Sheet1', index: 0 }];
     }
 
     try {
       const sheets = await this.getSheetsClient(credentialId, userId);
 
-      console.log(`[GoogleSheetsService] 📤 Executing Google Sheets API spreadsheets.get for ID: ${spreadsheetId}`);
       const response = await sheets.spreadsheets.get({
         spreadsheetId,
-        fields: 'sheets(properties(sheetId, title, index, gridProperties))',
+        fields: 'sheets(properties(sheetId, title, index))',
       });
 
       const rawSheets = response.data.sheets || [];
-      console.log(`[GoogleSheetsService] 📥 Received ${rawSheets.length} sheet tab(s) from Google Sheets API`);
 
       const worksheets = rawSheets.map((s) => ({
-        id: s.properties.sheetId,
         sheetId: s.properties.sheetId,
         title: s.properties.title,
         index: s.properties.index,
-        rowCount: s.properties.gridProperties?.rowCount || 0,
-        columnCount: s.properties.gridProperties?.columnCount || 0,
       }));
 
-      console.log('Fetching worksheets...');
-      console.log(`Worksheets loaded: ${worksheets.length}`);
-      console.log('Sheet:');
-      worksheets.forEach((w) => console.log(`- ${w.title}`));
+      console.log('\nFound worksheets:\n');
+      console.log(JSON.stringify(worksheets, null, 2));
+      console.log(`\nDropdown loaded:\n${worksheets.length} worksheets\n`);
 
       return worksheets;
     } catch (err) {
       console.error(`[GoogleSheetsService] ⚠️ Google Sheets API getWorksheets error for ${spreadsheetId}: ${err.message}`);
-      // Fallback sheet tab array to prevent HTTP 500 server crashes in frontend
       return [
-        { id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }
+        { sheetId: 0, title: 'Sheet1', index: 0 }
       ];
     }
   }

@@ -209,13 +209,14 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     setLoadingWorksheets(true);
     try {
       const targetCred = credId || credentialId || (credentials.length > 0 ? credentials[0]._id : '');
-      console.log('Fetching worksheets...');
+      console.log(`Loading worksheets...\nSpreadsheet ID: ${spId}`);
       const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${targetCred}&_t=${Date.now()}`);
       if (res.data.success) {
         const fetchedWorksheets = res.data.worksheets || [];
-        console.log(`Worksheets loaded: ${fetchedWorksheets.length}`);
-        console.log('Sheet:');
-        fetchedWorksheets.forEach((w) => console.log(`- ${w.title}`));
+        const formattedDto = fetchedWorksheets.map((w) => ({ sheetId: w.sheetId ?? w.id ?? 0, title: w.title }));
+        console.log('\nFound worksheets:\n');
+        console.log(JSON.stringify(formattedDto, null, 2));
+        console.log(`\nDropdown loaded:\n${fetchedWorksheets.length} worksheets\n`);
 
         setWorksheets(fetchedWorksheets);
 
@@ -523,8 +524,8 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             >
               <option value="">Select Worksheet Tab...</option>
               {worksheets.map((w, idx) => (
-                <option key={w.sheetId || w.id || idx} value={w.title}>
-                  {w.title} {w.rowCount ? `(${w.rowCount} rows)` : ''}
+                <option key={w.sheetId ?? w.id ?? idx} value={w.title}>
+                  {w.title}
                 </option>
               ))}
             </select>
