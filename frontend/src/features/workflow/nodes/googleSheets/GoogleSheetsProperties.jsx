@@ -25,6 +25,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const currentType = nodeType || currentNode?.type || 'googleSheetsAppendRow';
   const config = currentNode?.data?.config || nodeData?.config || {};
   const isFindRowNode = currentType === 'googleSheetsFindRow' || currentType === 'findRow' || config.operation === 'findRow';
+  const isCreateSpreadsheetNode = currentType === 'googleSheetsCreateSpreadsheet' || currentType === 'createSpreadsheet' || config.operation === 'createSpreadsheet';
 
   // Form State
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
@@ -68,26 +69,26 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     fetchCredentials();
   }, []);
 
-  // 2. Fetch Spreadsheets when Credential Changes
+  // 2. Fetch Spreadsheets when Credential Changes (ONLY for existing spreadsheet operations)
   useEffect(() => {
-    if (credentialId) {
+    if (credentialId && !isCreateSpreadsheetNode) {
       fetchSpreadsheets(credentialId);
     }
-  }, [credentialId]);
+  }, [credentialId, isCreateSpreadsheetNode]);
 
-  // 3. Fetch Worksheets when Spreadsheet or Credential Changes
+  // 3. Fetch Worksheets when Spreadsheet or Credential Changes (ONLY for existing spreadsheet operations)
   useEffect(() => {
-    if (spreadsheetId && credentialId) {
+    if (spreadsheetId && credentialId && !isCreateSpreadsheetNode) {
       fetchWorksheets(spreadsheetId, credentialId);
     }
-  }, [spreadsheetId, credentialId]);
+  }, [spreadsheetId, credentialId, isCreateSpreadsheetNode]);
 
-  // 4. Auto Detect Headers when Worksheet Changes
+  // 4. Auto Detect Headers when Worksheet Changes (ONLY for existing worksheet operations)
   useEffect(() => {
-    if (spreadsheetId && worksheet) {
+    if (spreadsheetId && worksheet && !isCreateSpreadsheetNode) {
       fetchHeaders(spreadsheetId, worksheet);
     }
-  }, [spreadsheetId, worksheet]);
+  }, [spreadsheetId, worksheet, isCreateSpreadsheetNode]);
 
   const updateConfig = (newFields) => {
     const nextConfig = {
@@ -128,6 +129,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   };
 
   const fetchSpreadsheets = async (credId) => {
+    if (isCreateSpreadsheetNode || !credId) return;
     setLoadingSpreadsheets(true);
     try {
       const res = await api.get(`/google/sheets?credentialId=${credId}`);
@@ -146,7 +148,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   };
 
   const fetchWorksheets = async (spId, credId = credentialId) => {
-    if (!spId) return;
+    if (isCreateSpreadsheetNode || !spId) return;
     setLoadingWorksheets(true);
     try {
       const targetCred = credId || credentialId;
@@ -176,6 +178,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   };
 
   const fetchHeaders = async (spId, wsTitle) => {
+    if (isCreateSpreadsheetNode || !spId || !wsTitle) return;
     setLoadingHeaders(true);
     try {
       const res = await api.get(`/google/sheets/${spId}/headers?credentialId=${credentialId}&worksheet=${encodeURIComponent(wsTitle)}&headerRow=${headerRow}`);
@@ -605,7 +608,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <span>Case Sensitive Match</span>
           </label>
         </div>
-      ) : (
+      ) : isCreateSpreadsheetNode ? null : (
         /* Standard Column Auto-Mapper for Append/Update */
         <div className="space-y-3 pt-2 border-t border-slate-800/80">
           <div className="flex items-center justify-between">
@@ -659,30 +662,32 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         </div>
       )}
 
-      {/* 5. Live Test & Preview Button */}
-      <div className="pt-2 border-t border-slate-800/80 space-y-2">
-        <button
-          type="button"
-          onClick={handleTestOperation}
-          disabled={testing || !spreadsheetId}
-          className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
-        >
-          {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-          Test Connection & Read Preview Rows
-        </button>
+      {/* 5. Live Test & Preview Button (ONLY for existing spreadsheet operations) */}
+      {!isCreateSpreadsheetNode && (
+        <div className="pt-2 border-t border-slate-800/80 space-y-2">
+          <button
+            type="button"
+            onClick={handleTestOperation}
+            disabled={testing || !spreadsheetId}
+            className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+          >
+            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+            Test Connection & Read Preview Rows
+          </button>
 
-        {testResult && (
-          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] space-y-1">
-            <div className="text-emerald-400 font-bold flex items-center justify-between">
-              <span>Status: {testResult.success ? 'Success 200 OK' : 'Failed'}</span>
-              <span>Rows Read: {testResult.rows?.length || 0}</span>
+          {testResult && (
+            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] space-y-1">
+              <div className="text-emerald-400 font-bold flex items-center justify-between">
+                <span>Status: {testResult.success ? 'Success 200 OK' : 'Failed'}</span>
+                <span>Rows Read: {testResult.rows?.length || 0}</span>
+              </div>
+              <pre className="max-h-32 overflow-y-auto text-slate-300 bg-slate-900 p-2 rounded border border-slate-800">
+                {JSON.stringify(testResult.rows || testResult, null, 2)}
+              </pre>
             </div>
-            <pre className="max-h-32 overflow-y-auto text-slate-300 bg-slate-900 p-2 rounded border border-slate-800">
-              {JSON.stringify(testResult.rows || testResult, null, 2)}
-            </pre>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

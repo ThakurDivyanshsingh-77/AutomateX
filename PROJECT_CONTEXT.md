@@ -133,6 +133,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Registrations & REST Routes**: Registered `googleSheetsCreateSpreadsheet` in `ExecutorRegistry.js` and `nodeRegistry.js`. Mounted `POST /api/v1/google/sheets/create` & `POST /api/v1/google-sheets/spreadsheets/create` in `googleSheetsRoutes.js`.
 - **Frontend Properties Panel**: Added dynamic form fields in `GoogleSheetsProperties.jsx` for **Spreadsheet Name** and **Initial Worksheet Name**.
 - **Automated Verification**: Passed 3/3 assertions in `test_create_spreadsheet.js`.
+- **UI & Header Detection Fix**: Guarded `fetchSpreadsheets`, `fetchWorksheets`, and `fetchHeaders` in `GoogleSheetsProperties.jsx` with `isCreateSpreadsheetNode` check. Hidden Column Auto-Mapper and Test Read controls so header auto-detection runs exclusively on existing worksheet nodes (`Append Row`, `Read Rows`, `Update Row`, `Delete Row`, `Find Row`).
 
 
 
