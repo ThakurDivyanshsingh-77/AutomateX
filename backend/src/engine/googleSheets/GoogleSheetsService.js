@@ -712,14 +712,16 @@ export class GoogleSheetsService {
   /**
    * Create a new Google Spreadsheet using Google Sheets API v4
    */
-  static async createSpreadsheet({ credentialId, userId, title, worksheetTitle = 'Sheet1', log = console.log }) {
+  static async createSpreadsheet({ credentialId, userId, title, spreadsheetName, worksheetTitle, initialWorksheetName, log = console.log }) {
     log('[CreateSpreadsheet] Loading OAuth credentials...');
-    if (!title || !String(title).trim()) {
-      throw new Error('Missing required configuration: Spreadsheet Name (title) is required.');
-    }
+    
+    // Explicit separation: Spreadsheet File Title vs Initial Worksheet Tab Title
+    const finalTitle = String(spreadsheetName || title || '').trim();
+    const finalWorksheet = String(initialWorksheetName || worksheetTitle || '').trim() || 'Sheet1';
 
-    const cleanTitle = String(title).trim();
-    const cleanWorksheet = String(worksheetTitle || 'Sheet1').trim() || 'Sheet1';
+    if (!finalTitle) {
+      throw new Error('Missing required configuration: Spreadsheet Name is required.');
+    }
 
     const sheets = await this.getSheetsClient(credentialId, userId);
     log('[CreateSpreadsheet] Access token validated.');
@@ -729,12 +731,12 @@ export class GoogleSheetsService {
       const response = await sheets.spreadsheets.create({
         requestBody: {
           properties: {
-            title: cleanTitle,
+            title: finalTitle,
           },
           sheets: [
             {
               properties: {
-                title: cleanWorksheet,
+                title: finalWorksheet,
               },
             },
           ],
@@ -753,8 +755,8 @@ export class GoogleSheetsService {
         success: true,
         spreadsheetId,
         spreadsheetUrl,
-        title: cleanTitle,
-        worksheet: cleanWorksheet,
+        title: finalTitle,
+        worksheet: finalWorksheet,
         raw: data,
       };
     } catch (err) {

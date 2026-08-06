@@ -100,6 +100,10 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
       range,
       headerRow,
       mappings,
+      title,
+      spreadsheetName: title,
+      initialWorksheetName,
+      worksheetTitle: initialWorksheetName,
       ...newFields,
     };
 
@@ -309,8 +313,9 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
               type="text"
               value={title}
               onChange={(e) => {
-                setTitle(e.target.value);
-                updateConfig({ title: e.target.value, spreadsheetName: e.target.value });
+                const val = e.target.value;
+                setTitle(val);
+                updateConfig({ title: val, spreadsheetName: val });
               }}
               placeholder="e.g. AutomateX Report {{now}}"
               className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 font-mono text-xs"
@@ -326,10 +331,11 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
               type="text"
               value={initialWorksheetName}
               onChange={(e) => {
-                setInitialWorksheetName(e.target.value);
-                updateConfig({ worksheetTitle: e.target.value, initialWorksheetName: e.target.value, worksheet: e.target.value });
+                const val = e.target.value;
+                setInitialWorksheetName(val);
+                updateConfig({ worksheetTitle: val, initialWorksheetName: val });
               }}
-              placeholder="e.g. Sheet1 or Data"
+              placeholder="e.g. Sheet1 or Orders"
               className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-emerald-500 font-mono text-xs"
             />
           </div>

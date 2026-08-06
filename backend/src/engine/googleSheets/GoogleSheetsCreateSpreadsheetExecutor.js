@@ -15,39 +15,51 @@ export class GoogleSheetsCreateSpreadsheetExecutor {
       logs.push({ message: msg, timestamp: new Date().toISOString() });
     };
 
-    const rawTitle = config.title || config.spreadsheetName || config.name || '';
-    const rawWorksheet = config.worksheetTitle || config.worksheet || config.initialWorksheetName || 'Sheet1';
+    // Spreadsheet file title MUST come strictly from spreadsheetName or title or name
+    const rawSpreadsheetName = (config.spreadsheetName !== undefined && config.spreadsheetName !== '')
+      ? config.spreadsheetName
+      : (config.title !== undefined ? config.title : (config.name || ''));
 
-    // Resolve dynamic expressions (e.g. {{steps.http.title}}, {{now}}) using ExpressionEngine
-    let title = rawTitle;
-    let worksheetTitle = rawWorksheet;
+    // Initial worksheet tab title MUST come strictly from initialWorksheetName or worksheetTitle or worksheet
+    const rawWorksheetName = (config.initialWorksheetName !== undefined && config.initialWorksheetName !== '')
+      ? config.initialWorksheetName
+      : (config.worksheetTitle !== undefined && config.worksheetTitle !== ''
+          ? config.worksheetTitle
+          : (config.worksheet !== undefined && config.worksheet !== '' ? config.worksheet : 'Sheet1'));
 
+    let spreadsheetName = rawSpreadsheetName;
+    let initialWorksheetName = rawWorksheetName;
+
+    // Resolve expressions independently
     if (context && typeof context.resolveVariables === 'function') {
-      title = context.resolveVariables(rawTitle);
-      worksheetTitle = context.resolveVariables(rawWorksheet);
-    } else if (typeof rawTitle === 'string' && rawTitle.includes('{{')) {
-      title = ExpressionEngine.resolve(rawTitle, context);
+      if (rawSpreadsheetName) spreadsheetName = context.resolveVariables(rawSpreadsheetName);
+      if (rawWorksheetName) initialWorksheetName = context.resolveVariables(rawWorksheetName);
+    } else {
+      if (typeof rawSpreadsheetName === 'string' && rawSpreadsheetName.includes('{{')) {
+        spreadsheetName = ExpressionEngine.resolve(rawSpreadsheetName, context);
+      }
+      if (typeof rawWorksheetName === 'string' && rawWorksheetName.includes('{{')) {
+        initialWorksheetName = ExpressionEngine.resolve(rawWorksheetName, context);
+      }
     }
 
-    if (typeof rawWorksheet === 'string' && rawWorksheet.includes('{{')) {
-      worksheetTitle = ExpressionEngine.resolve(rawWorksheet, context);
-    }
-
-    title = title || rawTitle;
-    worksheetTitle = worksheetTitle || rawWorksheet || 'Sheet1';
+    spreadsheetName = String(spreadsheetName || rawSpreadsheetName || '').trim();
+    initialWorksheetName = String(initialWorksheetName || rawWorksheetName || '').trim() || 'Sheet1';
 
     const credentialId = config.credentialId;
     const userId = context.userId || context.ownerId;
 
-    if (!title || !String(title).trim()) {
-      throw new Error(`Google Sheets Execution Error: Spreadsheet Name (title) is required for node "${node.id}".`);
+    if (!spreadsheetName) {
+      throw new Error(`Google Sheets Execution Error: Spreadsheet Name is required for node "${node.id}".`);
     }
 
     const result = await GoogleSheetsService.createSpreadsheet({
       credentialId,
       userId,
-      title,
-      worksheetTitle,
+      spreadsheetName,
+      title: spreadsheetName,
+      initialWorksheetName,
+      worksheetTitle: initialWorksheetName,
       log,
     });
 
