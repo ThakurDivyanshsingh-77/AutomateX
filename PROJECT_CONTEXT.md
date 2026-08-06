@@ -145,6 +145,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **UI Scoping & Cleanup**: Guarded `isCreateWorksheetNode` across `useEffect` (preventing unwanted `fetchWorksheets` execution) and `updateConfig` (pruning `worksheet`, `range`, `headerRow`, and `mappings` from node config). Removed existing Worksheet selector, Column Auto-Mapper, and Live Test buttons for Create Worksheet node.
 - **Automated Verification**: Passed 7/7 assertions in `test_create_worksheet.js` (verified creation of "Orders", "Customers", and exact error on duplicate "Orders").
 
+### **Phase 17.6 Complete — Google Sheets Delete Worksheet Node (`googleSheetsDeleteWorksheet`)** — ✅ COMPLETED
+- **Service Layer (`GoogleSheetsService.deleteWorksheet`)**: Google Sheets API v4 `spreadsheets.batchUpdate()` integration with `deleteSheet` request payload. Includes `getWorksheets()` metadata pre-flight check to resolve `sheetId` by title. Enforces safety rules: non-existent tab validation (`"Worksheet '<name>' not found."`) and single remaining worksheet tab protection (`"Cannot delete the last worksheet in a spreadsheet."`).
+- **Dedicated Node Executor (`GoogleSheetsDeleteWorksheetExecutor.js`)**: Resolves expression variables, validates required inputs, invokes service layer, and outputs structured execution logs (`Loading credentials...`, `Fetching spreadsheet...`, `Locating worksheet...`, `Deleting worksheet...`, `Worksheet deleted successfully.`, `Finished.`).
+- **Registrations & REST Routes**: Registered `googleSheetsDeleteWorksheet` in `ExecutorRegistry.js` and `nodeRegistry.js`. Mounted `POST /api/v1/google/sheets/worksheets/delete` & `POST /api/v1/google-sheets/worksheets/delete` in `googleSheetsRoutes.js`.
+- **Frontend Properties Panel**: Integrated `isDeleteWorksheetNode` in `GoogleSheetsProperties.jsx` to render Google Account picker, Spreadsheet picker, and Worksheet dropdown selector while hiding Column Auto-Mapper and Live Test controls.
+- **Automated Verification**: Passed 6/6 assertions in `test_delete_worksheet.js` (verified Test 1: deleting tab from multi-tab sheet, Test 2: non-existent tab error, and Test 3: sole remaining tab safety error).
+
 
 
 

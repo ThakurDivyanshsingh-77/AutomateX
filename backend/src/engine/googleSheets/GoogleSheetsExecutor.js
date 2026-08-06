@@ -48,6 +48,15 @@ export class GoogleSheetsExecutor {
           columnCount: config.columnCount || 26,
         });
         break;
+      case 'deleteWorksheet':
+      case 'googleSheetsDeleteWorksheet':
+        result = await GoogleSheetsService.deleteWorksheet({
+          credentialId,
+          userId,
+          spreadsheetId,
+          worksheetTitle: config.worksheetTitle || config.worksheetName || config.worksheet,
+        });
+        break;
       case 'readRows':
       case 'googleSheetsReadRows':
         result = await GoogleSheetsService.readRows({

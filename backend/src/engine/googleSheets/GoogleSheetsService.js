@@ -884,4 +884,77 @@ export class GoogleSheetsService {
       throw err;
     }
   }
+
+  /**
+   * Delete a worksheet (tab) from an existing Google Spreadsheet
+   */
+  static async deleteWorksheet({ credentialId, userId, spreadsheetId, worksheetTitle, worksheetName, worksheet, log = console.log }) {
+    log('Loading credentials...');
+    if (!spreadsheetId) {
+      throw new Error('Missing required configuration: Spreadsheet ID is required.');
+    }
+
+    const targetTitle = String(worksheetTitle || worksheetName || worksheet || '').trim();
+    if (!targetTitle) {
+      throw new Error('Missing required configuration: Worksheet selection is required.');
+    }
+
+    log('Fetching spreadsheet...');
+    const worksheets = await this.getWorksheets({ credentialId, userId, spreadsheetId });
+
+    log('Locating worksheet...');
+    const targetSheet = worksheets.find(
+      (w) => String(w.title).trim().toLowerCase() === targetTitle.toLowerCase()
+    );
+
+    if (!targetSheet) {
+      throw new Error(`Worksheet '${targetTitle}' not found.`);
+    }
+
+    if (worksheets.length <= 1) {
+      throw new Error('Cannot delete the last worksheet in a spreadsheet.');
+    }
+
+    const targetSheetId = targetSheet.id !== undefined ? targetSheet.id : targetSheet.sheetId;
+
+    const sheets = await this.getSheetsClient(credentialId, userId);
+    log('Deleting worksheet...');
+
+    try {
+      const response = await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              deleteSheet: {
+                sheetId: targetSheetId,
+              },
+            },
+          ],
+        },
+      });
+
+      log('Worksheet deleted successfully.');
+      log('Finished.');
+
+      return {
+        success: true,
+        spreadsheetId,
+        deletedWorksheet: targetSheet.title,
+        message: 'Worksheet deleted successfully.',
+        raw: response.data,
+      };
+    } catch (err) {
+      if (err.message.includes('not found') || err.message.includes('last worksheet')) {
+        throw err;
+      }
+      if (err.message.includes('invalid_grant') || err.message.includes('Token') || err.status === 401) {
+        throw new Error('Google OAuth token invalid or expired. Please reconnect your Google account.');
+      }
+      if (err.status === 403 || err.message.includes('permission')) {
+        throw new Error('Permission denied by Google Drive API. Please check OAuth scopes.');
+      }
+      throw err;
+    }
+  }
 }

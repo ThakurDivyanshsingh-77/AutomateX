@@ -12,11 +12,13 @@ import { GoogleSheetsExecutor } from '../googleSheets/GoogleSheetsExecutor.js';
 import { GoogleSheetsTriggerExecutor } from '../googleSheets/GoogleSheetsTriggerExecutor.js';
 import { GoogleSheetsCreateSpreadsheetExecutor } from '../googleSheets/GoogleSheetsCreateSpreadsheetExecutor.js';
 import { GoogleSheetsCreateWorksheetExecutor } from '../googleSheets/GoogleSheetsCreateWorksheetExecutor.js';
+import { GoogleSheetsDeleteWorksheetExecutor } from '../googleSheets/GoogleSheetsDeleteWorksheetExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
 const googleSheetsCreateSpreadsheetExecutor = new GoogleSheetsCreateSpreadsheetExecutor();
 const googleSheetsCreateWorksheetExecutor = new GoogleSheetsCreateWorksheetExecutor();
+const googleSheetsDeleteWorksheetExecutor = new GoogleSheetsDeleteWorksheetExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -59,7 +61,7 @@ export class ExecutorRegistry {
     ['googleSheetsCreateSpreadsheet', googleSheetsCreateSpreadsheetExecutor],
     ['googleSheetsCreateWorksheet', googleSheetsCreateWorksheetExecutor],
     ['googleSheetsDuplicateWorksheet', googleSheetsExecutor],
-    ['googleSheetsDeleteWorksheet', googleSheetsExecutor],
+    ['googleSheetsDeleteWorksheet', googleSheetsDeleteWorksheetExecutor],
     ['googleSheetsGetSpreadsheetInfo', googleSheetsExecutor],
   ]);
 

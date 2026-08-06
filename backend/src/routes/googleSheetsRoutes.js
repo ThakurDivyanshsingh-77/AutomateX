@@ -402,4 +402,39 @@ const handleCreateWorksheet = async (req, res, next) => {
 router.post('/sheets/worksheets/create', handleCreateWorksheet);
 router.post('/worksheets/create', handleCreateWorksheet);
 
+/**
+ * POST /api/v1/google/sheets/worksheets/delete
+ * POST /api/v1/google-sheets/worksheets/delete
+ * Delete a worksheet tab from an existing Google Spreadsheet
+ */
+const handleDeleteWorksheet = async (req, res, next) => {
+  try {
+    const { credentialId, spreadsheetId, worksheetTitle, worksheetName, worksheet } = req.body;
+    const result = await GoogleSheetsService.deleteWorksheet({
+      credentialId,
+      userId: req.user._id,
+      spreadsheetId,
+      worksheetTitle: worksheetTitle || worksheetName || worksheet,
+    });
+    return res.json(result);
+  } catch (err) {
+    if (err.message.includes('required') || err.message.includes('Missing')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('not found')) {
+      return res.status(404).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('last worksheet')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('token') || err.message.includes('401') || err.message.includes('OAuth')) {
+      return res.status(401).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+};
+
+router.post('/sheets/worksheets/delete', handleDeleteWorksheet);
+router.post('/worksheets/delete', handleDeleteWorksheet);
+
 export default router;

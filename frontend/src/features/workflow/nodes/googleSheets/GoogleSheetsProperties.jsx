@@ -27,6 +27,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const isFindRowNode = currentType === 'googleSheetsFindRow' || currentType === 'findRow' || config.operation === 'findRow';
   const isCreateSpreadsheetNode = currentType === 'googleSheetsCreateSpreadsheet' || currentNode?.type === 'googleSheetsCreateSpreadsheet' || nodeType === 'googleSheetsCreateSpreadsheet' || currentType === 'createSpreadsheet' || config.operation === 'createSpreadsheet';
   const isCreateWorksheetNode = currentType === 'googleSheetsCreateWorksheet' || currentNode?.type === 'googleSheetsCreateWorksheet' || nodeType === 'googleSheetsCreateWorksheet' || currentType === 'createWorksheet' || config.operation === 'createWorksheet';
+  const isDeleteWorksheetNode = currentType === 'googleSheetsDeleteWorksheet' || currentNode?.type === 'googleSheetsDeleteWorksheet' || nodeType === 'googleSheetsDeleteWorksheet' || currentType === 'deleteWorksheet' || config.operation === 'deleteWorksheet';
 
   // Form State
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
@@ -92,10 +93,10 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
 
   // 4. Auto Detect Headers when Worksheet Changes (ONLY for existing worksheet operations)
   useEffect(() => {
-    if (spreadsheetId && worksheet && !isCreateSpreadsheetNode && !isCreateWorksheetNode) {
+    if (spreadsheetId && worksheet && !isCreateSpreadsheetNode && !isCreateWorksheetNode && !isDeleteWorksheetNode) {
       fetchHeaders(spreadsheetId, worksheet);
     }
-  }, [spreadsheetId, worksheet, isCreateSpreadsheetNode, isCreateWorksheetNode]);
+  }, [spreadsheetId, worksheet, isCreateSpreadsheetNode, isCreateWorksheetNode, isDeleteWorksheetNode]);
 
   const updateConfig = (newFields) => {
     const baseConfig = {
@@ -121,6 +122,17 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         columnCount: activeColumnCount,
       };
       delete nextConfig.worksheet;
+      delete nextConfig.range;
+      delete nextConfig.headerRow;
+      delete nextConfig.mappings;
+    } else if (isDeleteWorksheetNode) {
+      const activeWorksheet = newFields.worksheet || newFields.worksheetTitle || worksheet;
+      nextConfig = {
+        ...baseConfig,
+        operation: 'deleteWorksheet',
+        worksheet: activeWorksheet,
+        worksheetTitle: activeWorksheet,
+      };
       delete nextConfig.range;
       delete nextConfig.headerRow;
       delete nextConfig.mappings;
