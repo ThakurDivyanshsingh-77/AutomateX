@@ -116,13 +116,15 @@ export class GoogleSheetsService {
         columnCount: s.properties.gridProperties?.columnCount || 0,
       }));
 
+      console.log('Fetching worksheets...');
+      console.log(`Worksheets loaded: ${worksheets.length}`);
+      console.log('Sheet:');
+      worksheets.forEach((w) => console.log(`- ${w.title}`));
+
       return worksheets;
     } catch (err) {
-      console.warn(`[GoogleSheetsService] ⚠️ Google Sheets API getWorksheets warning for ${spreadsheetId}: ${err.message}`);
-      // Return default Sheet1 tab fallback cleanly instead of throwing error to toast listener
-      return [
-        { id: 0, sheetId: 0, title: 'Sheet1', index: 0, rowCount: 100, columnCount: 26 }
-      ];
+      console.error(`[GoogleSheetsService] ❌ Google Sheets API getWorksheets failed for ${spreadsheetId}: ${err.message}`);
+      throw err;
     }
   }
 

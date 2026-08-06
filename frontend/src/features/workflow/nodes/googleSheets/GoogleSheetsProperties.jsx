@@ -209,26 +209,31 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
     setLoadingWorksheets(true);
     try {
       const targetCred = credId || credentialId;
-      const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${targetCred}`);
+      console.log('Fetching worksheets...');
+      const res = await api.get(`/google/sheets/${spId}/worksheets?credentialId=${targetCred}&_t=${Date.now()}`);
       if (res.data.success) {
         const fetchedWorksheets = res.data.worksheets || [];
+        console.log(`Worksheets loaded: ${fetchedWorksheets.length}`);
+        console.log('Sheet:');
+        fetchedWorksheets.forEach((w) => console.log(`- ${w.title}`));
+
         setWorksheets(fetchedWorksheets);
+
         if (fetchedWorksheets.length > 0) {
-          const firstTitle = fetchedWorksheets[0].title;
-          if (!worksheet) {
-            setWorksheet(firstTitle);
-            updateConfig({ worksheet: firstTitle });
+          const titles = fetchedWorksheets.map((w) => w.title);
+          const isCurrentValid = titles.includes(worksheet);
+
+          if (!worksheet || !isCurrentValid) {
+            const defaultSheet = titles.includes('Sheet1') ? 'Sheet1' : fetchedWorksheets[0].title;
+            setWorksheet(defaultSheet);
+            updateConfig({ worksheet: defaultSheet });
           }
         }
       }
     } catch (err) {
-      // Set default fallback Sheet1 tab on any network error so user can continue without blocking
-      const fallbackWorksheets = [{ id: 0, sheetId: 0, title: 'Sheet1', index: 0 }];
-      setWorksheets(fallbackWorksheets);
-      if (!worksheet) {
-        setWorksheet('Sheet1');
-        updateConfig({ worksheet: 'Sheet1' });
-      }
+      console.error('[GoogleSheetsProperties] Failed to load worksheets from Google Sheets API', err);
+      toast.error('Failed to load worksheets from Google Sheets API');
+      setWorksheets([]);
     } finally {
       setLoadingWorksheets(false);
     }
