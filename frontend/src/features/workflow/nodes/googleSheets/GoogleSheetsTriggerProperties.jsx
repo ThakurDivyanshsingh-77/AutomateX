@@ -91,16 +91,19 @@ export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, workfl
 
   const fetchCredentials = async () => {
     try {
-      const res = await credentialService.getAllCredentials();
-      const list = Array.isArray(res) ? res : res?.credentials || res?.data || [];
-      const googleCreds = list.filter((c) => c.type === 'google' || c.type === 'google_oauth' || c.type === 'google_sheets');
-      setCredentials(googleCreds);
-      if (googleCreds.length > 0 && !credentialId) {
-        setCredentialId(googleCreds[0]._id);
-        updateConfig({ credentialId: googleCreds[0]._id });
+      console.log('[GoogleSheetsTriggerProperties] 🔍 Fetching Google OAuth credentials via shared credentialService.getGoogleOAuthCredentials()');
+      const response = await credentialService.getGoogleOAuthCredentials();
+      if (response?.success) {
+        const googleCreds = response.data || [];
+        console.log(`[GoogleSheetsTriggerProperties] ✅ Loaded ${googleCreds.length} Google OAuth account(s)`, googleCreds.map(c => ({ id: c._id, name: c.name })));
+        setCredentials(googleCreds);
+        if (!credentialId && googleCreds.length > 0) {
+          setCredentialId(googleCreds[0]._id);
+          updateConfig({ credentialId: googleCreds[0]._id });
+        }
       }
     } catch (err) {
-      console.error('Failed to fetch credentials:', err);
+      console.error('[GoogleSheetsTriggerProperties] ❌ Failed to fetch Google OAuth credentials:', err);
     }
   };
 

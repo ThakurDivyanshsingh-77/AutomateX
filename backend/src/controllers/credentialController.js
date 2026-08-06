@@ -84,21 +84,23 @@ export const deleteCredential = async (req, res, next) => {
  */
 export const getGmailCredentials = async (req, res, next) => {
   try {
-    console.debug('[CredentialController] GET /credentials/google', {
-      authenticatedUserId: String(req.user._id),
-    });
+    const apiUrl = '/api/v1/credentials/google';
+    const authHeader = req.headers.authorization ? 'Bearer [PRESENT]' : 'NONE';
+    const userId = String(req.user?._id || req.user?.id);
+
+    console.log(`[CredentialController] 📥 GET ${apiUrl} | User: ${userId} | Auth: ${authHeader}`);
+
     const credentials = await credentialService.getGoogleOAuthCredentials(req.user._id);
-    console.debug('[CredentialController] Google OAuth response', {
-      authenticatedUserId: String(req.user._id),
-      count: credentials.length,
-      credentialIds: credentials.map((credential) => String(credential._id)),
-    });
+
+    console.log(`[CredentialController] 📤 Google OAuth Response | User: ${userId} | Count: ${credentials.length} | Credentials:`, credentials.map((c) => ({ id: String(c._id), name: c.name, service: c.service })));
+
     return res.status(200).json({
       success: true,
       count: credentials.length,
       data: credentials,
     });
   } catch (error) {
+    console.error(`[CredentialController] ❌ Error in GET /api/v1/credentials/google: ${error.message}`);
     return res.status(500).json({
       success: false,
       message: error.message,
