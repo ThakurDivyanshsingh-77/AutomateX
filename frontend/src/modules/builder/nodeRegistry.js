@@ -190,6 +190,8 @@ export const NODE_REGISTRY = {
     color: 'emerald',
     badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     defaultConfig: { worksheet: '' },
+    requiresColumns: false,
+    supportsColumnMapping: false,
   },
   [NODE_TYPES.GOOGLE_SHEETS_READ_ROWS]: {
     type: NODE_TYPES.GOOGLE_SHEETS_READ_ROWS,

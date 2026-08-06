@@ -150,6 +150,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Dedicated Node Executor (`GoogleSheetsDeleteWorksheetExecutor.js`)**: Resolves expression variables, validates required inputs, invokes service layer, and outputs structured execution logs (`Loading credentials...`, `Fetching spreadsheet...`, `Locating worksheet...`, `Deleting worksheet...`, `Worksheet deleted successfully.`, `Finished.`).
 - **Registrations & REST Routes**: Registered `googleSheetsDeleteWorksheet` in `ExecutorRegistry.js` and `nodeRegistry.js`. Mounted `POST /api/v1/google/sheets/worksheets/delete` & `POST /api/v1/google-sheets/worksheets/delete` in `googleSheetsRoutes.js`.
 - **Frontend Properties Panel**: Integrated `isDeleteWorksheetNode` in `GoogleSheetsProperties.jsx` to render Google Account picker, Spreadsheet picker, and Worksheet dropdown selector while hiding Column Auto-Mapper and Live Test controls.
+- **Node Validation & Metadata Fix**: Updated `googleSheetsValidator.js`, `GoogleSheetsNodeRegistry.js`, and `modules/builder/nodeRegistry.js` with dedicated validation requiring ONLY `credentialId`, `spreadsheetId`, and `worksheet` (marking `requiresColumns: false`, `supportsColumnMapping: false`). Node becomes valid immediately upon selecting required fields without requiring column mappings.
 - **Automated Verification**: Passed 6/6 assertions in `test_delete_worksheet.js` (verified Test 1: deleting tab from multi-tab sheet, Test 2: non-existent tab error, and Test 3: sole remaining tab safety error).
 
 

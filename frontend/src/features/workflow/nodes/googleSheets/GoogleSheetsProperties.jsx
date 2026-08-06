@@ -727,7 +727,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <span>Case Sensitive Match</span>
           </label>
         </div>
-      ) : (isCreateSpreadsheetNode || isCreateWorksheetNode) ? null : (
+      ) : (isCreateSpreadsheetNode || isCreateWorksheetNode || isDeleteWorksheetNode) ? null : (
         /* Standard Column Auto-Mapper for Append/Update */
         <div className="space-y-3 pt-2 border-t border-slate-800/80">
           <div className="flex items-center justify-between">
@@ -781,8 +781,8 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
         </div>
       )}
 
-      {/* 5. Live Test & Preview Button (ONLY for existing worksheet operations) */}
-      {(!isCreateSpreadsheetNode && !isCreateWorksheetNode) && (
+      {/* 5. Live Test & Preview Button (ONLY for existing row-level operations) */}
+      {(!isCreateSpreadsheetNode && !isCreateWorksheetNode && !isDeleteWorksheetNode) && (
         <div className="pt-2 border-t border-slate-800/80 space-y-2">
           <button
             type="button"
