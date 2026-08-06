@@ -111,17 +111,17 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
 
   const fetchCredentials = async () => {
     try {
-      const res = await api.get('/credentials');
-      if (res.data.success) {
-        const googleCreds = (res.data.data || []).filter((c) => c.service === 'gmail' || c.service === 'googleSheets' || c.service === 'google');
+      const response = await credentialService.getGoogleOAuthCredentials();
+      if (response.success) {
+        const googleCreds = response.data || [];
         setCredentials(googleCreds);
         if (!credentialId && googleCreds.length > 0) {
           setCredentialId(googleCreds[0]._id);
           updateConfig({ credentialId: googleCreds[0]._id });
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      console.error('[GoogleSheetsProperties] Failed to load shared Google OAuth credentials', error);
     }
   };
 

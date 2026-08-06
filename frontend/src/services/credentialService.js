@@ -10,7 +10,22 @@ export const credentialService = {
    * Used by the Gmail node credential dropdown.
    */
   getGmailCredentials: async () => {
+    return credentialService.getGoogleOAuthCredentials();
+  },
+
+  /**
+   * Fetch the owner-scoped Google OAuth accounts shared by all Google nodes.
+   */
+  getGoogleOAuthCredentials: async () => {
+    console.debug('[GoogleCredentials] Requesting shared Google OAuth accounts', {
+      endpoint: '/credentials/google',
+    });
     const res = await api.get('/credentials/google');
+    console.debug('[GoogleCredentials] Shared Google OAuth response', {
+      success: res.data?.success,
+      count: res.data?.count ?? res.data?.data?.length ?? 0,
+      credentialIds: (res.data?.data || []).map((credential) => credential._id),
+    });
     return res.data;
   },
 

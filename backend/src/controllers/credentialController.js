@@ -80,11 +80,19 @@ export const deleteCredential = async (req, res, next) => {
 
 /**
  * GET /api/v1/credentials/google
- * Returns only gmail OAuth2 credentials for the logged-in user.
+ * Returns Google OAuth2 credentials usable by all Google integrations.
  */
 export const getGmailCredentials = async (req, res, next) => {
   try {
-    const credentials = await credentialService.getCredentialsByService(req.user._id, 'gmail');
+    console.debug('[CredentialController] GET /credentials/google', {
+      authenticatedUserId: String(req.user._id),
+    });
+    const credentials = await credentialService.getGoogleOAuthCredentials(req.user._id);
+    console.debug('[CredentialController] Google OAuth response', {
+      authenticatedUserId: String(req.user._id),
+      count: credentials.length,
+      credentialIds: credentials.map((credential) => String(credential._id)),
+    });
     return res.status(200).json({
       success: true,
       count: credentials.length,

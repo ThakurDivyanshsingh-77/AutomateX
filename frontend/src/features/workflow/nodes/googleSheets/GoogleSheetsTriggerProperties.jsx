@@ -91,16 +91,19 @@ export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, onUpda
 
   const fetchCredentials = async () => {
     try {
-      const res = await credentialService.getAllCredentials();
-      const list = Array.isArray(res) ? res : res?.credentials || res?.data || [];
-      const googleCreds = list.filter((c) => c.type === 'google' || c.type === 'google_oauth' || c.type === 'google_sheets');
+      const response = await credentialService.getGoogleOAuthCredentials();
+      const googleCreds = response.data || [];
+      console.debug('[GoogleSheetsTriggerProperties] Google OAuth credentials applied to dropdown', {
+        count: googleCreds.length,
+        credentialIds: googleCreds.map((credential) => credential._id),
+      });
       setCredentials(googleCreds);
       if (googleCreds.length > 0 && !credentialId) {
         setCredentialId(googleCreds[0]._id);
         updateConfig({ credentialId: googleCreds[0]._id });
       }
     } catch (err) {
-      console.error('Failed to fetch credentials:', err);
+      console.error('[GoogleSheetsTriggerProperties] Failed to load shared Google OAuth credentials', err);
     }
   };
 
