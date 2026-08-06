@@ -122,6 +122,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Background Polling Scheduler (`GoogleSheetsTriggerScheduler.js`)**: Background polling service with overlap protection, configurable intervals (`30s` to `1h`), and auto-registration on workflow publication.
 - **Frontend Components & Canvas**: `GoogleSheetsTriggerNode.jsx` canvas component and `GoogleSheetsTriggerProperties.jsx` properties panel with Google Account, Spreadsheet, Worksheet, Trigger Event, Polling Interval, Ignore Existing Rows, Max Rows, and **Save Trigger** & **Test Trigger** buttons.
 - **Registrations & Verification**: Registered across `TriggerRegistry.js`, `ExecutorRegistry.js`, `googleSheetsRoutes.js`, `server.js`, `PublishManager.js`, `workflowService.js`, `nodeRegistry.js`, `WorkflowCanvas.jsx`, and `PropertiesPanel.jsx`. Passed 7/7 automated assertions in `test_google_sheets_trigger.js`.
+- **Bug Fix — Test Trigger ObjectId Validation**: Fixed `Cast to ObjectId failed` bug by passing `workflowId={workflowId}` from `PropertiesPanel.jsx` to `GoogleSheetsTriggerProperties.jsx` and adding `mongoose.Types.ObjectId.isValid(workflowId)` validation in `GoogleSheetsTriggerExecutor.js`.
 
 
 

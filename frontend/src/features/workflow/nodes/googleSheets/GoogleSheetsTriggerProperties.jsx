@@ -17,7 +17,7 @@ import { credentialService } from '../../../../services/credentialService';
 import api from '../../../../services/api';
 import toast from 'react-hot-toast';
 
-export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, onUpdateNodeConfig, onUpdateNodeData, onChange }) => {
+export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, workflowId, onUpdateNodeConfig, onUpdateNodeData, onChange }) => {
   const currentNode = node || { data: nodeData };
   const config = currentNode?.data?.config || nodeData?.config || {};
 
@@ -91,19 +91,16 @@ export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, onUpda
 
   const fetchCredentials = async () => {
     try {
-      const response = await credentialService.getGoogleOAuthCredentials();
-      const googleCreds = response.data || [];
-      console.debug('[GoogleSheetsTriggerProperties] Google OAuth credentials applied to dropdown', {
-        count: googleCreds.length,
-        credentialIds: googleCreds.map((credential) => credential._id),
-      });
+      const res = await credentialService.getAllCredentials();
+      const list = Array.isArray(res) ? res : res?.credentials || res?.data || [];
+      const googleCreds = list.filter((c) => c.type === 'google' || c.type === 'google_oauth' || c.type === 'google_sheets');
       setCredentials(googleCreds);
       if (googleCreds.length > 0 && !credentialId) {
         setCredentialId(googleCreds[0]._id);
         updateConfig({ credentialId: googleCreds[0]._id });
       }
     } catch (err) {
-      console.error('[GoogleSheetsTriggerProperties] Failed to load shared Google OAuth credentials', err);
+      console.error('Failed to fetch credentials:', err);
     }
   };
 
@@ -152,14 +149,18 @@ export const GoogleSheetsTriggerProperties = ({ node, nodeType, nodeData, onUpda
     setTestResult(null);
     const toastId = toast.loading('Testing trigger configuration...');
 
+    // Ensure workflowId is a valid Mongo ObjectId if provided, never node.id
+    const validWorkflowId = workflowId || currentNode?.workflowId;
+    const nodeId = currentNode?.id;
+
     try {
       const res = await api.post('/google-sheets/trigger/test', {
         credentialId,
         spreadsheetId,
         worksheetTitle,
         worksheet: worksheetTitle,
-        workflowId: currentNode?.workflowId || currentNode?.id,
-        nodeId: currentNode?.id,
+        workflowId: validWorkflowId && validWorkflowId !== nodeId ? validWorkflowId : undefined,
+        nodeId,
       });
 
       if (res.data?.success) {

@@ -169,8 +169,9 @@ export class GoogleSheetsTriggerExecutor {
     // 2. Load previous DB snapshot
     let isInitialRun = false;
     let previousRows = [];
+    const isValidWorkflowId = workflowId && mongoose.Types.ObjectId.isValid(workflowId);
 
-    if (mongoose.connection.readyState === 1) {
+    if (isValidWorkflowId && mongoose.connection.readyState === 1) {
       const existingSnapshot = await TriggerSnapshot.findOne({ workflowId, nodeId }).lean();
       if (!existingSnapshot) {
         isInitialRun = true;
@@ -178,6 +179,8 @@ export class GoogleSheetsTriggerExecutor {
       } else {
         previousRows = existingSnapshot.rows || [];
       }
+    } else {
+      isInitialRun = true;
     }
 
     // 3. Perform Change Detection
@@ -193,7 +196,7 @@ export class GoogleSheetsTriggerExecutor {
     console.log(`[GoogleSheetsTriggerExecutor] 🔍 Changes Detected: ${changes.length} | Rows Before: ${previousRows.length} | Rows After: ${currentRows.length} | Exec Time: ${executionTime}ms`);
 
     // 4. Update or save persistent DB Snapshot
-    if (mongoose.connection.readyState === 1) {
+    if (isValidWorkflowId && nodeId && mongoose.connection.readyState === 1) {
       await TriggerSnapshot.findOneAndUpdate(
         { workflowId, nodeId },
         {
@@ -225,7 +228,7 @@ export class GoogleSheetsTriggerExecutor {
    * Handle "Test Trigger" button call from UI
    */
   static async executeTest({ credentialId, spreadsheetId, worksheetTitle = 'Sheet1', userId, workflowId, nodeId }) {
-    console.log(`[GoogleSheetsTriggerExecutor] 🧪 Executing Test Trigger for Spreadsheet: ${spreadsheetId}, Worksheet: ${worksheetTitle}`);
+    console.log(`[GoogleSheetsTriggerExecutor] 🧪 Executing Test Trigger for Spreadsheet: ${spreadsheetId}, Worksheet: ${worksheetTitle}, WorkflowId: ${workflowId || 'N/A'}, NodeId: ${nodeId || 'N/A'}`);
 
     if (!spreadsheetId) {
       throw new Error('Spreadsheet ID is required for Test Trigger');
@@ -241,9 +244,10 @@ export class GoogleSheetsTriggerExecutor {
     });
 
     const rows = readResult.rows || [];
+    const isValidWorkflowId = workflowId && mongoose.Types.ObjectId.isValid(workflowId);
 
-    // Optional snapshot save if workflowId and nodeId are present
-    if (workflowId && nodeId && mongoose.connection.readyState === 1) {
+    // Optional snapshot save if valid workflowId and nodeId are present
+    if (isValidWorkflowId && nodeId && mongoose.connection.readyState === 1) {
       await TriggerSnapshot.findOneAndUpdate(
         { workflowId, nodeId },
         {
@@ -257,6 +261,9 @@ export class GoogleSheetsTriggerExecutor {
         },
         { upsert: true, new: true }
       );
+      console.log(`[GoogleSheetsTriggerExecutor] 💾 Saved baseline snapshot for Workflow: ${workflowId}, Node: ${nodeId}`);
+    } else {
+      console.log(`[GoogleSheetsTriggerExecutor] ℹ️ Tested trigger cleanly (${rows.length} rows found). Snapshot DB save skipped (Workflow is draft or has temporary ID).`);
     }
 
     return {

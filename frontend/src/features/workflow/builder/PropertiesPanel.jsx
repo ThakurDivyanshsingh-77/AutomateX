@@ -181,6 +181,7 @@ export const PropertiesPanel = ({
                 node={selectedNode}
                 nodeType={selectedNode.type}
                 nodeData={selectedNode.data}
+                workflowId={workflowId}
                 onUpdateNodeData={onUpdateNodeData}
                 onUpdateNodeConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
