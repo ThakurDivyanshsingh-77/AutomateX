@@ -106,6 +106,41 @@ router.get('/spreadsheets/:id/worksheets', async (req, res, next) => {
 });
 
 /**
+ * GET /api/v1/google/sheets/:id/info
+ * POST /api/v1/google/sheets/info
+ * Get complete metadata for a Google Spreadsheet
+ */
+router.get('/sheets/:id/info', async (req, res, next) => {
+  try {
+    const { credentialId } = req.query;
+    const info = await GoogleSheetsService.getSpreadsheetInfo({
+      credentialId,
+      userId: req.user._id,
+      spreadsheetId: req.params.id,
+      bypassCache: req.query.bypassCache === 'true',
+    });
+    return res.json(info);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/sheets/info', async (req, res, next) => {
+  try {
+    const { credentialId, spreadsheetId, bypassCache } = req.body;
+    const info = await GoogleSheetsService.getSpreadsheetInfo({
+      credentialId,
+      userId: req.user._id,
+      spreadsheetId,
+      bypassCache: !!bypassCache,
+    });
+    return res.json(info);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * GET /api/v1/google/sheets/:id/headers
  * Auto detect column headers from the first row of a sheet tab
  */

@@ -2,6 +2,9 @@ import { google } from 'googleapis';
 import { googleOAuthClient } from '../../oauth/GoogleOAuthClient.js';
 import { credentialService } from '../../credentials/credentialService.js';
 
+const metadataCache = new Map();
+const CACHE_TTL_MS = 10000;
+
 export class GoogleSheetsService {
   /**
    * Helper to construct authenticated Google client from credential ID or raw OAuth data
@@ -145,6 +148,119 @@ export class GoogleSheetsService {
       return mappedWorksheets;
     } catch (err) {
       console.error(`[GoogleSheetsService] ❌ Google Sheets API getWorksheets error for ${spreadsheetId}: ${err.message}`, err.stack);
+      throw err;
+    }
+  }
+
+  static invalidateCache(spreadsheetId = null) {
+    if (spreadsheetId) {
+      metadataCache.delete(String(spreadsheetId).trim());
+    } else {
+      metadataCache.clear();
+    }
+  }
+
+  /**
+   * Production-Ready Get Spreadsheet Info
+   */
+  static async getSpreadsheetInfo({ credentialId, userId, spreadsheetId, bypassCache = false, log = console.log }) {
+    const cleanId = String(spreadsheetId || '').trim();
+    if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
+      throw new Error('Spreadsheet ID is required to fetch spreadsheet info.');
+    }
+
+    log('[GetSpreadsheetInfo] Loading spreadsheet...');
+
+    const cacheKey = `${cleanId}_${credentialId || 'default'}`;
+    const now = Date.now();
+    if (!bypassCache && metadataCache.has(cacheKey)) {
+      const cached = metadataCache.get(cacheKey);
+      if (cached && cached.expiresAt > now) {
+        log('[GetSpreadsheetInfo] Returning cached metadata...');
+        return cached.data;
+      }
+    }
+
+    log('[GetSpreadsheetInfo] Fetching metadata...');
+    try {
+      const sheetsClient = await this.getSheetsClient(credentialId, userId);
+
+      log('[GetSpreadsheetInfo] Fetching worksheets...');
+      const response = await sheetsClient.spreadsheets.get({
+        spreadsheetId: cleanId,
+        includeGridData: false,
+      });
+
+      let owner = null;
+      let lastModified = null;
+
+      try {
+        const driveClient = await this.getDriveClient(credentialId, userId);
+        const driveRes = await driveClient.files.get({
+          fileId: cleanId,
+          fields: 'owners,modifiedTime',
+        });
+        if (driveRes.data) {
+          if (driveRes.data.owners && driveRes.data.owners.length > 0) {
+            owner = driveRes.data.owners[0].displayName || driveRes.data.owners[0].emailAddress || null;
+          }
+          if (driveRes.data.modifiedTime) {
+            lastModified = driveRes.data.modifiedTime;
+          }
+        }
+      } catch (driveErr) {
+        console.warn(`[GoogleSheetsService] Drive metadata optional fetch skipped: ${driveErr.message}`);
+      }
+
+      const spProps = response.data.properties || {};
+      const rawSheets = response.data.sheets || [];
+
+      const worksheets = rawSheets.map((s) => ({
+        sheetId: s.properties.sheetId,
+        title: s.properties.title,
+        index: s.properties.index ?? 0,
+        rows: s.properties.gridProperties?.rowCount || 0,
+        columns: s.properties.gridProperties?.columnCount || 0,
+        frozenRows: s.properties.gridProperties?.frozenRowCount || 0,
+        frozenColumns: s.properties.gridProperties?.frozenColumnCount || 0,
+        hidden: s.properties.hidden || false,
+      }));
+
+      const infoData = {
+        success: true,
+        spreadsheetId: cleanId,
+        spreadsheetName: spProps.title || 'Untitled Spreadsheet',
+        spreadsheetUrl: response.data.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${cleanId}/edit`,
+        owner,
+        locale: spProps.locale || 'en_US',
+        timeZone: spProps.timeZone || 'UTC',
+        totalWorksheets: worksheets.length,
+        worksheetCount: worksheets.length,
+        lastModified,
+        worksheets,
+      };
+
+      log('[GetSpreadsheetInfo] Metadata loaded successfully.');
+
+      metadataCache.set(cacheKey, {
+        data: infoData,
+        expiresAt: now + CACHE_TTL_MS,
+      });
+
+      return infoData;
+    } catch (err) {
+      if (err.status === 404 || err.message?.includes('not found') || err.message?.includes('Requested entity was not found')) {
+        throw new Error(`Spreadsheet '${cleanId}' not found.`);
+      }
+      if (err.status === 403 || err.message?.includes('permission') || err.message?.includes('Forbidden')) {
+        throw new Error('Permission denied for spreadsheet. Please check your Google OAuth scopes.');
+      }
+      if (err.status === 401 || err.message?.includes('invalid_grant') || err.message?.includes('Token')) {
+        throw new Error('Google OAuth token invalid or expired. Please reconnect your Google account.');
+      }
+      if (err.status === 429 || err.message?.includes('Quota') || err.message?.includes('rate limit')) {
+        throw new Error('Google Sheets API rate limit exceeded. Please try again later.');
+      }
       throw err;
     }
   }
@@ -884,6 +1000,7 @@ export class GoogleSheetsService {
 
       log('Worksheet created successfully.');
       log('Finished.');
+      this.invalidateCache(spreadsheetId);
 
       return {
         success: true,
@@ -978,6 +1095,7 @@ export class GoogleSheetsService {
 
       log('Worksheet deleted successfully.');
       log('Finished.');
+      this.invalidateCache(cleanSpreadsheetId);
 
       return {
         success: true,

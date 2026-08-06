@@ -46,7 +46,18 @@ export const googleSheetsValidator = (nodeData) => {
     };
   }
 
-  // 4. Standard Google Sheets Action Nodes
+  // 4. Get Spreadsheet Info (Requires ONLY credentialId & spreadsheetId)
+  if (nodeType === 'googleSheetsGetSpreadsheetInfo' || config.operation === 'getSpreadsheetInfo') {
+    if (!config.spreadsheetId) {
+      errors.push('Spreadsheet selection is required.');
+    }
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
+  // 5. Standard Google Sheets Action Nodes
   if (!config.spreadsheetId) {
     errors.push('Spreadsheet selection is required.');
   }

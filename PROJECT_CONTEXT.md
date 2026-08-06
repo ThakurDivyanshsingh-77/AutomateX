@@ -159,6 +159,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Direct Live Metadata Pre-Flight Validation**: Updated `GoogleSheetsService.deleteWorksheet` to call `sheetsClient.spreadsheets.get({ spreadsheetId })` directly before deletion. Added mandatory live logging (`Spreadsheet ID`, `Spreadsheet title`, `Number of sheets`, `sheetId`, `title`, `index`, and `Total worksheets: N`) and validated `rawSheets.length <= 1` against true live API count, resolving false-positive single tab errors.
 - **Automated Verification**: Passed 6/6 assertions in `test_delete_worksheet.js` (verified Test 1: deleting tab from multi-tab sheet, Test 2: non-existent tab error, and Test 3: sole remaining tab safety error).
 
+### **Phase 17.7 Complete — Google Sheets Get Spreadsheet Info Node (`googleSheetsGetSpreadsheetInfo`)** — ✅ COMPLETED
+- **Reusable Service Method (`GoogleSheetsService.getSpreadsheetInfo`)**: Retrieves complete spreadsheet metadata, grid properties, frozen rows/cols, hidden tab status, locale, time zone, and drive owner/modified timestamp using Google Sheets API v4 `spreadsheets.get` and Google Drive API v3 `files.get`. Includes short-lived in-memory cache (10s TTL) with automatic cache invalidation (`invalidateCache`) on worksheet creation and deletion.
+- **Dedicated Executor (`GoogleSheetsGetSpreadsheetInfoExecutor.js`)**: Resolves expression variables (`{{steps...}}`), invokes service layer with `bypassCache: true` during node execution, and outputs structured execution logs (`Loading spreadsheet`, `Fetching metadata`, `Fetching worksheets`, `Metadata loaded successfully.`).
+- **Registrations, Validation & REST Routes**: Registered `googleSheetsGetSpreadsheetInfo` in `ExecutorRegistry.js`, `GoogleSheetsNodeRegistry.js`, `googleSheetsValidator.js`, and `modules/builder/nodeRegistry.js` (`requiresColumns: false`, `supportsColumnMapping: false`). Mounted `GET /api/v1/google/sheets/:id/info` and `POST /api/v1/google/sheets/info` in `googleSheetsRoutes.js`.
+- **Frontend Properties Panel**: Integrated `isGetSpreadsheetInfoNode` in `GoogleSheetsProperties.jsx` with automatic spreadsheet selector, dynamic tab fetching, and a dedicated "Test Connection & Retrieve Metadata" button.
+- **Automated Verification**: Passed 7/7 assertions in `test_get_spreadsheet_info.js` (verified single & multi-worksheet metadata retrieval, hidden tab state, grid properties, cache invalidation after worksheet creation/deletion, and 404/403 error handling).
+
 
 
 

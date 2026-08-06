@@ -28,6 +28,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
   const isCreateSpreadsheetNode = currentType === 'googleSheetsCreateSpreadsheet' || currentNode?.type === 'googleSheetsCreateSpreadsheet' || nodeType === 'googleSheetsCreateSpreadsheet' || currentType === 'createSpreadsheet' || config.operation === 'createSpreadsheet';
   const isCreateWorksheetNode = currentType === 'googleSheetsCreateWorksheet' || currentNode?.type === 'googleSheetsCreateWorksheet' || nodeType === 'googleSheetsCreateWorksheet' || currentType === 'createWorksheet' || config.operation === 'createWorksheet';
   const isDeleteWorksheetNode = currentType === 'googleSheetsDeleteWorksheet' || currentNode?.type === 'googleSheetsDeleteWorksheet' || nodeType === 'googleSheetsDeleteWorksheet' || currentType === 'deleteWorksheet' || config.operation === 'deleteWorksheet';
+  const isGetSpreadsheetInfoNode = currentType === 'googleSheetsGetSpreadsheetInfo' || currentNode?.type === 'googleSheetsGetSpreadsheetInfo' || nodeType === 'googleSheetsGetSpreadsheetInfo' || currentType === 'getSpreadsheetInfo' || config.operation === 'getSpreadsheetInfo';
 
   // Form State
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
@@ -737,7 +738,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             <span>Case Sensitive Match</span>
           </label>
         </div>
-      ) : (isCreateSpreadsheetNode || isCreateWorksheetNode || isDeleteWorksheetNode) ? null : (
+      ) : (isCreateSpreadsheetNode || isCreateWorksheetNode || isDeleteWorksheetNode || isGetSpreadsheetInfoNode) ? null : (
         /* Standard Column Auto-Mapper for Append/Update */
         <div className="space-y-3 pt-2 border-t border-slate-800/80">
           <div className="flex items-center justify-between">
@@ -792,7 +793,7 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
       )}
 
       {/* 5. Live Test & Preview Button (ONLY for existing row-level operations) */}
-      {(!isCreateSpreadsheetNode && !isCreateWorksheetNode && !isDeleteWorksheetNode) && (
+      {(!isCreateSpreadsheetNode && !isCreateWorksheetNode && !isDeleteWorksheetNode && !isGetSpreadsheetInfoNode) && (
         <div className="pt-2 border-t border-slate-800/80 space-y-2">
           <button
             type="button"
@@ -803,18 +804,33 @@ export const GoogleSheetsProperties = ({ node, nodeType, nodeData, onUpdateNodeC
             {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
             Test Connection & Read Preview Rows
           </button>
+        </div>
+      )}
 
-          {testResult && (
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] space-y-1">
-              <div className="text-emerald-400 font-bold flex items-center justify-between">
-                <span>Status: {testResult.success ? 'Success 200 OK' : 'Failed'}</span>
-                <span>Rows Read: {testResult.rows?.length || 0}</span>
-              </div>
-              <pre className="max-h-32 overflow-y-auto text-slate-300 bg-slate-900 p-2 rounded border border-slate-800">
-                {JSON.stringify(testResult.rows || testResult, null, 2)}
-              </pre>
-            </div>
-          )}
+      {/* Dedicated Test Button for Get Spreadsheet Info */}
+      {isGetSpreadsheetInfoNode && (
+        <div className="pt-2 border-t border-slate-800/80 space-y-2">
+          <button
+            type="button"
+            onClick={handleTestGetInfo}
+            disabled={testing || !spreadsheetId}
+            className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+          >
+            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+            Test Connection & Retrieve Metadata
+          </button>
+        </div>
+      )}
+
+      {testResult && (
+        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] space-y-1">
+          <div className="text-emerald-400 font-bold flex items-center justify-between">
+            <span>Status: {testResult.success ? 'Success 200 OK' : 'Failed'}</span>
+            <span>Worksheets: {testResult.worksheetCount ?? testResult.totalWorksheets ?? testResult.worksheets?.length ?? 0}</span>
+          </div>
+          <pre className="max-h-32 overflow-y-auto text-slate-300 bg-slate-900 p-2 rounded border border-slate-800">
+            {JSON.stringify(testResult.rows || testResult, null, 2)}
+          </pre>
         </div>
       )}
     </div>

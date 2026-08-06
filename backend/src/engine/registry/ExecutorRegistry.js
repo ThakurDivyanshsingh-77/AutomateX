@@ -13,12 +13,14 @@ import { GoogleSheetsTriggerExecutor } from '../googleSheets/GoogleSheetsTrigger
 import { GoogleSheetsCreateSpreadsheetExecutor } from '../googleSheets/GoogleSheetsCreateSpreadsheetExecutor.js';
 import { GoogleSheetsCreateWorksheetExecutor } from '../googleSheets/GoogleSheetsCreateWorksheetExecutor.js';
 import { GoogleSheetsDeleteWorksheetExecutor } from '../googleSheets/GoogleSheetsDeleteWorksheetExecutor.js';
+import { GoogleSheetsGetSpreadsheetInfoExecutor } from '../googleSheets/GoogleSheetsGetSpreadsheetInfoExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
 const googleSheetsCreateSpreadsheetExecutor = new GoogleSheetsCreateSpreadsheetExecutor();
 const googleSheetsCreateWorksheetExecutor = new GoogleSheetsCreateWorksheetExecutor();
 const googleSheetsDeleteWorksheetExecutor = new GoogleSheetsDeleteWorksheetExecutor();
+const googleSheetsGetSpreadsheetInfoExecutor = new GoogleSheetsGetSpreadsheetInfoExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -62,7 +64,7 @@ export class ExecutorRegistry {
     ['googleSheetsCreateWorksheet', googleSheetsCreateWorksheetExecutor],
     ['googleSheetsDuplicateWorksheet', googleSheetsExecutor],
     ['googleSheetsDeleteWorksheet', googleSheetsDeleteWorksheetExecutor],
-    ['googleSheetsGetSpreadsheetInfo', googleSheetsExecutor],
+    ['googleSheetsGetSpreadsheetInfo', googleSheetsGetSpreadsheetInfoExecutor],
   ]);
 
   static getExecutor(nodeType) {
