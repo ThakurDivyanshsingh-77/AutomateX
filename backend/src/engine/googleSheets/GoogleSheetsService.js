@@ -736,6 +736,7 @@ export class GoogleSheetsService {
           sheets: [
             {
               properties: {
+                sheetId: 0,
                 title: finalWorksheet,
               },
             },
@@ -749,6 +750,40 @@ export class GoogleSheetsService {
 
       log('[CreateSpreadsheet] Spreadsheet created successfully.');
       log(`[CreateSpreadsheet] Spreadsheet ID: ${spreadsheetId}`);
+
+      // Verify created worksheet title
+      const createdSheetTitle = data.sheets?.[0]?.properties?.title;
+      const createdSheetId = data.sheets?.[0]?.properties?.sheetId ?? 0;
+
+      let actualWorksheetTitle = createdSheetTitle || finalWorksheet;
+
+      // If Google API left default sheet title as "Sheet1" instead of requested finalWorksheet, rename tab via batchUpdate
+      if (finalWorksheet && createdSheetTitle && createdSheetTitle !== finalWorksheet) {
+        log(`[CreateSpreadsheet] Renaming default worksheet "${createdSheetTitle}" to "${finalWorksheet}"...`);
+        try {
+          await sheets.spreadsheets.batchUpdate({
+            spreadsheetId,
+            requestBody: {
+              requests: [
+                {
+                  updateSheetProperties: {
+                    properties: {
+                      sheetId: createdSheetId,
+                      title: finalWorksheet,
+                    },
+                    fields: 'title',
+                  },
+                },
+              ],
+            },
+          });
+          actualWorksheetTitle = finalWorksheet;
+          log(`[CreateSpreadsheet] Worksheet tab renamed successfully to "${finalWorksheet}".`);
+        } catch (renameErr) {
+          log(`[CreateSpreadsheet] ⚠️ Failed to rename default worksheet tab: ${renameErr.message}`);
+        }
+      }
+
       log('[CreateSpreadsheet] Finished.');
 
       return {
@@ -756,7 +791,7 @@ export class GoogleSheetsService {
         spreadsheetId,
         spreadsheetUrl,
         title: finalTitle,
-        worksheet: finalWorksheet,
+        worksheet: actualWorksheetTitle,
         raw: data,
       };
     } catch (err) {

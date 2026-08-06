@@ -135,6 +135,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Verification**: Passed 3/3 assertions in `test_create_spreadsheet.js`.
 - **UI & Header Detection Fix**: Guarded `fetchSpreadsheets`, `fetchWorksheets`, and `fetchHeaders` in `GoogleSheetsProperties.jsx` with `isCreateSpreadsheetNode` check. Hidden Column Auto-Mapper and Test Read controls so header auto-detection runs exclusively on existing worksheet nodes (`Append Row`, `Read Rows`, `Update Row`, `Delete Row`, `Find Row`).
 - **Independent Parameter Fix**: Updated `GoogleSheetsService.js`, `GoogleSheetsCreateSpreadsheetExecutor.js`, and `GoogleSheetsProperties.jsx` so `spreadsheetName` controls `spreadsheet.properties.title` (file title) and `initialWorksheetName` controls `sheets[0].properties.title` (first tab title, defaulting to `'Sheet1'` if empty). Passed 4/4 assertions in `test_create_spreadsheet.js`.
+- **Worksheet Rename Verification**: Included `{ sheetId: 0, title: finalWorksheet }` inside `requestBody.sheets` of `spreadsheets.create` call and added automated `batchUpdate` `updateSheetProperties` fallback verification to guarantee initial worksheet tab is named as requested in Google Drive.
 
 
 

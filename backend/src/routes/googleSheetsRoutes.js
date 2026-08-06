@@ -348,8 +348,10 @@ const handleCreateSpreadsheet = async (req, res, next) => {
     const result = await GoogleSheetsService.createSpreadsheet({
       credentialId,
       userId: req.user._id,
-      title: title || spreadsheetName,
-      worksheetTitle: worksheetTitle || initialWorksheetName || 'Sheet1',
+      title,
+      spreadsheetName,
+      worksheetTitle,
+      initialWorksheetName,
     });
     return res.json(result);
   } catch (err) {
