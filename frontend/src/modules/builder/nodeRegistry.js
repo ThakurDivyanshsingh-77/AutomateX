@@ -24,6 +24,7 @@ export const NODE_TYPES = {
   LOG_ACTION: 'LOG_ACTION',
   PDF_GENERATOR: 'pdfGenerator',
   // Google Sheets
+  GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
   GOOGLE_SHEETS_READ_ROWS: 'googleSheetsReadRows',
   GOOGLE_SHEETS_APPEND_ROW: 'googleSheetsAppendRow',
   GOOGLE_SHEETS_UPDATE_ROW: 'googleSheetsUpdateRow',
@@ -146,6 +147,16 @@ export const NODE_REGISTRY = {
       outputMode: 'base64',
       content: '<h1>Hello {{trigger.body.name}}</h1>\n<p>Generated on {{now}}</p>',
     },
+  },
+  [NODE_TYPES.GOOGLE_SHEETS_TRIGGER]: {
+    type: NODE_TYPES.GOOGLE_SHEETS_TRIGGER,
+    category: 'TRIGGER',
+    label: 'Google Sheets Trigger',
+    description: 'Triggers workflow automatically whenever rows are added or updated in a Google Sheet',
+    icon: Zap,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: { worksheetTitle: 'Sheet1', triggerEvent: 'newRow', pollingInterval: '30s', ignoreExistingRows: true, maxRows: 100 },
   },
   [NODE_TYPES.GOOGLE_SHEETS_READ_ROWS]: {
     type: NODE_TYPES.GOOGLE_SHEETS_READ_ROWS,

@@ -1,6 +1,9 @@
 import { ManualTrigger } from '../triggers/ManualTrigger.js';
 import { WebhookTrigger } from '../triggers/WebhookTrigger.js';
 import { CronTrigger } from '../triggers/CronTrigger.js';
+import { GoogleSheetsTrigger } from '../triggers/GoogleSheetsTrigger.js';
+
+const googleSheetsTrigger = new GoogleSheetsTrigger();
 
 export class TriggerRegistry {
   static triggers = new Map([
@@ -8,6 +11,10 @@ export class TriggerRegistry {
     ['manual', new ManualTrigger()],
     ['webhook', new WebhookTrigger()],
     ['cron', new CronTrigger()],
+    ['googlesheetstrigger', googleSheetsTrigger],
+    ['googlesheetstriggerwatchrows', googleSheetsTrigger],
+    ['googleSheetsTrigger', googleSheetsTrigger],
+    ['googleSheetsTriggerWatchRows', googleSheetsTrigger],
   ]);
 
   static isTrigger(type) {

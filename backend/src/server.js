@@ -2,11 +2,15 @@ import './env.js';  // Must be first — loads dotenv before any other module
 import app from './app.js';
 import { connectDB } from './config/db.js';
 import { CronScheduler } from './runtime/scheduler/CronScheduler.js';
+import { GoogleSheetsTriggerScheduler } from './runtime/scheduler/GoogleSheetsTriggerScheduler.js';
 
-// Connect to MongoDB Database and initialize background Cron Scheduler
+// Connect to MongoDB Database and initialize background Schedulers
 connectDB().then(() => {
   CronScheduler.start().catch((err) => {
     console.error('⏰ [CronScheduler]: Failed to start scheduler on server boot:', err.message);
+  });
+  GoogleSheetsTriggerScheduler.start().catch((err) => {
+    console.error('🟢 [GoogleSheetsTriggerScheduler]: Failed to start scheduler on server boot:', err.message);
   });
 });
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import { GoogleSheetsService } from '../engine/googleSheets/GoogleSheetsService.js';
+import { GoogleSheetsTriggerExecutor } from '../engine/googleSheets/GoogleSheetsTriggerExecutor.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -292,5 +293,48 @@ router.post('/sheets/batch-update', async (req, res, next) => {
     next(err);
   }
 });
+
+/**
+ * POST /api/v1/google/sheets/trigger/test
+ * POST /api/v1/google-sheets/trigger/test
+ * Test Trigger configuration: Reads current rows, stores DB snapshot, returns status & sample rows.
+ */
+const handleTestTrigger = async (req, res, next) => {
+  try {
+    const { credentialId, spreadsheetId, worksheet, worksheetTitle, workflowId, nodeId } = req.body;
+
+    if (!spreadsheetId) {
+      return res.status(400).json({ success: false, message: 'Missing configuration: Spreadsheet ID is required.' });
+    }
+
+    const result = await GoogleSheetsTriggerExecutor.executeTest({
+      credentialId,
+      spreadsheetId,
+      worksheetTitle: worksheet || worksheetTitle || 'Sheet1',
+      userId: req.user._id,
+      workflowId,
+      nodeId,
+    });
+
+    return res.json(result);
+  } catch (err) {
+    if (err.message.includes('required') || err.message.includes('400')) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('token') || err.message.includes('401') || err.message.includes('auth')) {
+      return res.status(401).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('not found') || err.message.includes('404') || err.message.includes('Worksheet')) {
+      return res.status(404).json({ success: false, message: err.message });
+    }
+    if (err.message.includes('rate limit') || err.message.includes('429')) {
+      return res.status(429).json({ success: false, message: err.message });
+    }
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+router.post('/sheets/trigger/test', handleTestTrigger);
+router.post('/trigger/test', handleTestTrigger);
 
 export default router;

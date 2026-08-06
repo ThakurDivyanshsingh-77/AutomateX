@@ -9,8 +9,10 @@ import { TryCatchExecutor } from '../executors/TryCatchExecutor.js';
 import { DatabaseExecutor } from '../database/DatabaseExecutor.js';
 import { PdfGeneratorExecutor } from '../executors/PdfGeneratorExecutor.js';
 import { GoogleSheetsExecutor } from '../googleSheets/GoogleSheetsExecutor.js';
+import { GoogleSheetsTriggerExecutor } from '../googleSheets/GoogleSheetsTriggerExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
+const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -41,7 +43,8 @@ export class ExecutorRegistry {
 
     // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],
-    ['googleSheetsTriggerWatchRows', googleSheetsExecutor],
+    ['googleSheetsTrigger', googleSheetsTriggerExecutor],
+    ['googleSheetsTriggerWatchRows', googleSheetsTriggerExecutor],
     ['googleSheetsReadRows', googleSheetsExecutor],
     ['googleSheetsFindRow', googleSheetsExecutor],
     ['googleSheetsAppendRow', googleSheetsExecutor],

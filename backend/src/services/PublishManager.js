@@ -2,6 +2,7 @@ import { VersionManager } from './VersionManager.js';
 import { WorkflowVersion } from '../models/WorkflowVersion.js';
 import { Workflow } from '../models/Workflow.js';
 import { CronScheduler } from '../runtime/scheduler/CronScheduler.js';
+import { GoogleSheetsTriggerScheduler } from '../runtime/scheduler/GoogleSheetsTriggerScheduler.js';
 
 /**
  * PublishManager — Orchestrates the publish flow.
@@ -56,10 +57,11 @@ export class PublishManager {
       });
     }
 
-    // Phase 13: Register Cron Schedule automatically
+    // Phase 13 & 17: Register Cron & Google Sheets Trigger Schedules automatically
     const updatedWorkflow = await Workflow.findById(workflowId).lean();
     if (updatedWorkflow) {
       CronScheduler.registerWorkflow(updatedWorkflow);
+      GoogleSheetsTriggerScheduler.registerWorkflow(updatedWorkflow);
     }
 
     return result;

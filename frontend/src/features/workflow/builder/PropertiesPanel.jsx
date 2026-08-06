@@ -13,6 +13,7 @@ import { MongoCrudProperties } from '../nodes/database/MongoCrudProperties';
 import { MongoDBConnectionProperties } from '../nodes/database/MongoDBConnectionProperties';
 import { PdfGeneratorProperties } from '../nodes/pdf/PdfGeneratorProperties';
 import { GoogleSheetsProperties } from '../nodes/googleSheets/GoogleSheetsProperties';
+import { GoogleSheetsTriggerProperties } from '../nodes/googleSheets/GoogleSheetsTriggerProperties';
 
 export const PropertiesPanel = ({
   selectedNode,
@@ -60,7 +61,8 @@ export const PropertiesPanel = ({
   const isMongoCrudNode = selectedNode.type.startsWith('mongo') && selectedNode.type !== 'mongodb';
   const isMongoConnNode = selectedNode.type === 'mongodb';
   const isPdfNode = selectedNode.type === 'pdfGenerator';
-  const isGoogleSheetsNode = selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets');
+  const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
+  const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
 
   return (
     <>
@@ -173,6 +175,14 @@ export const PropertiesPanel = ({
               <PdfGeneratorProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isGoogleSheetsTriggerNode ? (
+              <GoogleSheetsTriggerProperties
+                node={selectedNode}
+                nodeType={selectedNode.type}
+                nodeData={selectedNode.data}
+                onUpdateNodeData={onUpdateNodeData}
+                onUpdateNodeConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : isGoogleSheetsNode ? (
               <GoogleSheetsProperties

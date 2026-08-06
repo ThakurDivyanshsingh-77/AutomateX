@@ -25,6 +25,7 @@ import { WebhookNode } from '../nodes/webhook/WebhookNode';
 import { TryCatchNode } from '../nodes/tryCatch/TryCatchNode';
 import { CronNode } from '../nodes/cron/CronNode';
 import { PdfGeneratorNode } from '../nodes/pdf/PdfGeneratorNode';
+import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 
 import { NodeToolbar } from './NodeToolbar';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -60,6 +61,8 @@ const nodeTypes = {
   [NODE_TYPES.TRY_CATCH]: TryCatchNode,
   [NODE_TYPES.CRON]: CronNode,
   [NODE_TYPES.PDF_GENERATOR]: PdfGeneratorNode,
+  googleSheetsTrigger: GoogleSheetsTriggerNode,
+  googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
 };
 
 const BuilderInner = () => {

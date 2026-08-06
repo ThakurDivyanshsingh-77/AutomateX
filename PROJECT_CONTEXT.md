@@ -116,6 +116,13 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Passed automated test suite in `test_google_sheets.js` (25/25 assertions passed).
   - Fixed JSX text node syntax & runtime errors in `GoogleSheetsProperties.jsx` by wrapping unescaped `{{items}}` and `{{item.email}}` variable placeholders in JavaScript string expressions (`{"{{items}}"}`).
 
+### **Phase 17.3 Complete — Production-Grade Google Sheets Trigger Node (`googleSheetsTrigger`)** — ✅ COMPLETED
+- **Database Snapshot Persistence (`TriggerSnapshot.js`)**: Mongoose schema storing row snapshots per `(workflowId, nodeId)` so polling state is persisted across server restarts.
+- **Change Detection Engine (`GoogleSheetsTriggerExecutor.js`)**: Production change detection algorithms supporting `newRow`, `updatedRow`, and `anyChange` (new, updated, deleted) events with `ignoreExistingRows` baseline handling and test trigger API `POST /api/v1/google-sheets/trigger/test`.
+- **Background Polling Scheduler (`GoogleSheetsTriggerScheduler.js`)**: Background polling service with overlap protection, configurable intervals (`30s` to `1h`), and auto-registration on workflow publication.
+- **Frontend Components & Canvas**: `GoogleSheetsTriggerNode.jsx` canvas component and `GoogleSheetsTriggerProperties.jsx` properties panel with Google Account, Spreadsheet, Worksheet, Trigger Event, Polling Interval, Ignore Existing Rows, Max Rows, and **Save Trigger** & **Test Trigger** buttons.
+- **Registrations & Verification**: Registered across `TriggerRegistry.js`, `ExecutorRegistry.js`, `googleSheetsRoutes.js`, `server.js`, `PublishManager.js`, `workflowService.js`, `nodeRegistry.js`, `WorkflowCanvas.jsx`, and `PropertiesPanel.jsx`. Passed 7/7 automated assertions in `test_google_sheets_trigger.js`.
+
 
 
 

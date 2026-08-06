@@ -1,5 +1,6 @@
 import { Workflow } from '../models/Workflow.js';
 import { CronScheduler } from '../runtime/scheduler/CronScheduler.js';
+import { GoogleSheetsTriggerScheduler } from '../runtime/scheduler/GoogleSheetsTriggerScheduler.js';
 
 export const workflowService = {
   createWorkflow: async (ownerId, data) => {
@@ -90,11 +91,13 @@ export const workflowService = {
 
     const updated = await workflow.save();
 
-    // Phase 13: Update Cron Schedule accordingly
+    // Phase 13 & 17: Update Cron & Google Sheets Trigger Schedules accordingly
     if (updated.status === 'published') {
       CronScheduler.registerWorkflow(updated.toObject());
+      GoogleSheetsTriggerScheduler.registerWorkflow(updated.toObject());
     } else {
       CronScheduler.unregisterWorkflow(workflowId);
+      GoogleSheetsTriggerScheduler.unregisterWorkflow(workflowId);
     }
 
     return updated;
@@ -104,8 +107,9 @@ export const workflowService = {
     const workflow = await Workflow.findOne({ _id: workflowId, owner: ownerId });
     if (!workflow) return false;
 
-    // Phase 13: Unregister Cron schedule immediately
+    // Phase 13 & 17: Unregister schedules immediately
     CronScheduler.unregisterWorkflow(workflowId);
+    GoogleSheetsTriggerScheduler.unregisterWorkflow(workflowId);
 
     await workflow.deleteOne();
     return true;
@@ -135,11 +139,13 @@ export const workflowService = {
     workflow.status = workflow.status === 'published' ? 'draft' : 'published';
     const updated = await workflow.save();
 
-    // Phase 13: Register or Unregister Cron Schedule
+    // Phase 13 & 17: Register or Unregister Schedules
     if (updated.status === 'published') {
       CronScheduler.registerWorkflow(updated.toObject());
+      GoogleSheetsTriggerScheduler.registerWorkflow(updated.toObject());
     } else {
       CronScheduler.unregisterWorkflow(workflowId);
+      GoogleSheetsTriggerScheduler.unregisterWorkflow(workflowId);
     }
 
     return updated;
@@ -152,8 +158,9 @@ export const workflowService = {
     workflow.status = 'archived';
     const updated = await workflow.save();
 
-    // Phase 13: Unregister Cron schedule
+    // Phase 13 & 17: Unregister schedules
     CronScheduler.unregisterWorkflow(workflowId);
+    GoogleSheetsTriggerScheduler.unregisterWorkflow(workflowId);
 
     return updated;
   },
