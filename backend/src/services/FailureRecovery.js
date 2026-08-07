@@ -39,10 +39,6 @@ export class FailureRecovery {
    * Resume a failed execution by re-running the entire workflow
    * with the original trigger payload.
    *
-   * Note: Full resume-from-checkpoint requires workflow engine changes
-   * to accept a startNodeId. For now, this re-runs from the beginning
-   * with the same input data (idempotency-safe for most nodes).
-   *
    * @param {string} executionId
    * @param {string} ownerId
    * @returns {Promise<Object>} New execution result
@@ -60,11 +56,27 @@ export class FailureRecovery {
 
     const lastSuccessful = await FailureRecovery.getLastSuccessfulNode(executionId);
 
-    // Run the full workflow again with original trigger payload
+    const resolvedOwnerId = String(ownerId || failedExecution.owner || workflow.owner || '').trim();
+    const recoveryContext = {
+      ...(failedExecution.triggerPayload || {}),
+      ownerId: resolvedOwnerId,
+      userId: resolvedOwnerId,
+      execution: {
+        id: `exec_recovery_${Date.now()}`,
+        ownerId: resolvedOwnerId,
+        userId: resolvedOwnerId,
+      },
+      workflow: {
+        id: String(workflow._id),
+        ownerId: resolvedOwnerId,
+      },
+    };
+
+    // Run the full workflow again with original trigger payload & resolved owner context
     const recoveryResult = await WorkflowEngine.run(
       workflow.definition,
       `exec_recovery_${Date.now()}`,
-      failedExecution.triggerPayload || {}
+      recoveryContext
     );
 
     return {

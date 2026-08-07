@@ -24,7 +24,23 @@ export class WorkflowEngine {
     const adjacencyList = GraphBuilder.buildAdjacencyList(parsedWorkflow.nodes, parsedWorkflow.edges);
 
     // 4. Initialize Execution RAM Context
-    const context = new ExecutionContext(executionId, initialData);
+    const resolvedOwnerId = String(
+      initialData?.ownerId ||
+      initialData?.userId ||
+      initialData?.workflow?.ownerId ||
+      initialData?.execution?.ownerId ||
+      workflowDefinition?.ownerId ||
+      workflowDefinition?.owner ||
+      parsedWorkflow?.ownerId ||
+      parsedWorkflow?.owner ||
+      ''
+    ).trim();
+
+    const context = new ExecutionContext(executionId, {
+      ...initialData,
+      ownerId: resolvedOwnerId,
+      userId: resolvedOwnerId,
+    });
 
     let currentNode = validation.startNode;
     let nodesExecutedCount = 0;

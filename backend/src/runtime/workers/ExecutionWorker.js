@@ -31,14 +31,37 @@ export class ExecutionWorker {
       throw new Error(`Workflow definition missing for execution ${executionId}`);
     }
 
+    const resolvedOwnerId = String(
+      ownerId ||
+      jobData.userId ||
+      workflow?.owner ||
+      execution?.owner ||
+      ''
+    ).trim();
+
     const initialPayload = triggerEvent || jobData.triggerPayload || {};
+    const initialVariables = {
+      ...(typeof initialPayload === 'object' ? initialPayload : {}),
+      ownerId: resolvedOwnerId,
+      userId: resolvedOwnerId,
+      execution: {
+        id: String(executionId),
+        ownerId: resolvedOwnerId,
+        userId: resolvedOwnerId,
+      },
+      workflow: {
+        id: String(workflowId),
+        ownerId: resolvedOwnerId,
+      },
+    };
+
     const startTime = Date.now();
 
     try {
       // Execute engine with 30s Timeout Cap and 3 Max Retries
       const engineResult = await TimeoutManager.runWithTimeout(
         RetryManager.executeWithRetry(async (attempt) => {
-          return await WorkflowEngine.run(definition, executionId, initialPayload);
+          return await WorkflowEngine.run(definition, executionId, initialVariables);
         })
       );
 
