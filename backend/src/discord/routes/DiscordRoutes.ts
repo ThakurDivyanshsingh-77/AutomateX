@@ -23,4 +23,8 @@ router.get('/channels', DiscordChannelController.getChannels);
 router.post('/channels/refresh', DiscordChannelController.refreshChannels);
 router.post('/channels/validate', DiscordChannelController.validateChannel);
 
+// Send Message Endpoints (Step 4)
+router.post('/send-message', DiscordController.sendMessage);
+router.post('/messages/send', DiscordController.sendMessage);
+
 export default router;

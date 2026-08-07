@@ -212,9 +212,24 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Searchable dropdown filtering channels by name (`Search channels...`).
   - Auto-loads channels upon Guild selection. Disables dropdown and displays `"Loading channels..."` while fetching.
   - Live refresh button with spin animation, warning message when selected channel no longer exists (`"Selected channel no longer exists."`), type badges (`TEXT`, `ANNOUNCEMENT`, `FORUM`), and user-friendly error messages for 401, 403, 404, 429, and network timeouts.
+### **Phase 18 Step 4 Complete — Discord Send Message Node (`discordSendMessage` / `POST /channels/{channelId}/messages`)** — ✅ COMPLETED
+- **Message Service Layer (`DiscordMessageService.ts` & `.js`)**:
+  - `DiscordMessageService.sendMessage(ownerId, credentialId, input)`: Posts messages via Discord REST API v10 `POST /channels/{channelId}/messages`.
+  - Supports plain text, markdown, mentions (`@user`, `@role`), rich JSON embeds array, Text-To-Speech (`tts`), message reply reference (`replyToMessageId`), and embed suppression (`suppressEmbeds`).
+  - Validation: Requires `credentialId`, `guildId`, `channelId`, non-empty content/embeds, and enforces 2000 character limit on message content.
+  - Standardized JSON Response format:
+    `{ success: true, messageId, channelId, guildId, timestamp, messageUrl: "https://discord.com/channels/{guildId}/{channelId}/{messageId}" }`.
+  - Execution logging: `Discord Credential Loaded`, `Guild Selected`, `Channel Selected`, `Sending Message...`, `Message Sent Successfully`, `Message ID`, `Execution Finished`.
+- **Workflow Engine Executor (`DiscordNodeExecutor.ts` & `.js`)**:
+  - Registered `discordSendMessage` and `discord` in `ExecutorRegistry.js`. Resolves workflow expression variables (`{{items}}`, `{{trigger...}}`) and dispatches to `DiscordMessageService`.
+- **Express REST Endpoint (`DiscordController.ts` & `.js`)**:
+  - Mounted `POST /api/v1/discord/send-message` and `POST /api/v1/discord/messages/send` protected by `protect` middleware.
+- **Frontend Registrations & Properties Panel (`DiscordProperties.jsx`)**:
+  - Registered node in `nodeRegistry.js` under category `Communication` with label `Discord → Send Message` and icon `MessageSquare`.
+  - `DiscordProperties.jsx`: Properties panel with Credential dropdown, Server picker (`DiscordServerDropdown`), Channel picker (`DiscordChannelDropdown`), Message textarea, Embeds JSON editor, TTS toggle, Reply To Message ID, and live **Send Test Message** button with direct Discord message link output.
 - **Verification**:
   - `npx tsc --noEmit` passed cleanly with 0 type errors.
-  - Passed 7/7 test scenarios in `test_discord_step3_full.js` (1 channel, 20 channels, mapper filtering, channel validation, cache clearing, invalid credential error handling, and route mounting).
+  - Passed 8/8 test scenarios in `test_discord_step4_full.js` (Empty message rejection, >2000 char length limit, missing guild/channel ID validation, embed JSON parsing, ExecutorRegistry resolution, non-existent credential error handling, and route mounting).
 
 
 

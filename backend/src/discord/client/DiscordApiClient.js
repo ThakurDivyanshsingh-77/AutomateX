@@ -117,4 +117,14 @@ export class DiscordApiClient {
       method: 'GET',
     });
   }
+
+  async createChannelMessage(channelId, body) {
+    if (!channelId) {
+      throw new Error('createChannelMessage requires a valid channelId');
+    }
+    return await this.request(`/channels/${channelId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
 }

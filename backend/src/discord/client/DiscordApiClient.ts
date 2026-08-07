@@ -145,7 +145,6 @@ export class DiscordApiClient {
 
   /**
    * STEP 3 Endpoint: GET /guilds/{guildId}/channels
-   * Fetches all channels in a Discord Guild (server).
    */
   public async getGuildChannels(guildId: string): Promise<IDiscordRawChannel[]> {
     if (!guildId) {
@@ -153,6 +152,20 @@ export class DiscordApiClient {
     }
     return await this.request<IDiscordRawChannel[]>(`/guilds/${guildId}/channels`, {
       method: 'GET',
+    });
+  }
+
+  /**
+   * STEP 4 Endpoint: POST /channels/{channelId}/messages
+   * Sends a message (text, markdown, mentions, embeds, TTS) to a Discord channel.
+   */
+  public async createChannelMessage(channelId: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    if (!channelId) {
+      throw new Error('createChannelMessage requires a valid channelId');
+    }
+    return await this.request<Record<string, unknown>>(`/channels/${channelId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     });
   }
 }

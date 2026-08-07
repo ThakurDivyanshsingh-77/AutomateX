@@ -8,6 +8,7 @@ import {
   GitBranch,
   Terminal,
   FileOutput,
+  MessageSquare,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -23,6 +24,9 @@ export const NODE_TYPES = {
   CONDITION: 'CONDITION',
   LOG_ACTION: 'LOG_ACTION',
   PDF_GENERATOR: 'pdfGenerator',
+  // Discord
+  DISCORD_SEND_MESSAGE: 'discordSendMessage',
+  DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
   GOOGLE_SHEETS_CREATE_SPREADSHEET: 'googleSheetsCreateSpreadsheet',
@@ -212,5 +216,43 @@ export const NODE_REGISTRY = {
     color: 'emerald',
     badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     defaultConfig: { range: 'Sheet1!A1', mappings: [] },
+  },
+  [NODE_TYPES.DISCORD_SEND_MESSAGE]: {
+    type: NODE_TYPES.DISCORD_SEND_MESSAGE,
+    category: 'Communication',
+    label: 'Discord → Send Message',
+    description: 'Send text, markdown, mentions, embeds, and TTS messages to a Discord channel',
+    icon: MessageSquare,
+    color: 'indigo',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      channelId: '',
+      content: '',
+      embeds: '',
+      tts: false,
+      replyToMessageId: '',
+      suppressEmbeds: false,
+    },
+  },
+  [NODE_TYPES.DISCORD]: {
+    type: NODE_TYPES.DISCORD,
+    category: 'Communication',
+    label: 'Discord → Send Message',
+    description: 'Send text, markdown, mentions, embeds, and TTS messages to a Discord channel',
+    icon: MessageSquare,
+    color: 'indigo',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      channelId: '',
+      content: '',
+      embeds: '',
+      tts: false,
+      replyToMessageId: '',
+      suppressEmbeds: false,
+    },
   },
 };

@@ -74,7 +74,7 @@ export interface IDiscordApiResponse<T> {
   error?: IDiscordNormalizedError;
 }
 
-// ── Step 2 Types: Guilds (Servers) ─────────────────────────────────────────
+// ── Step 2 Types: Guilds ─────────────────────────────────────────
 
 export interface IDiscordGuild {
   id: string;
@@ -93,4 +93,63 @@ export interface IDiscordGuildOption {
   iconUrl: string | null;
   id: string;
   name: string;
+  icon?: string | null;
+}
+
+// ── Step 4 Types: Send Message ─────────────────────────────────────
+
+export interface IDiscordEmbedFooter {
+  text: string;
+  icon_url?: string;
+}
+
+export interface IDiscordEmbedImage {
+  url: string;
+}
+
+export interface IDiscordEmbedAuthor {
+  name: string;
+  url?: string;
+  icon_url?: string;
+}
+
+export interface IDiscordEmbedField {
+  name: string;
+  value: string;
+  inline?: boolean;
+}
+
+export interface IDiscordEmbed {
+  title?: string;
+  description?: string;
+  url?: string;
+  timestamp?: string;
+  color?: number;
+  footer?: IDiscordEmbedFooter;
+  image?: IDiscordEmbedImage;
+  author?: IDiscordEmbedAuthor;
+  fields?: IDiscordEmbedField[];
+}
+
+export interface IDiscordSendMessageInput {
+  credentialId: string;
+  guildId: string;
+  channelId: string;
+  content?: string;
+  message?: string; // Fallback field alias
+  embeds?: IDiscordEmbed[] | string;
+  tts?: boolean;
+  replyToMessageId?: string;
+  allowedMentions?: Record<string, unknown>;
+  suppressEmbeds?: boolean;
+}
+
+export interface IDiscordSendMessageResult {
+  success: boolean;
+  messageId: string;
+  channelId: string;
+  guildId: string;
+  timestamp: string;
+  messageUrl: string;
+  rawMessage?: Record<string, unknown>;
 }

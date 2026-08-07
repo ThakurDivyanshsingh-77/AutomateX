@@ -1,5 +1,6 @@
 import { DiscordCredentialService } from '../services/DiscordCredentialService.js';
 import { DiscordGuildService } from '../services/DiscordGuildService.js';
+import { DiscordMessageService } from '../services/DiscordMessageService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 export class DiscordController {
@@ -156,6 +157,43 @@ export class DiscordController {
         success: false,
         valid: false,
         message: error.message || normalized.message,
+      });
+    }
+  }
+
+  static async sendMessage(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.status(401).json({
+          success: false,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const { credentialId, guildId, channelId, content, message, embeds, tts, replyToMessageId, suppressEmbeds } = req.body;
+      const targetCredId = credentialId || req.body.credential;
+
+      const result = await DiscordMessageService.sendMessage(String(ownerId), targetCredId, {
+        credentialId: targetCredId,
+        guildId: guildId || req.body.guild,
+        channelId: channelId || req.body.channel,
+        content: content || message,
+        embeds,
+        tts,
+        replyToMessageId,
+        suppressEmbeds,
+      });
+
+      res.status(200).json(result);
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || normalized.message,
+        error: normalized,
       });
     }
   }

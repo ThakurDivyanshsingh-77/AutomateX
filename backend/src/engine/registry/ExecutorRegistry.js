@@ -14,6 +14,7 @@ import { GoogleSheetsCreateSpreadsheetExecutor } from '../googleSheets/GoogleShe
 import { GoogleSheetsCreateWorksheetExecutor } from '../googleSheets/GoogleSheetsCreateWorksheetExecutor.js';
 import { GoogleSheetsDeleteWorksheetExecutor } from '../googleSheets/GoogleSheetsDeleteWorksheetExecutor.js';
 import { GoogleSheetsGetSpreadsheetInfoExecutor } from '../googleSheets/GoogleSheetsGetSpreadsheetInfoExecutor.js';
+import { DiscordNodeExecutor } from '../../discord/executors/DiscordNodeExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -21,6 +22,7 @@ const googleSheetsCreateSpreadsheetExecutor = new GoogleSheetsCreateSpreadsheetE
 const googleSheetsCreateWorksheetExecutor = new GoogleSheetsCreateWorksheetExecutor();
 const googleSheetsDeleteWorksheetExecutor = new GoogleSheetsDeleteWorksheetExecutor();
 const googleSheetsGetSpreadsheetInfoExecutor = new GoogleSheetsGetSpreadsheetInfoExecutor();
+const discordNodeExecutor = new DiscordNodeExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -48,6 +50,10 @@ export class ExecutorRegistry {
     ['mongoCount', DatabaseExecutor],
     ['mongoAggregate', DatabaseExecutor],
     ['pdfGenerator', new PdfGeneratorExecutor()],
+
+    // Discord Node Executors
+    ['discordSendMessage', discordNodeExecutor],
+    ['discord', discordNodeExecutor],
 
     // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],

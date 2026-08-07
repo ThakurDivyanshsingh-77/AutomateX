@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { DiscordCredentialService } from '../services/DiscordCredentialService.js';
 import { DiscordGuildService } from '../services/DiscordGuildService.js';
+import { DiscordMessageService } from '../services/DiscordMessageService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 export class DiscordController {
   /**
    * POST /api/v1/discord/credentials/verify
-   * Verify Bot Token without saving credential.
    */
   public static async verifyCredential(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -49,7 +49,6 @@ export class DiscordController {
 
   /**
    * POST /api/v1/discord/credentials
-   * Validate, encrypt, and save Discord Bot Credential.
    */
   public static async createCredential(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -86,11 +85,10 @@ export class DiscordController {
 
   /**
    * GET /api/v1/discord/guilds
-   * Step 2 API: Fetch all Discord Guilds (servers) for a given credentialId.
    */
   public static async getGuilds(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // @ts-ignore - req.user populated by authMiddleware
+      // @ts-ignore
       const ownerId = req.user?._id || req.user?.id;
       if (!ownerId) {
         res.status(401).json({
@@ -129,7 +127,6 @@ export class DiscordController {
 
   /**
    * POST /api/v1/discord/guilds/refresh
-   * Step 2 API: Force refresh Discord Guilds.
    */
   public static async refreshGuilds(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -157,7 +154,6 @@ export class DiscordController {
 
   /**
    * POST /api/v1/discord/guilds/validate
-   * Step 2 API: Validate accessibility of a Guild ID.
    */
   public static async validateGuild(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -181,6 +177,48 @@ export class DiscordController {
         success: false,
         valid: false,
         message: (error as Error).message || normalized.message,
+      });
+    }
+  }
+
+  /**
+   * POST /api/v1/discord/send-message
+   * Step 4 API: Send message to a Discord channel.
+   */
+  public static async sendMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // @ts-ignore
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.status(401).json({
+          success: false,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const { credentialId, guildId, channelId, content, message, embeds, tts, replyToMessageId, suppressEmbeds } = req.body;
+      const targetCredId = credentialId || req.body.credential;
+
+      const result = await DiscordMessageService.sendMessage(String(ownerId), targetCredId, {
+        credentialId: targetCredId,
+        guildId: guildId || req.body.guild,
+        channelId: channelId || req.body.channel,
+        content: content || message,
+        embeds,
+        tts,
+        replyToMessageId,
+        suppressEmbeds,
+      });
+
+      res.status(200).json(result);
+    } catch (error: unknown) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = (error as unknown as { statusCode?: number }).statusCode || normalized.statusCode;
+      res.status(statusCode).json({
+        success: false,
+        message: (error as Error).message || normalized.message,
+        error: normalized,
       });
     }
   }
