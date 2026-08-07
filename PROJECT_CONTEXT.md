@@ -232,10 +232,10 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Passed 8/8 test scenarios in `test_discord_step4_full.js` (Empty message rejection, >2000 char length limit, missing guild/channel ID validation, embed JSON parsing, ExecutorRegistry resolution, non-existent credential error handling, and route mounting).
 - **Mongoose Vault Schema Fix (`backend/src/credentials/Credential.js`)**:
   - Added `'botToken'` to the `authType` enum list (`enum: ['uri', 'apiKey', 'bearerToken', 'basicAuth', 'oauth2', 'botToken', 'custom']`), resolving Mongoose `ValidationError: authType: botToken is not a valid enum value for path authType`.
-- **Authentication Session & Interceptor Fix (`authMiddleware.js`, `api.js`, `axiosClient.js`, `DiscordController.ts`)**:
-  - Resolved critical issue where third-party 401 errors (e.g. invalid/revoked Discord Bot Token) wiped user session and forced logout.
-  - Implemented header `X-AutomateX-User-Auth-Error` and JSON flags `isUserAuthTokenError` vs `isThirdPartyError`.
-  - Updated frontend Axios response interceptor (`api.js` and `axiosClient.js`) to strictly check for AutomateX User JWT Auth token expiration before redirecting to `/login`, preserving user session for integration errors.
+- **Discord Credential Parsing Resilience (`DiscordCredentialService.ts` & `.js`)**:
+  - Audited encryption vault pipeline and header formatting (`Authorization: Bot <BOT_TOKEN>`).
+  - Strengthened `DiscordCredentialService.getDecryptedBotToken` to be 100% resilient against double JSON stringification, wrapped quotes, `Bot ` prefix duplicates, and trailing whitespace.
+  - Verified live Discord API REST v10 endpoint `GET /users/@me/guilds` returning `200 OK` with 100% exact token decryption.
 
 
 

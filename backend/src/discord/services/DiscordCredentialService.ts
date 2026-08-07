@@ -87,7 +87,7 @@ export class DiscordCredentialService {
     }
 
     const secretPayload = {
-      botToken: input.botToken.trim(),
+      botToken: input.botToken.trim().replace(/^["']|["']$/g, ''),
       botId: botInfo.botId,
       botName: botInfo.botName,
       username: botInfo.username,
@@ -118,18 +118,46 @@ export class DiscordCredentialService {
 
   /**
    * Get decrypted Discord Bot Token by Credential ID for a user.
+   * Handles stringified JSON objects, double JSON strings, raw strings, wrapping quotes, and whitespace.
    */
   public static async getDecryptedBotToken(ownerId: string, credentialId: string): Promise<string> {
-    const secret = await credentialService.getDecryptedSecret(ownerId, credentialId);
+    let secret = await credentialService.getDecryptedSecret(ownerId, credentialId);
     if (!secret) {
       throw new Error(`Discord credential not found: ${credentialId}`);
     }
-    if (typeof secret === 'object' && secret.botToken) {
-      return secret.botToken;
+
+    // Recursively parse if stored as nested JSON string
+    while (typeof secret === 'string') {
+      try {
+        const parsed = JSON.parse(secret);
+        if (typeof parsed === 'object' && parsed !== null) {
+          secret = parsed;
+        } else if (typeof parsed === 'string') {
+          secret = parsed;
+        } else {
+          break;
+        }
+      } catch {
+        break;
+      }
     }
-    if (typeof secret === 'string') {
-      return secret;
+
+    let token = '';
+    if (typeof secret === 'object' && secret !== null && (secret.botToken || secret.token)) {
+      token = String(secret.botToken || secret.token);
+    } else if (typeof secret === 'string') {
+      token = secret;
     }
-    throw new Error(`Invalid Discord credential format stored for ID: ${credentialId}`);
+
+    token = token.trim().replace(/^["']|["']$/g, '');
+    if (token.toLowerCase().startsWith('bot ')) {
+      token = token.substring(4).trim();
+    }
+
+    if (!token) {
+      throw new Error(`Invalid or empty Discord Bot Token extracted for Credential ID: ${credentialId}`);
+    }
+
+    return token;
   }
 }

@@ -4,11 +4,9 @@ import { DiscordUtils } from '../utils/DiscordUtils.js';
 import { credentialService } from '../../credentials/credentialService.js';
 
 export class DiscordCredentialService {
-  /**
-   * Validate a Discord Bot Token by invoking GET /users/@me
-   */
   static async validateBotToken(botToken) {
     console.log('[DiscordAuth] 🔐 Authentication started...');
+
     console.log('[DiscordAuth] 🔍 Token validation: Checking token format...');
     const tokenValidation = DiscordValidators.validateBotToken(botToken);
     if (!tokenValidation.isValid) {
@@ -58,9 +56,6 @@ export class DiscordCredentialService {
     }
   }
 
-  /**
-   * Validate, encrypt, and store a Discord Bot Credential in AutomateX vault.
-   */
   static async createCredential(ownerId, input) {
     console.log(`[DiscordAuth] 🔒 Storing encrypted Discord credential for Connection Name: "${input.name}"...`);
 
@@ -79,7 +74,7 @@ export class DiscordCredentialService {
     }
 
     const secretPayload = {
-      botToken: input.botToken.trim(),
+      botToken: input.botToken.trim().replace(/^["']|["']$/g, ''),
       botId: botInfo.botId,
       botName: botInfo.botName,
       username: botInfo.username,
@@ -108,20 +103,43 @@ export class DiscordCredentialService {
     };
   }
 
-  /**
-   * Get decrypted Discord Bot Token by Credential ID.
-   */
   static async getDecryptedBotToken(ownerId, credentialId) {
-    const secret = await credentialService.getDecryptedSecret(ownerId, credentialId);
+    let secret = await credentialService.getDecryptedSecret(ownerId, credentialId);
     if (!secret) {
       throw new Error(`Discord credential not found: ${credentialId}`);
     }
-    if (typeof secret === 'object' && secret.botToken) {
-      return secret.botToken;
+
+    while (typeof secret === 'string') {
+      try {
+        const parsed = JSON.parse(secret);
+        if (typeof parsed === 'object' && parsed !== null) {
+          secret = parsed;
+        } else if (typeof parsed === 'string') {
+          secret = parsed;
+        } else {
+          break;
+        }
+      } catch {
+        break;
+      }
     }
-    if (typeof secret === 'string') {
-      return secret;
+
+    let token = '';
+    if (typeof secret === 'object' && secret !== null && (secret.botToken || secret.token)) {
+      token = String(secret.botToken || secret.token);
+    } else if (typeof secret === 'string') {
+      token = secret;
     }
-    throw new Error(`Invalid Discord credential format stored for ID: ${credentialId}`);
+
+    token = token.trim().replace(/^["']|["']$/g, '');
+    if (token.toLowerCase().startsWith('bot ')) {
+      token = token.substring(4).trim();
+    }
+
+    if (!token) {
+      throw new Error(`Invalid or empty Discord Bot Token extracted for Credential ID: ${credentialId}`);
+    }
+
+    return token;
   }
 }
