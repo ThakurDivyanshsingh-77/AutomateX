@@ -188,6 +188,9 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Returns clean typed `IDiscordGuildOption[]` (`{ label, value, iconUrl, id, name }`).
 - **Express REST Endpoint (`DiscordController.getGuilds`)**:
   - Mounted `GET /api/v1/discord/guilds` protected by `protect` middleware. Supports `credentialId` and optional `refresh=true` parameters.
+- **Production Render Build Fix**:
+  - Generated and committed dual-support ES module `.js` files alongside `.ts` definitions in `backend/src/discord/` (`DiscordRoutes.js`, `DiscordController.js`, `DiscordCredentialService.js`, `DiscordApiClient.js`, `DiscordUtils.js`, `DiscordValidators.js`, `DiscordDynamicOptions.js`, `DiscordNodeExecutor.js`, `DiscordTypes.js`).
+  - Resolves Render `ERR_MODULE_NOT_FOUND` deployment issue while preserving `npx tsc --noEmit` strict TypeScript checking. Verified via `node -e "import('./src/app.js')"`.
 - **Verification**:
   - `npx tsc --noEmit` passed cleanly with 0 type errors.
   - Passed 5/5 automated assertions in `test_discord_step2.js`.
