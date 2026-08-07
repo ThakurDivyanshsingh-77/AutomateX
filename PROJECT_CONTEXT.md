@@ -166,6 +166,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Frontend Properties Panel**: Integrated `isGetSpreadsheetInfoNode` in `GoogleSheetsProperties.jsx` with automatic spreadsheet selector, dynamic tab fetching, and a dedicated `handleTestGetInfo` handler connecting to the "Test Connection & Retrieve Metadata" button.
 - **Automated Verification**: Passed 7/7 assertions in `test_get_spreadsheet_info.js` (verified single & multi-worksheet metadata retrieval, hidden tab state, grid properties, cache invalidation after worksheet creation/deletion, and 404/403 error handling).
 
+### **Phase 18 Step 1 Complete — Production-Grade Discord Integration Module (Bot Token Authentication & Vault Storage)** — ✅ COMPLETED
+- **TypeScript Module Architecture (`backend/src/discord/`)**:
+  - `DiscordTypes.ts`: Strict TypeScript interfaces for Bot credentials, `GET /users/@me` user profiles, API responses, rate limits, and error shapes (zero `any` types).
+  - `DiscordUtils.ts`: Pure utilities formatting `Bot <token>` auth headers, building CDN avatar URLs (`https://cdn.discordapp.com/avatars/...`), parsing rate limit headers, and normalizing HTTP errors (401, 403, 404, 429, 500).
+  - `DiscordValidators.ts`: Strict input validator routines for Connection Name and Bot Token format.
+  - `DiscordApiClient.ts`: Production Discord REST API v10 HTTP client with `GET /users/@me` endpoint, 429 rate limit backoff handling, and 5xx exponential backoff retries.
+  - `DiscordCredentialService.ts`: Core service validating bot tokens via API client, formatting bot metadata (`botName`, `botId`, `avatar`, `username`, `discriminator`), encrypting credentials with AES-256 in AutomateX vault (`credentialService`), and providing token decryption.
+  - `DiscordController.ts` & `DiscordRoutes.ts`: Mounted Express endpoints (`POST /api/v1/discord/credentials/verify` & `POST /api/v1/discord/credentials`) protected by JWT `protect` middleware.
+  - Architectural stubs: `DiscordNodeExecutor.ts` & `DiscordDynamicOptions.ts` ready for subsequent steps.
+- **Tooling & Strict Verification**:
+  - Added `typescript`, `tsx`, `@types/node`, `@types/express` to devDependencies and created `backend/tsconfig.json` (`strict: true`).
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Passed 5/5 automated test assertions in `test_discord_step1.js`.
+
 
 
 
