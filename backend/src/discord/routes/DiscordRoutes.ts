@@ -36,8 +36,10 @@ router.get('/channels', DiscordChannelController.getChannels);
 router.post('/channels/refresh', DiscordChannelController.refreshChannels);
 router.post('/channels/validate', DiscordChannelController.validateChannel);
 
-// Send Message Endpoints (Step 4)
+// Send Message & Embed Endpoints (Step 4 & Embed Node)
 router.post('/send-message', DiscordController.sendMessage);
 router.post('/messages/send', DiscordController.sendMessage);
+router.post('/send-embed', DiscordController.sendEmbed);
+router.post('/embeds/send', DiscordController.sendEmbed);
 
 export default router;

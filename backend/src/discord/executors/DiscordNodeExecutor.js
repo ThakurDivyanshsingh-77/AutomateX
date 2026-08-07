@@ -1,8 +1,10 @@
 import { DiscordMessageService } from '../services/DiscordMessageService.js';
+import { DiscordEmbedService } from '../services/DiscordEmbedService.js';
 
 export class DiscordNodeExecutor {
   async execute(nodeData, context) {
     const config = nodeData.config || nodeData.data || nodeData;
+    const nodeType = String(nodeData.type || nodeData.nodeType || config.type || '').toLowerCase();
 
     const workflowObj = context.workflow || {};
     const executionObj = context.execution || {};
@@ -30,6 +32,42 @@ export class DiscordNodeExecutor {
     const credentialId = String(config.credentialId || config.credential || '');
     const guildId = String(config.guildId || config.guild || '');
     const channelId = String(config.channelId || config.channel || '');
+
+    if (nodeType.includes('embed') || nodeType === 'discordsendembed') {
+      const title = config.title ? String(config.title) : undefined;
+      const description = config.description ? String(config.description) : undefined;
+      const color = config.color;
+      const url = config.url ? String(config.url) : undefined;
+      const authorName = config.authorName ? String(config.authorName) : undefined;
+      const authorUrl = config.authorUrl ? String(config.authorUrl) : undefined;
+      const authorIconUrl = config.authorIconUrl ? String(config.authorIconUrl) : undefined;
+      const thumbnailUrl = config.thumbnailUrl ? String(config.thumbnailUrl) : undefined;
+      const imageUrl = config.imageUrl ? String(config.imageUrl) : undefined;
+      const footerText = config.footerText ? String(config.footerText) : undefined;
+      const footerIconUrl = config.footerIconUrl ? String(config.footerIconUrl) : undefined;
+      const timestamp = Boolean(config.timestamp);
+      const fields = Array.isArray(config.fields) ? config.fields : [];
+
+      return await DiscordEmbedService.sendEmbed(ownerId, credentialId, {
+        credentialId,
+        guildId,
+        channelId,
+        title,
+        description,
+        color,
+        url,
+        authorName,
+        authorUrl,
+        authorIconUrl,
+        thumbnailUrl,
+        imageUrl,
+        footerText,
+        footerIconUrl,
+        timestamp,
+        fields,
+      });
+    }
+
     const content = String(config.content || config.message || '');
     const embeds = config.embeds;
     const tts = Boolean(config.tts);

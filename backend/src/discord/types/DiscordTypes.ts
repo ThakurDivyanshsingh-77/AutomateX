@@ -96,7 +96,7 @@ export interface IDiscordGuildOption {
   icon?: string | null;
 }
 
-// ── Step 4 Types: Send Message ─────────────────────────────────────
+// ── Step 4 Types: Send Message & Embeds ─────────────────────────────────────
 
 export interface IDiscordEmbedFooter {
   text: string;
@@ -127,6 +127,7 @@ export interface IDiscordEmbed {
   color?: number;
   footer?: IDiscordEmbedFooter;
   image?: IDiscordEmbedImage;
+  thumbnail?: IDiscordEmbedImage;
   author?: IDiscordEmbedAuthor;
   fields?: IDiscordEmbedField[];
 }
@@ -142,6 +143,25 @@ export interface IDiscordSendMessageInput {
   replyToMessageId?: string;
   allowedMentions?: Record<string, unknown>;
   suppressEmbeds?: boolean;
+}
+
+export interface IDiscordSendEmbedInput {
+  credentialId: string;
+  guildId: string;
+  channelId: string;
+  title?: string;
+  description?: string;
+  color?: string | number;
+  url?: string;
+  authorName?: string;
+  authorUrl?: string;
+  authorIconUrl?: string;
+  thumbnailUrl?: string;
+  imageUrl?: string;
+  footerText?: string;
+  footerIconUrl?: string;
+  timestamp?: boolean | string;
+  fields?: IDiscordEmbedField[];
 }
 
 export interface IDiscordSendMessageResult {

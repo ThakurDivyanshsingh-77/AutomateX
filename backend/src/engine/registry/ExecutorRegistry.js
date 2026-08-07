@@ -53,6 +53,8 @@ export class ExecutorRegistry {
 
     // Discord Node Executors
     ['discordSendMessage', discordNodeExecutor],
+    ['discordSendEmbed', discordNodeExecutor],
+    ['discordEmbed', discordNodeExecutor],
     ['discord', discordNodeExecutor],
 
     // Google Sheets Node Executors (Exact matching string registration)

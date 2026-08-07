@@ -141,6 +141,8 @@ export const nodeValidators = {
   [GOOGLE_SHEETS_NODE_TYPES.GET_SPREADSHEET_INFO]: googleSheetsValidator,
   googleSheets: googleSheetsValidator,
   discordSendMessage: discordValidator,
+  discordSendEmbed: discordValidator,
+  discordEmbed: discordValidator,
   discord: discordValidator,
 };
 

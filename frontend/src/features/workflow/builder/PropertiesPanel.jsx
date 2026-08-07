@@ -15,6 +15,7 @@ import { PdfGeneratorProperties } from '../nodes/pdf/PdfGeneratorProperties';
 import { GoogleSheetsProperties } from '../nodes/googleSheets/GoogleSheetsProperties';
 import { GoogleSheetsTriggerProperties } from '../nodes/googleSheets/GoogleSheetsTriggerProperties';
 import { DiscordProperties } from '../components/DiscordProperties';
+import { DiscordEmbedProperties } from '../components/DiscordEmbedProperties';
 
 export const PropertiesPanel = ({
   selectedNode,
@@ -42,19 +43,6 @@ export const PropertiesPanel = ({
     onUpdateNodeData(selectedNode.id, { label: e.target.value });
   };
 
-  const handleConfigChange = (field, value) => {
-    const nextConfig = { ...config, [field]: value };
-    const nextValidation = registryEntry.validate
-      ? registryEntry.validate(nextConfig)
-      : { isValid: true, errors: {} };
-
-    onUpdateNodeData(selectedNode.id, {
-      config: nextConfig,
-      isValid: nextValidation.isValid,
-      validationErrors: nextValidation.errors,
-    });
-  };
-
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -64,7 +52,8 @@ export const PropertiesPanel = ({
   const isPdfNode = selectedNode.type === 'pdfGenerator';
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
-  const isDiscordNode = selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord');
+  const isDiscordEmbedNode = selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed'));
+  const isDiscordNode = !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
 
   return (
     <>
@@ -108,17 +97,23 @@ export const PropertiesPanel = ({
           {/* Node Validation Status Banner */}
           {!isGmailNode && !isWebhookNode && (
             !validationResult.isValid ? (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] flex items-start gap-2 font-medium">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold block">Invalid Configuration</span>
-                  Please fix the highlighted fields below.
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                <div className="space-y-1 text-xs">
+                  <span className="font-semibold block">Incomplete Configuration</span>
+                  <ul className="list-disc list-inside space-y-0.5 text-[11px] opacity-90">
+                    {Array.isArray(validationResult.errors) ? (
+                      validationResult.errors.map((err, idx) => <li key={idx}>{err}</li>)
+                    ) : (
+                      Object.values(validationResult.errors).map((err, idx) => <li key={idx}>{err}</li>)
+                    )}
+                  </ul>
                 </div>
               </div>
             ) : (
-              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] flex items-center gap-2 font-medium">
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                <span>Node configuration valid</span>
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2 text-xs">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                <span className="font-medium">Valid Node Configuration</span>
               </div>
             )
           )}
@@ -193,7 +188,11 @@ export const PropertiesPanel = ({
                 nodeType={selectedNode.type}
                 nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
-                onUpdateNodeConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isDiscordEmbedNode ? (
+              <DiscordEmbedProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : isDiscordNode ? (
               <DiscordProperties
@@ -202,41 +201,52 @@ export const PropertiesPanel = ({
               />
             ) : (
               <AutoForm
-                configSchema={registryEntry.configSchema}
-                config={config}
-                errors={validationResult.errors}
-                onChange={handleConfigChange}
+                schema={registryEntry.schema}
+                data={selectedNode.data?.config || {}}
+                onChange={(newConfig) =>
+                  onUpdateNodeData(selectedNode.id, { config: newConfig })
+                }
               />
             )}
           </div>
         </div>
 
-        {/* Panel Footer Actions */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950">
+        {/* Panel Footer */}
+        <div className="p-4 border-t border-slate-800 flex items-center justify-between">
           <Button
-            variant="danger"
+            variant="ghost"
             size="sm"
-            className="w-full justify-center"
             onClick={() => onDeleteNode(selectedNode.id)}
+            className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-xs font-semibold"
           >
-            <Trash2 className="w-4 h-4" /> Delete Node
+            <Trash2 className="w-4 h-4 mr-1.5" />
+            Delete Node
           </Button>
+
+          <span className="text-[10px] font-mono text-slate-500">
+            ID: {selectedNode.id}
+          </span>
         </div>
       </aside>
 
-      {/* Visual Data Mapper Panel Modal */}
+      {/* Visual Data Mapper Overlay */}
       {showDataMapper && (
         <DataMapperPanel
-          isOpen={showDataMapper}
-          onClose={() => setShowDataMapper(false)}
-          targetNode={selectedNode}
+          currentNode={selectedNode}
           workflowNodes={workflowNodes}
           executionSnapshot={executionSnapshot}
-          onUpdateTargetNodeConfig={(nodeId, field, val) => {
-            handleConfigChange(field, val);
+          onClose={() => setShowDataMapper(false)}
+          onApplyMapping={(targetField, expression) => {
+            const currentConfig = selectedNode.data?.config || {};
+            onUpdateNodeData(selectedNode.id, {
+              config: { ...currentConfig, [targetField]: expression },
+            });
+            setShowDataMapper(false);
           }}
         />
       )}
     </>
   );
 };
+
+export default PropertiesPanel;

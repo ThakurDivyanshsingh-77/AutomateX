@@ -236,7 +236,14 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Eliminated `owner: "system"` fallback during workflow execution.
   - Implemented `CredentialService.getCredentialForExecution(credentialId, ownerId)` as the single shared credential loading method for both "Send Test Message" (Test API) and "Run Workflow" (Workflow Runner).
   - Updated `executionService.js` and `ExecutionContext.js` to expose and pass `ownerId`, `userId`, `workflow.ownerId`, and `execution.ownerId` down to every node executor.
-  - Added strict audit logging (`Execution owner`, `Workflow owner`, `Credential owner`, `Credential ID`, `Resolved User ID`) and security violation guards prohibiting system owner execution.
+- **Discord → Send Embed Message Node (`discordSendEmbed`)**:
+  - Implemented production Discord Embed node under category `Communication`.
+  - Reused existing `DiscordCredentialService`, `DiscordServerDropdown`, `DiscordChannelDropdown`, `DiscordApiClient`, and credential loading pipeline.
+  - Implemented `DiscordEmbedValidators` enforcing limits (Title $\le 256$, Description $\le 4096$, Footer $\le 2048$, Author $\le 256$, Fields $\le 25$, Field Name $\le 256$, Field Value $\le 1024$, Hex color conversion).
+  - Built `DiscordEmbedService.sendEmbed` and mounted REST API endpoint `POST /api/v1/discord/send-embed`.
+  - Built `DiscordEmbedPreview.jsx`: Pixel-perfect, live Discord dark-theme preview card with dynamic color accent strip, author, multiline description, fields grid, thumbnail, hero image, footer, and timestamp.
+  - Built `DiscordEmbedProperties.jsx`: Node properties panel with color picker, field array editor (Add/Remove fields, Name, Value, Inline grid toggle), live preview, and **Send Test Embed Message** button with live Discord jump URL output.
+  - Registered `discordSendEmbed` and `discordEmbed` in `nodeRegistry.js`, `ExecutorRegistry.js`, and `PropertiesPanel.jsx`.
 
 
 

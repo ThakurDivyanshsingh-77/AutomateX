@@ -32,5 +32,7 @@ router.post('/channels/validate', DiscordChannelController.validateChannel);
 
 router.post('/send-message', DiscordController.sendMessage);
 router.post('/messages/send', DiscordController.sendMessage);
+router.post('/send-embed', DiscordController.sendEmbed);
+router.post('/embeds/send', DiscordController.sendEmbed);
 
 export default router;
