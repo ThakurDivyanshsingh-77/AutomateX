@@ -15,6 +15,34 @@ export class ExecutionContext {
     this.logs = [];
     this.startedAt = new Date();
 
+    // Authenticated User & Execution Context Resolution
+    const resolvedOwnerId = String(
+      initialVariables?.ownerId ||
+      initialVariables?.userId ||
+      initialVariables?.workflow?.ownerId ||
+      initialVariables?.execution?.ownerId ||
+      initialVariables?.execution?.userId ||
+      initialVariables?.user?._id ||
+      initialVariables?.user?.id ||
+      ''
+    ).trim();
+
+    this.ownerId = resolvedOwnerId;
+    this.userId = resolvedOwnerId;
+
+    this.workflow = {
+      id: initialVariables?.workflow?.id || '',
+      ownerId: resolvedOwnerId,
+      ...(initialVariables?.workflow || {}),
+    };
+
+    this.execution = {
+      id: this.executionId,
+      ownerId: resolvedOwnerId,
+      userId: resolvedOwnerId,
+      ...(initialVariables?.execution || {}),
+    };
+
     // RAM State for ExpressionEngine resolution
     const payloadData = (this.initialPayload && typeof this.initialPayload === 'object' && this.initialPayload.data)
       ? { ...this.initialPayload.data, ...this.initialPayload }

@@ -63,8 +63,6 @@ export const credentialService = {
 
   /**
    * Return Google OAuth credentials usable by every Google integration.
-   * `gmail` is the canonical service for credentials created by the shared
-   * Google OAuth callback; the other values preserve legacy credentials.
    */
   getGoogleOAuthCredentials: async (ownerId) => {
     const query = {
@@ -72,12 +70,6 @@ export const credentialService = {
       service: { $in: GOOGLE_OAUTH_SERVICES },
       authType: 'oauth2',
     };
-
-    console.debug('[CredentialService] Google OAuth credential query', {
-      ownerId: String(ownerId),
-      query: { service: query.service, authType: query.authType },
-      storage: mongoose.connection.readyState === 1 ? 'mongodb' : 'memory',
-    });
 
     const credentials = mongoose.connection.readyState === 1
       ? await Credential.find(query).sort({ createdAt: -1 })
@@ -87,11 +79,6 @@ export const credentialService = {
         credential.authType === 'oauth2'
       ));
 
-    console.debug('[CredentialService] Google OAuth credentials returned', {
-      ownerId: String(ownerId),
-      count: credentials.length,
-      credentialIds: credentials.map((credential) => String(credential._id)),
-    });
     return credentials;
   },
 
@@ -112,27 +99,107 @@ export const credentialService = {
   },
 
   /**
+   * Unified shared method for loading credentials during both Test API ("Send Test Message")
+   * and Workflow Runner ("Run Workflow"). Enforces strict owner lookup and prohibits "system".
+   */
+  getCredentialForExecution: async (credentialId, ownerId) => {
+    if (!credentialId) {
+      const err = new Error('[CredentialService] credentialId is required for execution credential lookup');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const resolvedUserId = String(ownerId || '').trim();
+    if (!resolvedUserId || resolvedUserId === 'system' || resolvedUserId === 'undefined') {
+      console.error('[CredentialService] ❌ CRITICAL: Attempted credential lookup with invalid or "system" ownerId:', {
+        credentialId,
+        resolvedUserId,
+      });
+      const err = new Error(`[CredentialService] Security Violation: Cannot perform credential lookup with owner "${resolvedUserId}". Valid authenticated user ID is required.`);
+      err.statusCode = 401;
+      throw err;
+    }
+
+    let credDocument = null;
+    let encryptedData = null;
+
+    if (mongoose.connection.readyState === 1) {
+      credDocument = await Credential.findOne({ _id: credentialId, owner: resolvedUserId }).select('+encryptedData');
+
+      if (!credDocument) {
+        // Diagnostic audit check: check if credential exists under a different owner
+        const existingCredAnyOwner = await Credential.findById(credentialId);
+        const actualOwner = existingCredAnyOwner ? String(existingCredAnyOwner.owner) : 'NOT_FOUND';
+
+        console.error(`[CredentialService Audit Log]
+Execution owner: ${resolvedUserId}
+Workflow owner: ${resolvedUserId}
+Credential owner: ${actualOwner}
+Credential ID: ${credentialId}
+Resolved User ID: ${resolvedUserId}`);
+
+        const err = new Error(`Credential lookup failed: Credential ID "${credentialId}" does not belong to user "${resolvedUserId}" (Actual credential owner: ${actualOwner}).`);
+        err.statusCode = 404;
+        throw err;
+      }
+      encryptedData = credDocument.encryptedData;
+    } else {
+      credDocument = inMemoryCredentials.find((c) => String(c._id) === String(credentialId) && String(c.owner) === resolvedUserId);
+      if (!credDocument) {
+        const anyCred = inMemoryCredentials.find((c) => String(c._id) === String(credentialId));
+        const actualOwner = anyCred ? String(anyCred.owner) : 'NOT_FOUND';
+
+        console.error(`[CredentialService Audit Log]
+Execution owner: ${resolvedUserId}
+Workflow owner: ${resolvedUserId}
+Credential owner: ${actualOwner}
+Credential ID: ${credentialId}
+Resolved User ID: ${resolvedUserId}`);
+
+        const err = new Error(`Credential lookup failed in memory: Credential ID "${credentialId}" not found for user "${resolvedUserId}".`);
+        err.statusCode = 404;
+        throw err;
+      }
+      encryptedData = credDocument.encryptedData;
+    }
+
+    console.log(`[CredentialService Debug Log]
+Execution owner: ${resolvedUserId}
+Workflow owner: ${resolvedUserId}
+Credential owner: ${String(credDocument.owner)}
+Credential ID: ${credentialId}
+Resolved User ID: ${resolvedUserId}`);
+
+    const decrypted = credentialCrypto.decrypt(encryptedData);
+    let parsedSecret;
+    try {
+      parsedSecret = JSON.parse(decrypted);
+    } catch {
+      parsedSecret = decrypted;
+    }
+
+    return {
+      credentialId,
+      ownerId: resolvedUserId,
+      service: credDocument.service,
+      authType: credDocument.authType,
+      name: credDocument.name,
+      secret: parsedSecret,
+    };
+  },
+
+  /**
    * Get decrypted plain-text secret or object
    */
   getDecryptedSecret: async (ownerId, credentialId) => {
-    let encryptedData;
-    if (mongoose.connection.readyState === 1) {
-      const cred = await Credential.findOne({ _id: credentialId, owner: ownerId }).select('+encryptedData');
-      if (!cred) return null;
-      encryptedData = cred.encryptedData;
-    } else {
-      const cred = inMemoryCredentials.find((credential) => (
-        credential._id === credentialId && (!ownerId || String(credential.owner) === String(ownerId))
-      ));
-      if (!cred) return null;
-      encryptedData = cred.encryptedData;
-    }
-
-    const decrypted = credentialCrypto.decrypt(encryptedData);
     try {
-      return JSON.parse(decrypted);
-    } catch {
-      return decrypted;
+      const res = await credentialService.getCredentialForExecution(credentialId, ownerId);
+      return res.secret;
+    } catch (err) {
+      if (err.message?.includes('Security Violation') || err.message?.includes('does not belong to user')) {
+        throw err;
+      }
+      return null;
     }
   },
 
@@ -140,10 +207,13 @@ export const credentialService = {
    * Get decrypted credential by ID
    */
   getCredentialById: async (credentialId, ownerId = null) => {
+    if (ownerId) {
+      const res = await credentialService.getCredentialForExecution(credentialId, ownerId);
+      return res.secret;
+    }
     let encryptedData;
     if (mongoose.connection.readyState === 1) {
-      const query = ownerId ? { _id: credentialId, owner: ownerId } : { _id: credentialId };
-      const cred = await Credential.findOne(query).select('+encryptedData');
+      const cred = await Credential.findById(credentialId).select('+encryptedData');
       if (!cred) throw new Error(`Credential not found: ${credentialId}`);
       encryptedData = cred.encryptedData;
     } else {
@@ -160,9 +230,6 @@ export const credentialService = {
     }
   },
 
-  /**
-   * Get decrypted OAuth2 data as a parsed JSON object.
-   */
   getDecryptedOAuthData: async (credentialId) => {
     return credentialService.getCredentialById(credentialId);
   },

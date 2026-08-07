@@ -64,7 +64,20 @@ export const executionService = {
     try {
       const engineResult = await WorkflowEngine.run(
         workflow.definition,
-        executionRecord._id.toString()
+        executionRecord._id.toString(),
+        {
+          ownerId: ownerId.toString(),
+          userId: ownerId.toString(),
+          execution: {
+            id: executionRecord._id.toString(),
+            ownerId: ownerId.toString(),
+            userId: ownerId.toString(),
+          },
+          workflow: {
+            id: workflow._id.toString(),
+            ownerId: ownerId.toString(),
+          },
+        }
       );
 
       const finishedAt = new Date();

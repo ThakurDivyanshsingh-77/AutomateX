@@ -232,12 +232,11 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Passed 8/8 test scenarios in `test_discord_step4_full.js` (Empty message rejection, >2000 char length limit, missing guild/channel ID validation, embed JSON parsing, ExecutorRegistry resolution, non-existent credential error handling, and route mounting).
 - **Mongoose Vault Schema Fix (`backend/src/credentials/Credential.js`)**:
   - Added `'botToken'` to the `authType` enum list (`enum: ['uri', 'apiKey', 'bearerToken', 'basicAuth', 'oauth2', 'botToken', 'custom']`), resolving Mongoose `ValidationError: authType: botToken is not a valid enum value for path authType`.
-- **Discord Credential Parsing Resilience & Status Code Fix (`DiscordCredentialService.ts` & `.js`)**:
-  - Audited encryption vault pipeline and header formatting (`Authorization: Bot <BOT_TOKEN>`).
-  - Strengthened `DiscordCredentialService.getDecryptedBotToken` to be 100% resilient against double JSON stringification, wrapped quotes, `Bot ` prefix duplicates, and trailing whitespace.
-  - Resolved status code mismatch where missing/stale credential IDs returned HTTP 401 instead of HTTP 404, preventing false "Invalid Bot Token" errors when stale credential IDs were selected in UI.
-  - Added request/response logging middleware `[DiscordApiRequest]` & `[DiscordApiResponse]` to `DiscordRoutes.ts` & `.js`.
-  - Verified live Discord API REST v10 endpoint `GET /users/@me/guilds` returning `200 OK` with 100% exact token decryption.
+- **Workflow Execution Engine Owner ID Resolution (`credentialService.js`, `executionService.js`, `ExecutionContext.js`, `DiscordNodeExecutor.ts`)**:
+  - Eliminated `owner: "system"` fallback during workflow execution.
+  - Implemented `CredentialService.getCredentialForExecution(credentialId, ownerId)` as the single shared credential loading method for both "Send Test Message" (Test API) and "Run Workflow" (Workflow Runner).
+  - Updated `executionService.js` and `ExecutionContext.js` to expose and pass `ownerId`, `userId`, `workflow.ownerId`, and `execution.ownerId` down to every node executor.
+  - Added strict audit logging (`Execution owner`, `Workflow owner`, `Credential owner`, `Credential ID`, `Resolved User ID`) and security violation guards prohibiting system owner execution.
 
 
 
