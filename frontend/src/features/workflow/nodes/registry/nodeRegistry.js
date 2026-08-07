@@ -19,6 +19,7 @@ import { gmailValidator } from '../validators/gmailValidator';
 import { googleSheetsValidator } from '../googleSheets/googleSheetsValidator';
 
 import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
+import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator } from '../discord/DiscordNodeRegistry';
 
 export const NODE_TYPES = {
   START: 'start',
@@ -44,6 +45,7 @@ export const NODE_TYPES = {
   MONGO_AGGREGATE: 'mongoAggregate',
   PDF_GENERATOR: 'pdfGenerator',
   ...GOOGLE_SHEETS_NODE_TYPES,
+  ...DISCORD_NODE_TYPES,
 };
 
 const databaseValidator = (nodeData) => {
@@ -81,6 +83,9 @@ export const nodeDefinitions = {
   [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
+  discordSendMessage: discordNodeDefinitions.discordSendMessage,
+  discord: discordNodeDefinitions.discord,
+  ...discordNodeDefinitions,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;
@@ -135,6 +140,8 @@ export const nodeValidators = {
   [GOOGLE_SHEETS_NODE_TYPES.DELETE_WORKSHEET]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.GET_SPREADSHEET_INFO]: googleSheetsValidator,
   googleSheets: googleSheetsValidator,
+  discordSendMessage: discordValidator,
+  discord: discordValidator,
 };
 
 // Helper: Get definition by node type

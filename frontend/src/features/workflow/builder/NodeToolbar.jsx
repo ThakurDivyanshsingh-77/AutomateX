@@ -21,7 +21,7 @@ export const NodeToolbar = () => {
   );
 
   // Group filtered nodes by category
-  const baseCategories = ['Trigger', 'Database', 'Logic', 'Action', 'Utility', 'Output', 'Google'];
+  const baseCategories = ['Trigger', 'Communication', 'Database', 'Logic', 'Action', 'Utility', 'Output', 'Google'];
   const extraCategories = Array.from(new Set(filteredNodes.map((n) => n.category))).filter((c) => c && !baseCategories.includes(c));
   const categories = [...baseCategories, ...extraCategories];
 

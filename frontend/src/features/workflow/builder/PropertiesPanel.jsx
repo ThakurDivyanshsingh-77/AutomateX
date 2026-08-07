@@ -14,6 +14,7 @@ import { MongoDBConnectionProperties } from '../nodes/database/MongoDBConnection
 import { PdfGeneratorProperties } from '../nodes/pdf/PdfGeneratorProperties';
 import { GoogleSheetsProperties } from '../nodes/googleSheets/GoogleSheetsProperties';
 import { GoogleSheetsTriggerProperties } from '../nodes/googleSheets/GoogleSheetsTriggerProperties';
+import { DiscordProperties } from '../components/DiscordProperties';
 
 export const PropertiesPanel = ({
   selectedNode,
@@ -63,6 +64,7 @@ export const PropertiesPanel = ({
   const isPdfNode = selectedNode.type === 'pdfGenerator';
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
+  const isDiscordNode = selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord');
 
   return (
     <>
@@ -192,6 +194,11 @@ export const PropertiesPanel = ({
                 nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
                 onUpdateNodeConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isDiscordNode ? (
+              <DiscordProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : (
               <AutoForm
