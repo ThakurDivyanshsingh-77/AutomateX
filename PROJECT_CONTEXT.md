@@ -194,9 +194,27 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Searchable dropdown displaying Guild Icon (CDN thumbnail or fallback icon), Guild Name, and Guild ID as value.
   - Automatic guild loading upon credential selection.
   - Live refresh button with spin animation, loading state (`Loading servers...`), empty state (`No servers found`), and error handling for 401, 403, 404, 429, and network failures.
+### **Phase 18 Step 3 Complete — Load Discord Channels (`GET /guilds/{guild.id}/channels`)** — ✅ COMPLETED
+- **Channel Mapper & Type Filtering (`DiscordChannelMapper.ts` & `.js`)**:
+  - `DiscordChannelMapper`: Strictly filters raw channels to only include message-supported types: `GUILD_TEXT` (0), `GUILD_ANNOUNCEMENT` (5), and `GUILD_FORUM` (15).
+  - Ignores unsupported types: Voice channels (2), Categories (4), Stage channels (13), and Threads (10, 11, 12).
+  - Maps to clean DTO format: `{ id, name, type, typeId, parentId, position }`.
+- **Reusable Channel Service (`DiscordChannelService.ts` & `.js`)**:
+  - `DiscordChannelService.getChannels(ownerId, credentialId, guildId, bypassCache)`: Queries Discord REST API v10 `GET /guilds/{guildId}/channels`.
+  - `DiscordChannelService.refreshChannels(ownerId, credentialId, guildId)`: Invalidate cache & force re-fetch.
+  - `DiscordChannelService.validateChannel(ownerId, credentialId, guildId, channelId)`: Validates existence of selected channel.
+  - Short-term in-memory cache: 60s TTL per `${ownerId}:${credentialId}:${guildId}`.
+  - Structured logging: `Discord Credential Loaded`, `Guild Selected`, `Loading Channels...`, `Found N Channels`, `Loaded: ...`.
+  - Standardized JSON response format: `{ success: true, channels: [ { id, name, type } ] }`.
+- **Express REST Endpoints (`DiscordChannelController` & `DiscordChannelRoutes`)**:
+  - Mounted `GET /api/v1/discord/channels`, `POST /api/v1/discord/channels/refresh`, and `POST /api/v1/discord/channels/validate` protected by `protect` middleware.
+- **Searchable UI Dropdown Component (`DiscordChannelDropdown.jsx`)**:
+  - Searchable dropdown filtering channels by name (`Search channels...`).
+  - Auto-loads channels upon Guild selection. Disables dropdown and displays `"Loading channels..."` while fetching.
+  - Live refresh button with spin animation, warning message when selected channel no longer exists (`"Selected channel no longer exists."`), type badges (`TEXT`, `ANNOUNCEMENT`, `FORUM`), and user-friendly error messages for 401, 403, 404, 429, and network timeouts.
 - **Verification**:
   - `npx tsc --noEmit` passed cleanly with 0 type errors.
-  - Passed 6/6 test scenarios in `test_discord_step2_full.js` (1 Guild, 5 Guilds, 20 Guilds, Empty Guild list, Guild validation, and Invalid credential error handling).
+  - Passed 7/7 test scenarios in `test_discord_step3_full.js` (1 channel, 20 channels, mapper filtering, channel validation, cache clearing, invalid credential error handling, and route mounting).
 
 
 
