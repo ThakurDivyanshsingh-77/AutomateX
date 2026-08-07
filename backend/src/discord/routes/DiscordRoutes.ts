@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { DiscordController } from '../controllers/DiscordController.js';
+import { DiscordChannelController } from '../controllers/DiscordChannelController.js';
 // @ts-ignore - Existing JS module
 import { protect } from '../../middleware/authMiddleware.js';
 
@@ -12,7 +13,14 @@ router.use(protect);
 router.post('/credentials/verify', DiscordController.verifyCredential);
 router.post('/credentials', DiscordController.createCredential);
 
-// Dynamic Options Endpoints (Step 2: Guilds)
+// Guild Service Endpoints (Step 2)
 router.get('/guilds', DiscordController.getGuilds);
+router.post('/guilds/refresh', DiscordController.refreshGuilds);
+router.post('/guilds/validate', DiscordController.validateGuild);
+
+// Channel Service Endpoints (Step 3)
+router.get('/channels', DiscordChannelController.getChannels);
+router.post('/channels/refresh', DiscordChannelController.refreshChannels);
+router.post('/channels/validate', DiscordChannelController.validateChannel);
 
 export default router;

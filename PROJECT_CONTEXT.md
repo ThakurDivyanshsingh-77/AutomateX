@@ -181,19 +181,22 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Passed 5/5 automated test assertions in `test_discord_step1.js`.
 
 ### **Phase 18 Step 2 Complete — Load Servers / Guilds (`GET /users/@me/guilds`)** — ✅ COMPLETED
-- **Guild Options Loader (`DiscordDynamicOptions.getGuilds`)**:
-  - `DiscordApiClient.getCurrentUserGuilds()`: Calls Discord REST API v10 `GET /users/@me/guilds`.
-  - `DiscordUtils.getGuildIconUrl()`: Constructs PNG and animated GIF icon URLs (`https://cdn.discordapp.com/icons/{guildId}/{icon}.png`).
-  - Short-Term In-Memory Caching: 60-second TTL per credential ID (`ownerId:credentialId`) with manual `refresh` / `bypassCache` bypass.
-  - Returns clean typed `IDiscordGuildOption[]` (`{ label, value, iconUrl, id, name }`).
-- **Express REST Endpoint (`DiscordController.getGuilds`)**:
-  - Mounted `GET /api/v1/discord/guilds` protected by `protect` middleware. Supports `credentialId` and optional `refresh=true` parameters.
-- **Production Render Build Fix**:
-  - Generated and committed dual-support ES module `.js` files alongside `.ts` definitions in `backend/src/discord/` (`DiscordRoutes.js`, `DiscordController.js`, `DiscordCredentialService.js`, `DiscordApiClient.js`, `DiscordUtils.js`, `DiscordValidators.js`, `DiscordDynamicOptions.js`, `DiscordNodeExecutor.js`, `DiscordTypes.js`).
-  - Resolves Render `ERR_MODULE_NOT_FOUND` deployment issue while preserving `npx tsc --noEmit` strict TypeScript checking. Verified via `node -e "import('./src/app.js')"`.
+- **Reusable Service (`DiscordGuildService.ts` & `.js`)**:
+  - `DiscordGuildService.getGuilds(ownerId, credentialId, bypassCache)`: Calls Discord REST API v10 `GET /users/@me/guilds`.
+  - `DiscordGuildService.refreshGuilds(ownerId, credentialId)`: Invalidates cache and re-queries Discord API.
+  - `DiscordGuildService.validateGuild(ownerId, credentialId, guildId)`: Validates bot access to a specific server.
+  - Execution logging: `Discord Credential Loaded: ...`, `Loading Guilds...`, `Found N Guilds`, `Guild: ...`.
+  - In-memory cache: 60s TTL per credential ID (`ownerId:credentialId`) with manual refresh support.
+  - Formatted output: `{ success: true, guilds: [ { id, name, icon } ] }`.
+- **Express REST Endpoints (`DiscordController.ts` & `.js` & `DiscordRoutes.ts` & `.js`)**:
+  - Mounted `GET /api/v1/discord/guilds`, `POST /api/v1/discord/guilds/refresh`, and `POST /api/v1/discord/guilds/validate` protected by `protect` middleware.
+- **Frontend Dropdown UI Component (`DiscordServerDropdown.jsx`)**:
+  - Searchable dropdown displaying Guild Icon (CDN thumbnail or fallback icon), Guild Name, and Guild ID as value.
+  - Automatic guild loading upon credential selection.
+  - Live refresh button with spin animation, loading state (`Loading servers...`), empty state (`No servers found`), and error handling for 401, 403, 404, 429, and network failures.
 - **Verification**:
   - `npx tsc --noEmit` passed cleanly with 0 type errors.
-  - Passed 5/5 automated assertions in `test_discord_step2.js`.
+  - Passed 6/6 test scenarios in `test_discord_step2_full.js` (1 Guild, 5 Guilds, 20 Guilds, Empty Guild list, Guild validation, and Invalid credential error handling).
 
 
 

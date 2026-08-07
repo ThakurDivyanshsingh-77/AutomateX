@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { DiscordCredentialService } from '../services/DiscordCredentialService.js';
-import { DiscordDynamicOptions } from '../options/DiscordDynamicOptions.js';
+import { DiscordGuildService } from '../services/DiscordGuildService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 export class DiscordController {
@@ -110,12 +110,11 @@ export class DiscordController {
       }
 
       const refresh = req.query.refresh === 'true' || req.query.bypassCache === 'true';
-      const guilds = await DiscordDynamicOptions.getGuilds(String(ownerId), credentialId, refresh);
+      const result = await DiscordGuildService.getGuilds(String(ownerId), credentialId, refresh);
 
       res.status(200).json({
         success: true,
-        count: guilds.length,
-        data: guilds,
+        guilds: result.guilds,
       });
     } catch (error: unknown) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
@@ -124,6 +123,64 @@ export class DiscordController {
         success: false,
         message: (error as Error).message || normalized.message,
         error: normalized,
+      });
+    }
+  }
+
+  /**
+   * POST /api/v1/discord/guilds/refresh
+   * Step 2 API: Force refresh Discord Guilds.
+   */
+  public static async refreshGuilds(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // @ts-ignore
+      const ownerId = req.user?._id || req.user?.id;
+      const { credentialId } = req.body;
+      if (!credentialId) {
+        res.status(400).json({ success: false, message: 'credentialId body parameter is required' });
+        return;
+      }
+
+      const result = await DiscordGuildService.refreshGuilds(String(ownerId), credentialId);
+      res.status(200).json({
+        success: true,
+        guilds: result.guilds,
+      });
+    } catch (error: unknown) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      res.status(normalized.statusCode).json({
+        success: false,
+        message: (error as Error).message || normalized.message,
+      });
+    }
+  }
+
+  /**
+   * POST /api/v1/discord/guilds/validate
+   * Step 2 API: Validate accessibility of a Guild ID.
+   */
+  public static async validateGuild(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // @ts-ignore
+      const ownerId = req.user?._id || req.user?.id;
+      const { credentialId, guildId } = req.body;
+      if (!credentialId || !guildId) {
+        res.status(400).json({ success: false, message: 'credentialId and guildId are required' });
+        return;
+      }
+
+      const isValid = await DiscordGuildService.validateGuild(String(ownerId), credentialId, guildId);
+      res.status(200).json({
+        success: true,
+        valid: isValid,
+        guildId,
+      });
+    } catch (error: unknown) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      res.status(normalized.statusCode).json({
+        success: false,
+        valid: false,
+        message: (error as Error).message || normalized.message,
       });
     }
   }

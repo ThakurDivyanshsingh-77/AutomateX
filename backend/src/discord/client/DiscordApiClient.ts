@@ -4,6 +4,7 @@ import {
   IDiscordNormalizedError,
   IDiscordApiErrorResponse,
 } from '../types/DiscordTypes.js';
+import { IDiscordRawChannel } from '../types/DiscordChannelTypes.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 export interface IDiscordApiClientConfig {
@@ -126,7 +127,6 @@ export class DiscordApiClient {
 
   /**
    * STEP 1 Endpoint: GET /users/@me
-   * Fetches current Bot user profile details to validate token.
    */
   public async getCurrentUser(): Promise<IDiscordUser> {
     return await this.request<IDiscordUser>('/users/@me', {
@@ -136,10 +136,22 @@ export class DiscordApiClient {
 
   /**
    * STEP 2 Endpoint: GET /users/@me/guilds
-   * Fetches all Discord Guilds (servers) that the Bot belongs to.
    */
   public async getCurrentUserGuilds(): Promise<IDiscordGuild[]> {
     return await this.request<IDiscordGuild[]>('/users/@me/guilds', {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * STEP 3 Endpoint: GET /guilds/{guildId}/channels
+   * Fetches all channels in a Discord Guild (server).
+   */
+  public async getGuildChannels(guildId: string): Promise<IDiscordRawChannel[]> {
+    if (!guildId) {
+      throw new Error('getGuildChannels requires a valid guildId');
+    }
+    return await this.request<IDiscordRawChannel[]>(`/guilds/${guildId}/channels`, {
       method: 'GET',
     });
   }

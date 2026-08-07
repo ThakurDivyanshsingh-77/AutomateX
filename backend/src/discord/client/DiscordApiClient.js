@@ -11,9 +11,6 @@ export class DiscordApiClient {
     this.timeoutMs = config.timeoutMs ?? 10000;
   }
 
-  /**
-   * Execute an HTTP Request to Discord REST API v10 with automatic retry and rate-limit handling.
-   */
   async request(endpoint, options = {}) {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     
@@ -56,7 +53,6 @@ export class DiscordApiClient {
 
         const statusCode = response.status;
 
-        // Rate Limited (429)
         if (statusCode === 429) {
           const retryAfterSec = responseBody?.retry_after ?? 
             parseFloat(response.headers.get('Retry-After') || '1');
@@ -69,7 +65,6 @@ export class DiscordApiClient {
           }
         }
 
-        // Server Error (5xx)
         if (statusCode >= 500 && attempt <= this.maxRetries) {
           const backoffMs = Math.pow(2, attempt) * 500;
           console.warn(`[DiscordApiClient] ${statusCode} Server Error on ${endpoint}. Retrying in ${backoffMs}ms (Attempt ${attempt}/${this.maxRetries})`);
@@ -102,20 +97,23 @@ export class DiscordApiClient {
     throw DiscordUtils.normalizeDiscordError(new Error(`Failed request to ${endpoint} after ${this.maxRetries} attempts`));
   }
 
-  /**
-   * STEP 1 Endpoint: GET /users/@me
-   */
   async getCurrentUser() {
     return await this.request('/users/@me', {
       method: 'GET',
     });
   }
 
-  /**
-   * STEP 2 Endpoint: GET /users/@me/guilds
-   */
   async getCurrentUserGuilds() {
     return await this.request('/users/@me/guilds', {
+      method: 'GET',
+    });
+  }
+
+  async getGuildChannels(guildId) {
+    if (!guildId) {
+      throw new Error('getGuildChannels requires a valid guildId');
+    }
+    return await this.request(`/guilds/${guildId}/channels`, {
       method: 'GET',
     });
   }
