@@ -12,4 +12,7 @@ router.use(protect);
 router.post('/credentials/verify', DiscordController.verifyCredential);
 router.post('/credentials', DiscordController.createCredential);
 
+// Dynamic Options Endpoints (Step 2: Guilds)
+router.get('/guilds', DiscordController.getGuilds);
+
 export default router;

@@ -1,5 +1,6 @@
 import {
   IDiscordUser,
+  IDiscordGuild,
   IDiscordNormalizedError,
   IDiscordApiErrorResponse,
 } from '../types/DiscordTypes.js';
@@ -129,6 +130,16 @@ export class DiscordApiClient {
    */
   public async getCurrentUser(): Promise<IDiscordUser> {
     return await this.request<IDiscordUser>('/users/@me', {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * STEP 2 Endpoint: GET /users/@me/guilds
+   * Fetches all Discord Guilds (servers) that the Bot belongs to.
+   */
+  public async getCurrentUserGuilds(): Promise<IDiscordGuild[]> {
+    return await this.request<IDiscordGuild[]>('/users/@me/guilds', {
       method: 'GET',
     });
   }

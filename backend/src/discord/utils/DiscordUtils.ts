@@ -29,6 +29,17 @@ export class DiscordUtils {
   }
 
   /**
+   * Build Discord Guild (Server) Icon URL on Discord CDN.
+   */
+  public static getGuildIconUrl(guildId: string, iconHash: string | null): string | null {
+    if (!iconHash) {
+      return null;
+    }
+    const extension = iconHash.startsWith('a_') ? 'gif' : 'png';
+    return `https://cdn.discordapp.com/icons/${guildId}/${iconHash}.${extension}`;
+  }
+
+  /**
    * Normalize any caught HTTP error or network failure into a structured IDiscordNormalizedError.
    */
   public static normalizeDiscordError(error: unknown): IDiscordNormalizedError {

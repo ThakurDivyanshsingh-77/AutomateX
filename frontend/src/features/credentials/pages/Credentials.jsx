@@ -6,7 +6,7 @@ import { Input } from '../../../components/ui/Input';
 import { Loader } from '../../../components/ui/Loader';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import toast from 'react-hot-toast';
-import { ShieldCheck, Plus, Trash2, Key, Lock, CheckCircle2, Activity, Database, Loader2 } from 'lucide-react';
+import { ShieldCheck, Plus, Trash2, Key, Lock, CheckCircle2, Activity, Database, Loader2, Bot, AlertCircle } from 'lucide-react';
 import api from '../../../services/api';
 
 export const Credentials = () => {
@@ -15,8 +15,8 @@ export const Credentials = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [name, setName] = useState('');
-  const [service, setService] = useState('mongodb');
-  const [authType, setAuthType] = useState('uri');
+  const [service, setService] = useState('discord');
+  const [authType, setAuthType] = useState('botToken');
   const [secret, setSecret] = useState('');
   
   // MongoDB specific state
@@ -25,6 +25,13 @@ export const Credentials = () => {
   const [authDatabase, setAuthDatabase] = useState('admin');
   const [tlsEnable, setTlsEnable] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
+
+  // Discord specific state
+  const [discordBotToken, setDiscordBotToken] = useState('');
+  const [testingDiscordConnection, setTestingDiscordConnection] = useState(false);
+  const [discordBotInfo, setDiscordBotInfo] = useState(null);
+  const [discordTestError, setDiscordTestError] = useState('');
+
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -65,6 +72,33 @@ export const Credentials = () => {
     }
   };
 
+  const handleTestDiscordConnection = async () => {
+    if (!discordBotToken) {
+      return toast.error('Please enter a Discord Bot Token to test');
+    }
+    setTestingDiscordConnection(true);
+    setDiscordTestError('');
+    setDiscordBotInfo(null);
+    try {
+      const res = await api.post('/discord/credentials/verify', {
+        botToken: discordBotToken,
+      });
+      if (res.data.success) {
+        setDiscordBotInfo(res.data.data);
+        toast.success(`Connected Successfully! Authenticated Bot: ${res.data.data.botName}`);
+      } else {
+        setDiscordTestError(res.data.message || 'Verification Failed');
+        toast.error(res.data.message || 'Verification Failed');
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Discord Bot Authentication Failed';
+      setDiscordTestError(errMsg);
+      toast.error(errMsg);
+    } finally {
+      setTestingDiscordConnection(false);
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!name) {
@@ -79,6 +113,10 @@ export const Credentials = () => {
         authDatabase,
         tlsEnable,
       });
+    } else if (service === 'discord') {
+      secretPayload = JSON.stringify({
+        botToken: discordBotToken,
+      });
     }
 
     if (!secretPayload) {
@@ -90,16 +128,19 @@ export const Credentials = () => {
       const res = await credentialService.createCredential({
         name,
         service,
-        authType: service === 'mongodb' ? 'uri' : authType,
+        authType: service === 'mongodb' ? 'uri' : service === 'discord' ? 'botToken' : authType,
         secret: secretPayload,
       });
       toast.success(res.message || 'Credential encrypted & saved!');
       setName('');
       setSecret('');
+      setDiscordBotToken('');
+      setDiscordBotInfo(null);
+      setDiscordTestError('');
       setShowAddModal(false);
       fetchCredentials();
     } catch (err) {
-      toast.error('Failed to save credential');
+      toast.error(err.response?.data?.message || 'Failed to save credential');
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +167,7 @@ export const Credentials = () => {
             <h1 className="text-xl font-bold text-white tracking-tight">Credentials Vault</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Store MongoDB connections, API keys, OAuth tokens, and secrets encrypted at rest via AES-256-CBC.
+            Store Discord Bot Tokens, MongoDB connections, API keys, OAuth tokens, and secrets encrypted at rest via AES-256-CBC.
           </p>
         </div>
 
@@ -149,8 +190,8 @@ export const Credentials = () => {
 
           <form onSubmit={handleCreate} className="space-y-4 text-xs">
             <Input
-              label="Credential Label"
-              placeholder="e.g. Production MongoDB Database"
+              label="Credential Name"
+              placeholder="e.g. My Discord Production Bot"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -160,12 +201,16 @@ export const Credentials = () => {
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Target Service</label>
                 <select
                   value={service}
-                  onChange={(e) => setService(e.target.value)}
+                  onChange={(e) => {
+                    setService(e.target.value);
+                    if (e.target.value === 'discord') setAuthType('botToken');
+                    if (e.target.value === 'mongodb') setAuthType('uri');
+                  }}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200"
                 >
+                  <option value="discord">Discord Bot</option>
                   <option value="mongodb">MongoDB Database</option>
                   <option value="slack">Slack</option>
-                  <option value="discord">Discord</option>
                   <option value="gmail">Gmail</option>
                   <option value="telegram">Telegram</option>
                   <option value="github">GitHub</option>
@@ -181,6 +226,7 @@ export const Credentials = () => {
                   onChange={(e) => setAuthType(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200"
                 >
+                  {service === 'discord' && <option value="botToken">Bot Token (Bot &lt;token&gt;)</option>}
                   <option value="uri">Connection URI / Object</option>
                   <option value="apiKey">API Key / Secret</option>
                   <option value="bearerToken">Bearer Token</option>
@@ -189,8 +235,80 @@ export const Credentials = () => {
               </div>
             </div>
 
-            {/* MongoDB Specific Form Fields */}
-            {service === 'mongodb' ? (
+            {/* Discord Specific Form Fields */}
+            {service === 'discord' ? (
+              <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <Input
+                  label="Bot Token"
+                  type="password"
+                  placeholder="e.g. MTAwMDAwMDAwMDAwMDAwMDAwMA.G12345.abcdefghijklmnopqrstuvwxyz"
+                  value={discordBotToken}
+                  onChange={(e) => setDiscordBotToken(e.target.value)}
+                />
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    Validated via Discord REST API v10 (GET /users/@me)
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleTestDiscordConnection}
+                    disabled={testingDiscordConnection || !discordBotToken}
+                    className="px-3 py-1.5 bg-indigo-600/15 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                  >
+                    {testingDiscordConnection ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Activity className="w-3.5 h-3.5 text-indigo-400" />
+                    )}
+                    Test Connection
+                  </button>
+                </div>
+
+                {/* Discord Bot Verified Information Display */}
+                {discordBotInfo && (
+                  <div className="mt-3 p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-3">
+                    <div className="relative">
+                      {discordBotInfo.avatar ? (
+                        <img
+                          src={discordBotInfo.avatar}
+                          alt={discordBotInfo.botName}
+                          className="w-10 h-10 rounded-full border border-emerald-400/50 object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-emerald-800/50 flex items-center justify-center text-emerald-300">
+                          <Bot className="w-5 h-5" />
+                        </div>
+                      )}
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 absolute -bottom-1 -right-1 bg-slate-950 rounded-full" />
+                    </div>
+
+                    <div className="flex-1 space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-xs">{discordBotInfo.botName}</span>
+                        <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          Connected Successfully
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-300 flex items-center gap-3">
+                        <span>Username: <strong>{discordBotInfo.username}</strong></span>
+                        <span>ID: <strong className="font-mono text-slate-400">{discordBotInfo.botId}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Discord Error Display */}
+                {discordTestError && (
+                  <div className="mt-3 p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl flex items-center gap-2 text-rose-300 text-xs">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span>{discordTestError}</span>
+                  </div>
+                )}
+              </div>
+            ) : service === 'mongodb' ? (
               <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
                 <Input
                   label="MongoDB Connection URI"

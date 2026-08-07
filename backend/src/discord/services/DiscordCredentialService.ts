@@ -15,8 +15,12 @@ export class DiscordCredentialService {
    * Returns bot user metadata (Bot Name, Bot ID, Avatar URL, Username).
    */
   public static async validateBotToken(botToken: string): Promise<IDiscordCredentialValidationResult> {
+    console.log('[DiscordAuth] 🔐 Authentication started...');
+
+    console.log('[DiscordAuth] 🔍 Token validation: Checking token format...');
     const tokenValidation = DiscordValidators.validateBotToken(botToken);
     if (!tokenValidation.isValid) {
+      console.warn('[DiscordAuth] ❌ Authentication failed: Invalid token format.');
       return {
         valid: false,
         botName: '',
@@ -29,11 +33,14 @@ export class DiscordCredentialService {
     }
 
     try {
+      console.log('[DiscordAuth] 🌐 Discord API request: GET /users/@me');
       const client = new DiscordApiClient({ botToken });
       const user: IDiscordUser = await client.getCurrentUser();
 
       const botName = user.global_name || user.username;
       const avatarUrl = DiscordUtils.getAvatarUrl(user.id, user.avatar);
+
+      console.log(`[DiscordAuth] ✅ Authentication successful! Authenticated Bot: "${botName}" (ID: ${user.id})`);
 
       return {
         valid: true,
@@ -46,6 +53,7 @@ export class DiscordCredentialService {
       };
     } catch (err: unknown) {
       const normalizedErr = DiscordUtils.normalizeDiscordError(err);
+      console.warn(`[DiscordAuth] ❌ Authentication failed: ${normalizedErr.message}`);
       return {
         valid: false,
         botName: '',
@@ -62,6 +70,8 @@ export class DiscordCredentialService {
    * Validate, encrypt, and store a Discord Bot Credential in AutomateX vault.
    */
   public static async createCredential(ownerId: string, input: IDiscordBotCredentialInput) {
+    console.log(`[DiscordAuth] 🔒 Storing encrypted Discord credential for Connection Name: "${input.name}"...`);
+
     const validation = DiscordValidators.validateCredentialInput(input);
     if (!validation.isValid) {
       const err = new Error(`Validation failed: ${validation.errors.join(' ')}`);
@@ -91,6 +101,8 @@ export class DiscordCredentialService {
       authType: 'botToken',
       secret: secretPayload,
     });
+
+    console.log(`[DiscordAuth] 💾 Encrypted credential successfully stored with ID: ${savedCred._id}`);
 
     return {
       credential: savedCred,

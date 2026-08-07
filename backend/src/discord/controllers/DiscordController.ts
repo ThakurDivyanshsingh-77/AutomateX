@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { DiscordCredentialService } from '../services/DiscordCredentialService.js';
+import { DiscordDynamicOptions } from '../options/DiscordDynamicOptions.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 export class DiscordController {
@@ -79,6 +80,50 @@ export class DiscordController {
       res.status(statusCode).json({
         success: false,
         message: (error as Error).message || normalized.message,
+      });
+    }
+  }
+
+  /**
+   * GET /api/v1/discord/guilds
+   * Step 2 API: Fetch all Discord Guilds (servers) for a given credentialId.
+   */
+  public static async getGuilds(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      // @ts-ignore - req.user populated by authMiddleware
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.status(401).json({
+          success: false,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const credentialId = (req.query.credentialId as string) || (req.query.credential as string);
+      if (!credentialId) {
+        res.status(400).json({
+          success: false,
+          message: 'credentialId query parameter is required',
+        });
+        return;
+      }
+
+      const refresh = req.query.refresh === 'true' || req.query.bypassCache === 'true';
+      const guilds = await DiscordDynamicOptions.getGuilds(String(ownerId), credentialId, refresh);
+
+      res.status(200).json({
+        success: true,
+        count: guilds.length,
+        data: guilds,
+      });
+    } catch (error: unknown) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = (error as unknown as { statusCode?: number }).statusCode || normalized.statusCode;
+      res.status(statusCode).json({
+        success: false,
+        message: (error as Error).message || normalized.message,
+        error: normalized,
       });
     }
   }

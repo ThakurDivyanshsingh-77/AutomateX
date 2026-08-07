@@ -180,6 +180,18 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `npx tsc --noEmit` passed with 0 errors.
   - Passed 5/5 automated test assertions in `test_discord_step1.js`.
 
+### **Phase 18 Step 2 Complete — Load Servers / Guilds (`GET /users/@me/guilds`)** — ✅ COMPLETED
+- **Guild Options Loader (`DiscordDynamicOptions.getGuilds`)**:
+  - `DiscordApiClient.getCurrentUserGuilds()`: Calls Discord REST API v10 `GET /users/@me/guilds`.
+  - `DiscordUtils.getGuildIconUrl()`: Constructs PNG and animated GIF icon URLs (`https://cdn.discordapp.com/icons/{guildId}/{icon}.png`).
+  - Short-Term In-Memory Caching: 60-second TTL per credential ID (`ownerId:credentialId`) with manual `refresh` / `bypassCache` bypass.
+  - Returns clean typed `IDiscordGuildOption[]` (`{ label, value, iconUrl, id, name }`).
+- **Express REST Endpoint (`DiscordController.getGuilds`)**:
+  - Mounted `GET /api/v1/discord/guilds` protected by `protect` middleware. Supports `credentialId` and optional `refresh=true` parameters.
+- **Verification**:
+  - `npx tsc --noEmit` passed cleanly with 0 type errors.
+  - Passed 5/5 automated assertions in `test_discord_step2.js`.
+
 
 
 

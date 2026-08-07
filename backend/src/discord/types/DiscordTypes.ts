@@ -73,3 +73,24 @@ export interface IDiscordApiResponse<T> {
   data?: T;
   error?: IDiscordNormalizedError;
 }
+
+// ── Step 2 Types: Guilds (Servers) ─────────────────────────────────────────
+
+export interface IDiscordGuild {
+  id: string;
+  name: string;
+  icon: string | null;
+  owner?: boolean;
+  permissions?: string;
+  features?: string[];
+  approximate_member_count?: number;
+  approximate_presence_count?: number;
+}
+
+export interface IDiscordGuildOption {
+  label: string;
+  value: string;
+  iconUrl: string | null;
+  id: string;
+  name: string;
+}
