@@ -17,8 +17,6 @@ export const protect = async (req, res, next) => {
   }
 
   console.log(`[AuthMiddleware] 🔍 Path: ${req.method} ${req.originalUrl}`);
-  console.log(`[AuthMiddleware] 🍪 Cookies:`, req.cookies || 'None');
-  console.log(`[AuthMiddleware] 🔑 Header Authorization:`, req.headers.authorization || 'None');
 
   if (token) {
     try {
@@ -46,17 +44,24 @@ export const protect = async (req, res, next) => {
       return next();
 
     } catch (error) {
-      console.warn(`[AuthMiddleware] ❌ Token validation error on ${req.originalUrl}: ${error.message}`);
+      console.warn(`[AuthMiddleware] 🔴 Token validation error on ${req.originalUrl}: ${error.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'true');
       return res.status(401).json({
         success: false,
+        isUserAuthTokenError: true,
+        code: 'USER_AUTH_EXPIRED',
         message: 'Not authorized, token invalid or expired',
+        errorDetails: error.message,
       });
     }
   }
 
-  console.warn(`[AuthMiddleware] 🚫 No token provided for ${req.method} ${req.originalUrl}`);
+  console.warn(`[AuthMiddleware] 🔴 No token provided for ${req.method} ${req.originalUrl}`);
+  res.setHeader('X-AutomateX-User-Auth-Error', 'true');
   return res.status(401).json({
     success: false,
+    isUserAuthTokenError: true,
+    code: 'USER_AUTH_EXPIRED',
     message: 'Not authorized, no token provided',
   });
 };

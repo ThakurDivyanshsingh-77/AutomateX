@@ -29,19 +29,46 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 Unauthorized globally
+// Response Interceptor: Handle HTTP Errors gracefully
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      if (
-        !window.location.pathname.includes('/login') &&
-        !window.location.pathname.includes('/register') &&
-        !window.location.pathname.includes('/oauth/callback') &&
-        window.location.pathname !== '/'
-      ) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+    const response = error.response;
+    const requestUrl = error.config?.url || 'unknown';
+
+    if (response && response.status === 401) {
+      // Differentiate between AutomateX User JWT Auth Expiration vs Third-Party Integration Credential Error
+      const isUserAuthTokenError =
+        response.headers?.['x-automatex-user-auth-error'] === 'true' ||
+        response.data?.isUserAuthTokenError === true ||
+        response.data?.code === 'USER_AUTH_EXPIRED' ||
+        requestUrl.includes('/auth/me') ||
+        requestUrl.includes('/auth/refresh');
+
+      if (isUserAuthTokenError) {
+        console.warn(`[AxiosInterceptor] 🔴 AutomateX User JWT Session Expired on ${requestUrl}. Redirecting to /login.`, {
+          url: requestUrl,
+          status: 401,
+          responseData: response.data,
+          stackTrace: new Error().stack,
+        });
+
+        if (
+          !window.location.pathname.includes('/login') &&
+          !window.location.pathname.includes('/register') &&
+          !window.location.pathname.includes('/oauth/callback') &&
+          window.location.pathname !== '/'
+        ) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
+      } else {
+        console.warn(`[AxiosInterceptor] ⚠️ Preserving User Session: Received 401 from Third-Party Integration API (${requestUrl}).`, {
+          url: requestUrl,
+          status: 401,
+          isThirdPartyError: true,
+          responseData: response.data,
+        });
       }
     }
     return Promise.reject(error);

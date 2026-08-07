@@ -12,6 +12,7 @@ export const DiscordProperties = ({ nodeData, onUpdateConfig }) => {
 
   const [credentials, setCredentials] = useState([]);
   const [loadingCreds, setLoadingCreds] = useState(false);
+  const [credError, setCredError] = useState('');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
 
@@ -34,6 +35,7 @@ export const DiscordProperties = ({ nodeData, onUpdateConfig }) => {
 
   const fetchDiscordCredentials = async () => {
     setLoadingCreds(true);
+    setCredError('');
     try {
       const res = await credentialService.getCredentials();
       const allCreds = res.data || [];
@@ -49,7 +51,9 @@ export const DiscordProperties = ({ nodeData, onUpdateConfig }) => {
         updateField('credentialId', firstId);
       }
     } catch (err) {
-      toast.error('Failed to load Discord credentials');
+      console.warn('[DiscordProperties] ⚠️ Failed to load credentials inline:', err);
+      const msg = err.response?.data?.message || 'Failed to load Discord credentials';
+      setCredError(msg);
     } finally {
       setLoadingCreds(false);
     }
@@ -119,6 +123,14 @@ export const DiscordProperties = ({ nodeData, onUpdateConfig }) => {
           REST API v10
         </span>
       </div>
+
+      {/* Inline Credential Fetch Error Alert */}
+      {credError && (
+        <div className="p-2.5 bg-rose-950/40 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <span>{credError}</span>
+        </div>
+      )}
 
       {/* 1. Credential Picker */}
       <div className="space-y-1">

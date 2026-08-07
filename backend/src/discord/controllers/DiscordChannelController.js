@@ -6,8 +6,10 @@ export class DiscordChannelController {
     try {
       const ownerId = req.user?._id || req.user?.id;
       if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
         res.status(401).json({
           success: false,
+          isUserAuthTokenError: true,
           message: 'Unauthorized: User context required',
         });
         return;
@@ -17,12 +19,14 @@ export class DiscordChannelController {
       const guildId = req.query.guildId || req.query.guild;
 
       if (!credentialId) {
-        res.status(400).json({ success: false, message: 'credentialId query parameter is required' });
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId query parameter is required' });
         return;
       }
 
       if (!guildId) {
-        res.status(400).json({ success: false, message: 'guildId query parameter is required' });
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'guildId query parameter is required' });
         return;
       }
 
@@ -36,8 +40,12 @@ export class DiscordChannelController {
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordChannelController] ⚠️ Error fetching channels on ${req.originalUrl}: ${normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
         error: normalized,
       });
@@ -50,7 +58,8 @@ export class DiscordChannelController {
       const { credentialId, guildId } = req.body;
 
       if (!credentialId || !guildId) {
-        res.status(400).json({ success: false, message: 'credentialId and guildId body parameters are required' });
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId and guildId body parameters are required' });
         return;
       }
 
@@ -61,8 +70,12 @@ export class DiscordChannelController {
       });
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordChannelController] ⚠️ Error refreshing channels on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(normalized.statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
       });
     }
@@ -74,7 +87,8 @@ export class DiscordChannelController {
       const { credentialId, guildId, channelId } = req.body;
 
       if (!credentialId || !guildId || !channelId) {
-        res.status(400).json({ success: false, message: 'credentialId, guildId, and channelId are required' });
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId, guildId, and channelId are required' });
         return;
       }
 
@@ -86,9 +100,13 @@ export class DiscordChannelController {
       });
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordChannelController] ⚠️ Error validating channel on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(normalized.statusCode).json({
         success: false,
         valid: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
       });
     }

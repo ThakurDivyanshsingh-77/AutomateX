@@ -8,8 +8,10 @@ export class DiscordController {
     try {
       const { botToken } = req.body;
       if (!botToken) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
         res.status(400).json({
           success: false,
+          isThirdPartyError: true,
           message: 'botToken is required for verification',
         });
         return;
@@ -17,8 +19,12 @@ export class DiscordController {
 
       const result = await DiscordCredentialService.validateBotToken(botToken);
       if (!result.valid) {
+        console.warn(`[DiscordController] ⚠️ Third-Party Discord Token Verification Failed: ${result.error}`);
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
         res.status(401).json({
           success: false,
+          isThirdPartyError: true,
+          isUserAuthTokenError: false,
           message: result.error || 'Discord Bot Token verification failed',
         });
         return;
@@ -36,9 +42,14 @@ export class DiscordController {
       });
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordController] ⚠️ Exception during verifyCredential on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(normalized.statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: normalized.message,
+        error: normalized,
       });
     }
   }
@@ -47,8 +58,10 @@ export class DiscordController {
     try {
       const ownerId = req.user?._id || req.user?.id;
       if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
         res.status(401).json({
           success: false,
+          isUserAuthTokenError: true,
           message: 'Unauthorized: User context required',
         });
         return;
@@ -68,8 +81,12 @@ export class DiscordController {
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error creating credential on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
       });
     }
@@ -79,8 +96,10 @@ export class DiscordController {
     try {
       const ownerId = req.user?._id || req.user?.id;
       if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
         res.status(401).json({
           success: false,
+          isUserAuthTokenError: true,
           message: 'Unauthorized: User context required',
         });
         return;
@@ -88,8 +107,10 @@ export class DiscordController {
 
       const credentialId = req.query.credentialId || req.query.credential;
       if (!credentialId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
         res.status(400).json({
           success: false,
+          isThirdPartyError: true,
           message: 'credentialId query parameter is required',
         });
         return;
@@ -105,8 +126,12 @@ export class DiscordController {
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error fetching guilds on ${req.originalUrl}: ${normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
         error: normalized,
       });
@@ -118,7 +143,8 @@ export class DiscordController {
       const ownerId = req.user?._id || req.user?.id;
       const { credentialId } = req.body;
       if (!credentialId) {
-        res.status(400).json({ success: false, message: 'credentialId body parameter is required' });
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId body parameter is required' });
         return;
       }
 
@@ -129,8 +155,12 @@ export class DiscordController {
       });
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordController] ⚠️ Error refreshing guilds on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(normalized.statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
       });
     }
@@ -141,7 +171,8 @@ export class DiscordController {
       const ownerId = req.user?._id || req.user?.id;
       const { credentialId, guildId } = req.body;
       if (!credentialId || !guildId) {
-        res.status(400).json({ success: false, message: 'credentialId and guildId are required' });
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId and guildId are required' });
         return;
       }
 
@@ -153,9 +184,13 @@ export class DiscordController {
       });
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordController] ⚠️ Error validating guild on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(normalized.statusCode).json({
         success: false,
         valid: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
       });
     }
@@ -165,8 +200,10 @@ export class DiscordController {
     try {
       const ownerId = req.user?._id || req.user?.id;
       if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
         res.status(401).json({
           success: false,
+          isUserAuthTokenError: true,
           message: 'Unauthorized: User context required',
         });
         return;
@@ -190,8 +227,12 @@ export class DiscordController {
     } catch (error) {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error sending message on ${req.originalUrl}: ${normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
         message: error.message || normalized.message,
         error: normalized,
       });
