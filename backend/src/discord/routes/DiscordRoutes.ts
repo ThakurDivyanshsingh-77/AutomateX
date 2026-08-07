@@ -6,6 +6,19 @@ import { protect } from '../../middleware/authMiddleware.js';
 
 const router = Router();
 
+// Detailed Request / Response Logger Middleware for Discord API
+router.use((req, res, next) => {
+  const start = Date.now();
+  const credentialId = (req.query.credentialId || req.query.credential || req.body?.credentialId || req.body?.credential || 'N/A') as string;
+  console.log(`[DiscordApiRequest] 📥 ${req.method} ${req.originalUrl} | CredentialID: ${credentialId}`);
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[DiscordApiResponse] 📤 ${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Duration: ${duration}ms`);
+  });
+  next();
+});
+
 // Protect all Discord endpoints with auth middleware
 router.use(protect);
 

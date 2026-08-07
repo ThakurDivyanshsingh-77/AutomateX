@@ -106,7 +106,10 @@ export class DiscordCredentialService {
   static async getDecryptedBotToken(ownerId, credentialId) {
     let secret = await credentialService.getDecryptedSecret(ownerId, credentialId);
     if (!secret) {
-      throw new Error(`Discord credential not found: ${credentialId}`);
+      console.warn(`[DiscordAuth] ⚠️ Credential ID "${credentialId}" not found in vault for User ID "${ownerId}"`);
+      const err = new Error(`Discord credential not found in vault: ${credentialId}. Please select a valid credential.`);
+      err.statusCode = 404;
+      throw err;
     }
 
     while (typeof secret === 'string') {
@@ -137,7 +140,9 @@ export class DiscordCredentialService {
     }
 
     if (!token) {
-      throw new Error(`Invalid or empty Discord Bot Token extracted for Credential ID: ${credentialId}`);
+      const err = new Error(`Invalid or empty Discord Bot Token extracted for Credential ID: ${credentialId}`);
+      err.statusCode = 422;
+      throw err;
     }
 
     return token;

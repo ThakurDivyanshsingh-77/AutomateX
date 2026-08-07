@@ -44,11 +44,15 @@ export const DiscordProperties = ({ nodeData, onUpdateConfig }) => {
       );
       setCredentials(discordCreds);
 
-      // Auto-select first credential if none selected
-      if (!credentialId && discordCreds.length > 0) {
-        const firstId = discordCreds[0]._id;
-        setCredentialId(firstId);
-        updateField('credentialId', firstId);
+      // Auto-select first credential if none selected or if configured credentialId is stale/deleted
+      if (discordCreds.length > 0) {
+        const exists = discordCreds.some((c) => c._id === credentialId);
+        if (!credentialId || !exists) {
+          const firstId = discordCreds[0]._id;
+          console.log('[DiscordProperties] Selected credential ID:', firstId);
+          setCredentialId(firstId);
+          updateField('credentialId', firstId);
+        }
       }
     } catch (err) {
       console.warn('[DiscordProperties] ⚠️ Failed to load credentials inline:', err);

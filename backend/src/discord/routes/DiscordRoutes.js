@@ -5,6 +5,18 @@ import { protect } from '../../middleware/authMiddleware.js';
 
 const router = Router();
 
+router.use((req, res, next) => {
+  const start = Date.now();
+  const credentialId = req.query.credentialId || req.query.credential || req.body?.credentialId || req.body?.credential || 'N/A';
+  console.log(`[DiscordApiRequest] 📥 ${req.method} ${req.originalUrl} | CredentialID: ${credentialId}`);
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[DiscordApiResponse] 📤 ${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Duration: ${duration}ms`);
+  });
+  next();
+});
+
 router.use(protect);
 
 router.post('/credentials/verify', DiscordController.verifyCredential);
