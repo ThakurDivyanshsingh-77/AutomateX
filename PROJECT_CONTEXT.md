@@ -230,6 +230,8 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Verification**:
   - `npx tsc --noEmit` passed cleanly with 0 type errors.
   - Passed 8/8 test scenarios in `test_discord_step4_full.js` (Empty message rejection, >2000 char length limit, missing guild/channel ID validation, embed JSON parsing, ExecutorRegistry resolution, non-existent credential error handling, and route mounting).
+- **Mongoose Vault Schema Fix (`backend/src/credentials/Credential.js`)**:
+  - Added `'botToken'` to the `authType` enum list (`enum: ['uri', 'apiKey', 'bearerToken', 'basicAuth', 'oauth2', 'botToken', 'custom']`), resolving Mongoose `ValidationError: authType: botToken is not a valid enum value for path authType`.
 
 
 

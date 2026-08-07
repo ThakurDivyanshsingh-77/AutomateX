@@ -21,7 +21,7 @@ const credentialSchema = new mongoose.Schema(
     },
     authType: {
       type: String,
-      enum: ['uri', 'apiKey', 'bearerToken', 'basicAuth', 'oauth2', 'custom'],
+      enum: ['uri', 'apiKey', 'bearerToken', 'basicAuth', 'oauth2', 'botToken', 'custom'],
       required: true,
     },
     encryptedData: {
