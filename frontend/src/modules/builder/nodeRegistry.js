@@ -11,6 +11,7 @@ import {
   MessageSquare,
   FolderPlus,
   Trash2,
+  ShieldPlus,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -30,6 +31,7 @@ export const NODE_TYPES = {
   DISCORD_SEND_MESSAGE: 'discordSendMessage',
   DISCORD_CREATE_CHANNEL: 'discordCreateChannel',
   DISCORD_DELETE_CHANNEL: 'discordDeleteChannel',
+  DISCORD_CREATE_ROLE: 'discordCreateRole',
   DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
@@ -276,6 +278,24 @@ export const NODE_REGISTRY = {
       confirmDelete: false,
     },
   },
+  [NODE_TYPES.DISCORD_CREATE_ROLE]: {
+    type: NODE_TYPES.DISCORD_CREATE_ROLE,
+    category: 'Communication',
+    label: 'Discord → Create Role',
+    description: 'Create a new Discord role with custom color, hoist, mentionable permissions, and audit log reason.',
+    icon: ShieldPlus,
+    color: 'indigo',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      name: '',
+      color: '#5865F2',
+      hoist: false,
+      mentionable: false,
+      reason: '',
+    },
+  },
   [NODE_TYPES.DISCORD]: {
     type: NODE_TYPES.DISCORD,
     category: 'Communication',
@@ -296,5 +316,6 @@ export const NODE_REGISTRY = {
     },
   },
 };
+
 
 

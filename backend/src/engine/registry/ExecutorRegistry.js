@@ -57,7 +57,9 @@ export class ExecutorRegistry {
     ['discordEmbed', discordNodeExecutor],
     ['discordCreateChannel', discordNodeExecutor],
     ['discordDeleteChannel', discordNodeExecutor],
+    ['discordCreateRole', discordNodeExecutor],
     ['discord', discordNodeExecutor],
+
 
 
 

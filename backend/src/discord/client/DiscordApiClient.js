@@ -164,7 +164,23 @@ export class DiscordApiClient {
       method: 'DELETE',
     });
   }
+
+  async createRole(guildId, body, reason) {
+    if (!guildId) {
+      throw new Error('createRole requires a valid guildId');
+    }
+    const headers = {};
+    if (reason && String(reason).trim()) {
+      headers['X-Audit-Log-Reason'] = encodeURIComponent(String(reason).trim());
+    }
+    return await this.request(`/guilds/${guildId}/roles`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+  }
 }
+
 
 
 

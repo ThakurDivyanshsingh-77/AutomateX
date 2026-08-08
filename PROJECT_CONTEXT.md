@@ -364,9 +364,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Frontend Subsystem (`frontend/src/features/workflow/`)**:
   - `DiscordDeleteChannelProperties.jsx`: Production properties panel with credential selector, guild picker, channel picker (supporting channel dropdown or dynamic variable expressions e.g. `{{steps["Discord → Create Channel"].channel.id}}`), red permanent deletion warning banner, mandatory confirmation checkbox, and a **Delete Channel** manual test execution button.
   - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Delete Channel` under **Communication → Discord** category, searchable by `Discord` and `Delete Channel`.
-- **Automated Test Suite**: Passed all unit and integration tests in `test_discord_delete_channel.js`.
+### **Phase 22 Complete — Discord → Create Role Workflow Node** — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/discord/`)**:
+  - `DiscordCreateRoleTypes.js` & `DiscordCreateRoleTypes.ts`: Interface structures for role creation payloads.
+  - `DiscordCreateRoleValidator.js`: Input validator checking required credential, guild ID, role name (1-100 characters), HEX to integer color conversion (`#5865F2` -> `5793266`), hoist, mentionable, and audit log reason.
+  - `DiscordApiClient.js`: Added `createRole(guildId, payload, reason)` targeting `POST /guilds/{guildId}/roles` with optional `X-Audit-Log-Reason` header.
+  - `DiscordCreateRoleService.js`: Full role creation service resolving decrypted bot token, converting HEX colors, executing `POST /guilds/{guildId}/roles`, and returning normalized `{ success: true, role: { id, name, guildId, color, hoist, mentionable }, created: true }`.
+  - `DiscordController.js` & `DiscordRoutes.js`: Mounted `POST /api/v1/discord/create-role` & `POST /api/v1/discord/roles/create`.
+  - `DiscordNodeExecutor.js` & `ExecutorRegistry.js`: Wired `discordCreateRole` node type to `DiscordCreateRoleService.createRole()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `DiscordCreateRoleProperties.jsx`: Production properties panel with credential selector, guild picker, role name input (with live character counter), role color picker/HEX text input (with live color preview badge), hoist toggle, mentionable toggle, audit log reason input, and a **Create Role** manual test execution button.
+  - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Create Role` under **Communication → Discord** category, searchable by `Discord` and `Create Role`.
+- **Automated Test Suite**: Passed **11/11** unit and integration tests in `test_discord_create_role.js`.
 
 ---
+
 
 
 ## 🛠️ Complete Tech Stack

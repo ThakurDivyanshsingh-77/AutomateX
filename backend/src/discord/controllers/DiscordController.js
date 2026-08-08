@@ -4,7 +4,9 @@ import { DiscordMessageService } from '../services/DiscordMessageService.js';
 import { DiscordEmbedService } from '../services/DiscordEmbedService.js';
 import { DiscordCreateChannelService } from '../services/DiscordCreateChannelService.js';
 import { DiscordDeleteChannelService } from '../services/DiscordDeleteChannelService.js';
+import { DiscordCreateRoleService } from '../services/DiscordCreateRoleService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
+
 
 
 
@@ -370,6 +372,45 @@ export class DiscordController {
       });
     }
   }
+
+  static async createRole(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
+        res.status(401).json({
+          success: false,
+          isUserAuthTokenError: true,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const { credentialId } = req.body;
+      const targetCredId = credentialId || req.body.credential;
+
+      const result = await DiscordCreateRoleService.createRole(
+        String(ownerId),
+        targetCredId,
+        req.body
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error creating role on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+        error: normalized,
+      });
+    }
+  }
 }
+
 
 

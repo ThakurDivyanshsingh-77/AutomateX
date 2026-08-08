@@ -18,6 +18,8 @@ import { DiscordProperties } from '../components/DiscordProperties';
 import { DiscordEmbedProperties } from '../components/DiscordEmbedProperties';
 import { DiscordCreateChannelProperties } from '../components/DiscordCreateChannelProperties';
 import { DiscordDeleteChannelProperties } from '../components/DiscordDeleteChannelProperties';
+import { DiscordCreateRoleProperties } from '../components/DiscordCreateRoleProperties';
+
 
 
 
@@ -58,8 +60,10 @@ export const PropertiesPanel = ({
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
   const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
   const isDiscordDeleteChannelNode = selectedNode.type === 'discordDeleteChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deletechannel'));
-  const isDiscordEmbedNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
-  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+  const isDiscordCreateRoleNode = selectedNode.type === 'discordCreateRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createrole'));
+  const isDiscordEmbedNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
+  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+
 
 
 
@@ -204,6 +208,11 @@ export const PropertiesPanel = ({
               />
             ) : isDiscordDeleteChannelNode ? (
               <DiscordDeleteChannelProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isDiscordCreateRoleNode ? (
+              <DiscordCreateRoleProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />

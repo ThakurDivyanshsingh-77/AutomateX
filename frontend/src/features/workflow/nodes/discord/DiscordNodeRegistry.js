@@ -1,10 +1,11 @@
-import { MessageSquare, Layout, FolderPlus, Trash2 } from 'lucide-react';
+import { MessageSquare, Layout, FolderPlus, Trash2, ShieldPlus } from 'lucide-react';
 
 export const DISCORD_NODE_TYPES = {
   SEND_MESSAGE: 'discordSendMessage',
   SEND_EMBED: 'discordSendEmbed',
   CREATE_CHANNEL: 'discordCreateChannel',
   DELETE_CHANNEL: 'discordDeleteChannel',
+  CREATE_ROLE: 'discordCreateRole',
   DISCORD_EMBED: 'discordEmbed',
   DISCORD: 'discord',
 };
@@ -77,6 +78,19 @@ export const discordDeleteChannelValidator = (config) => {
   const isConfirmed = Boolean(config.confirmDelete === true || config.confirmDelete === 'true');
   if (!isConfirmed) {
     errors.push('Confirmation is required to delete a Discord channel permanently.');
+  }
+  return { isValid: errors.length === 0, errors };
+};
+
+export const discordCreateRoleValidator = (config) => {
+  const errors = [];
+  if (!config.credentialId) errors.push('Discord Credential is required.');
+  if (!config.guildId) errors.push('Discord Server (Guild) selection is required.');
+  const trimmedName = (config.name || config.roleName || '').trim();
+  if (!trimmedName) {
+    errors.push('Role Name is required.');
+  } else if (trimmedName.length > 100) {
+    errors.push(`Role Name exceeds 100 characters limit (${trimmedName.length}/100).`);
   }
   return { isValid: errors.length === 0, errors };
 };
@@ -199,11 +213,39 @@ export const discordDeleteChannelDefinition = {
   validate: discordDeleteChannelValidator,
 };
 
+export const discordCreateRoleDefinition = {
+  id: DISCORD_NODE_TYPES.CREATE_ROLE,
+  type: DISCORD_NODE_TYPES.CREATE_ROLE,
+  name: 'discordCreateRole',
+  label: 'Discord → Create Role',
+  displayName: 'Discord → Create Role',
+  category: 'Communication',
+  description: 'Create a new Discord role with custom color, hoist, mentionable permissions, and audit log reason.',
+  icon: ShieldPlus,
+  color: 'indigo',
+  badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    guildId: '',
+    name: '',
+    color: '#5865F2',
+    hoist: false,
+    mentionable: false,
+    reason: '',
+  },
+  validate: discordCreateRoleValidator,
+};
+
 export const discordNodeDefinitions = {
   [DISCORD_NODE_TYPES.SEND_MESSAGE]: discordSendMessageDefinition,
   [DISCORD_NODE_TYPES.SEND_EMBED]: discordSendEmbedDefinition,
   [DISCORD_NODE_TYPES.CREATE_CHANNEL]: discordCreateChannelDefinition,
   [DISCORD_NODE_TYPES.DELETE_CHANNEL]: discordDeleteChannelDefinition,
+  [DISCORD_NODE_TYPES.CREATE_ROLE]: discordCreateRoleDefinition,
   [DISCORD_NODE_TYPES.DISCORD_EMBED]: {
     ...discordSendEmbedDefinition,
     id: DISCORD_NODE_TYPES.DISCORD_EMBED,
@@ -217,5 +259,6 @@ export const discordNodeDefinitions = {
     name: 'discord',
   },
 };
+
 
 
