@@ -36,5 +36,7 @@ router.post('/send-embed', DiscordController.sendEmbed);
 router.post('/embeds/send', DiscordController.sendEmbed);
 router.post('/create-channel', DiscordController.createChannel);
 router.post('/channels/create', DiscordController.createChannel);
+router.post('/delete-channel', DiscordController.deleteChannel);
+router.post('/channels/delete', DiscordController.deleteChannel);
 
 export default router;

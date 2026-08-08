@@ -10,6 +10,7 @@ import {
   FileOutput,
   MessageSquare,
   FolderPlus,
+  Trash2,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -28,6 +29,7 @@ export const NODE_TYPES = {
   // Discord
   DISCORD_SEND_MESSAGE: 'discordSendMessage',
   DISCORD_CREATE_CHANNEL: 'discordCreateChannel',
+  DISCORD_DELETE_CHANNEL: 'discordDeleteChannel',
   DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
@@ -259,6 +261,21 @@ export const NODE_REGISTRY = {
       userLimit: 0,
     },
   },
+  [NODE_TYPES.DISCORD_DELETE_CHANNEL]: {
+    type: NODE_TYPES.DISCORD_DELETE_CHANNEL,
+    category: 'Communication',
+    label: 'Discord → Delete Channel',
+    description: 'Delete an existing Discord channel using the Discord Bot Token.',
+    icon: Trash2,
+    color: 'rose',
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      channelId: '',
+      confirmDelete: false,
+    },
+  },
   [NODE_TYPES.DISCORD]: {
     type: NODE_TYPES.DISCORD,
     category: 'Communication',
@@ -279,4 +296,5 @@ export const NODE_REGISTRY = {
     },
   },
 };
+
 

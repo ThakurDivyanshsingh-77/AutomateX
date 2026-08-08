@@ -155,6 +155,16 @@ export class DiscordApiClient {
       body: JSON.stringify(body),
     });
   }
+
+  async deleteChannel(channelId) {
+    if (!channelId) {
+      throw new Error('deleteChannel requires a valid channelId');
+    }
+    return await this.request(`/channels/${channelId}`, {
+      method: 'DELETE',
+    });
+  }
 }
+
 
 

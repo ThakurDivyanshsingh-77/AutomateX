@@ -353,7 +353,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 
 
+### **Phase 21 Complete — Discord → Delete Channel Workflow Node** — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/discord/`)**:
+  - `DiscordDeleteChannelTypes.js` & `DiscordDeleteChannelTypes.ts`: Interface structures for channel deletion payloads.
+  - `DiscordDeleteChannelValidator.js`: Input validator checking required credential, channel ID, and mandatory `confirmDelete === true` confirmation checkbox.
+  - `DiscordApiClient.js`: Added `deleteChannel(channelId)` targeting `DELETE /channels/{channelId}`.
+  - `DiscordDeleteChannelService.js`: Full channel deletion service resolving decrypted bot token, validating mandatory user confirmation, executing `DELETE /channels/{channelId}`, clearing guild channel cache in `DiscordChannelService`, and returning normalized `{ success: true, channel: { id, name, guildId }, deleted: true }`.
+  - `DiscordController.js` & `DiscordRoutes.js`: Mounted `POST /api/v1/discord/delete-channel` & `POST /api/v1/discord/channels/delete`.
+  - `DiscordNodeExecutor.js` & `ExecutorRegistry.js`: Wired `discordDeleteChannel` node type to `DiscordDeleteChannelService.deleteChannel()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `DiscordDeleteChannelProperties.jsx`: Production properties panel with credential selector, guild picker, channel picker (supporting channel dropdown or dynamic variable expressions e.g. `{{steps["Discord → Create Channel"].channel.id}}`), red permanent deletion warning banner, mandatory confirmation checkbox, and a **Delete Channel** manual test execution button.
+  - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Delete Channel` under **Communication → Discord** category, searchable by `Discord` and `Delete Channel`.
+- **Automated Test Suite**: Passed all unit and integration tests in `test_discord_delete_channel.js`.
+
 ---
+
 
 ## 🛠️ Complete Tech Stack
 

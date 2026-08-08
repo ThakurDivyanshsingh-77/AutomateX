@@ -17,6 +17,8 @@ import { GoogleSheetsTriggerProperties } from '../nodes/googleSheets/GoogleSheet
 import { DiscordProperties } from '../components/DiscordProperties';
 import { DiscordEmbedProperties } from '../components/DiscordEmbedProperties';
 import { DiscordCreateChannelProperties } from '../components/DiscordCreateChannelProperties';
+import { DiscordDeleteChannelProperties } from '../components/DiscordDeleteChannelProperties';
+
 
 
 export const PropertiesPanel = ({
@@ -55,8 +57,10 @@ export const PropertiesPanel = ({
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
   const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
-  const isDiscordEmbedNode = !isDiscordCreateChannelNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
-  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+  const isDiscordDeleteChannelNode = selectedNode.type === 'discordDeleteChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deletechannel'));
+  const isDiscordEmbedNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
+  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+
 
 
   return (
@@ -195,6 +199,11 @@ export const PropertiesPanel = ({
               />
             ) : isDiscordCreateChannelNode ? (
               <DiscordCreateChannelProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isDiscordDeleteChannelNode ? (
+              <DiscordDeleteChannelProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />

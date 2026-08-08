@@ -1,6 +1,7 @@
 import { DiscordMessageService } from '../services/DiscordMessageService.js';
 import { DiscordEmbedService } from '../services/DiscordEmbedService.js';
 import { DiscordCreateChannelService } from '../services/DiscordCreateChannelService.js';
+import { DiscordDeleteChannelService } from '../services/DiscordDeleteChannelService.js';
 
 export class DiscordNodeExecutor {
   async execute(nodeData, context) {
@@ -37,7 +38,12 @@ export class DiscordNodeExecutor {
       return await DiscordCreateChannelService.createChannel(ownerId, credentialId, config);
     }
 
+    if (nodeType.includes('deletechannel') || nodeType === 'discorddeletechannel') {
+      return await DiscordDeleteChannelService.deleteChannel(ownerId, credentialId, config);
+    }
+
     const channelId = String(config.channelId || config.channel || '');
+
 
 
     if (nodeType.includes('embed') || nodeType === 'discordsendembed') {

@@ -1,9 +1,10 @@
-import { MessageSquare, Layout, FolderPlus } from 'lucide-react';
+import { MessageSquare, Layout, FolderPlus, Trash2 } from 'lucide-react';
 
 export const DISCORD_NODE_TYPES = {
   SEND_MESSAGE: 'discordSendMessage',
   SEND_EMBED: 'discordSendEmbed',
   CREATE_CHANNEL: 'discordCreateChannel',
+  DELETE_CHANNEL: 'discordDeleteChannel',
   DISCORD_EMBED: 'discordEmbed',
   DISCORD: 'discord',
 };
@@ -62,6 +63,20 @@ export const discordCreateChannelValidator = (config) => {
     errors.push('Channel Name is required.');
   } else if (trimmedName.length > 100) {
     errors.push(`Channel Name exceeds 100 characters limit (${trimmedName.length}/100).`);
+  }
+  return { isValid: errors.length === 0, errors };
+};
+
+export const discordDeleteChannelValidator = (config) => {
+  const errors = [];
+  if (!config.credentialId) errors.push('Discord Credential is required.');
+  const targetChannelId = (config.channelId || config.channel || '').trim();
+  if (!targetChannelId) {
+    errors.push('Discord Channel selection or dynamic Channel ID expression is required.');
+  }
+  const isConfirmed = Boolean(config.confirmDelete === true || config.confirmDelete === 'true');
+  if (!isConfirmed) {
+    errors.push('Confirmation is required to delete a Discord channel permanently.');
   }
   return { isValid: errors.length === 0, errors };
 };
@@ -160,10 +175,35 @@ export const discordCreateChannelDefinition = {
   validate: discordCreateChannelValidator,
 };
 
+export const discordDeleteChannelDefinition = {
+  id: DISCORD_NODE_TYPES.DELETE_CHANNEL,
+  type: DISCORD_NODE_TYPES.DELETE_CHANNEL,
+  name: 'discordDeleteChannel',
+  label: 'Discord → Delete Channel',
+  displayName: 'Discord → Delete Channel',
+  category: 'Communication',
+  description: 'Delete an existing Discord channel using the Discord Bot Token.',
+  icon: Trash2,
+  color: 'rose',
+  badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    guildId: '',
+    channelId: '',
+    confirmDelete: false,
+  },
+  validate: discordDeleteChannelValidator,
+};
+
 export const discordNodeDefinitions = {
   [DISCORD_NODE_TYPES.SEND_MESSAGE]: discordSendMessageDefinition,
   [DISCORD_NODE_TYPES.SEND_EMBED]: discordSendEmbedDefinition,
   [DISCORD_NODE_TYPES.CREATE_CHANNEL]: discordCreateChannelDefinition,
+  [DISCORD_NODE_TYPES.DELETE_CHANNEL]: discordDeleteChannelDefinition,
   [DISCORD_NODE_TYPES.DISCORD_EMBED]: {
     ...discordSendEmbedDefinition,
     id: DISCORD_NODE_TYPES.DISCORD_EMBED,
@@ -177,4 +217,5 @@ export const discordNodeDefinitions = {
     name: 'discord',
   },
 };
+
 
