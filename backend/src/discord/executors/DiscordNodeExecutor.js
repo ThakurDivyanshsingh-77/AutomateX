@@ -1,5 +1,6 @@
 import { DiscordMessageService } from '../services/DiscordMessageService.js';
 import { DiscordEmbedService } from '../services/DiscordEmbedService.js';
+import { DiscordCreateChannelService } from '../services/DiscordCreateChannelService.js';
 
 export class DiscordNodeExecutor {
   async execute(nodeData, context) {
@@ -31,7 +32,13 @@ export class DiscordNodeExecutor {
 
     const credentialId = String(config.credentialId || config.credential || '');
     const guildId = String(config.guildId || config.guild || '');
+
+    if (nodeType.includes('createchannel') || nodeType === 'discordcreatechannel') {
+      return await DiscordCreateChannelService.createChannel(ownerId, credentialId, config);
+    }
+
     const channelId = String(config.channelId || config.channel || '');
+
 
     if (nodeType.includes('embed') || nodeType === 'discordsendembed') {
       const title = config.title ? String(config.title) : undefined;

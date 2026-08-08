@@ -16,6 +16,8 @@ import { GoogleSheetsProperties } from '../nodes/googleSheets/GoogleSheetsProper
 import { GoogleSheetsTriggerProperties } from '../nodes/googleSheets/GoogleSheetsTriggerProperties';
 import { DiscordProperties } from '../components/DiscordProperties';
 import { DiscordEmbedProperties } from '../components/DiscordEmbedProperties';
+import { DiscordCreateChannelProperties } from '../components/DiscordCreateChannelProperties';
+
 
 export const PropertiesPanel = ({
   selectedNode,
@@ -52,8 +54,10 @@ export const PropertiesPanel = ({
   const isPdfNode = selectedNode.type === 'pdfGenerator';
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
-  const isDiscordEmbedNode = selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed'));
-  const isDiscordNode = !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+  const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
+  const isDiscordEmbedNode = !isDiscordCreateChannelNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
+  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+
 
   return (
     <>
@@ -188,6 +192,11 @@ export const PropertiesPanel = ({
                 nodeType={selectedNode.type}
                 nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isDiscordCreateChannelNode ? (
+              <DiscordCreateChannelProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : isDiscordEmbedNode ? (
               <DiscordEmbedProperties

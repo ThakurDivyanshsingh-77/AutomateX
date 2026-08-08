@@ -19,7 +19,7 @@ import { gmailValidator } from '../validators/gmailValidator';
 import { googleSheetsValidator } from '../googleSheets/googleSheetsValidator';
 
 import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
-import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator } from '../discord/DiscordNodeRegistry';
+import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator, discordCreateChannelValidator } from '../discord/DiscordNodeRegistry';
 
 export const NODE_TYPES = {
   START: 'start',
@@ -143,6 +143,7 @@ export const nodeValidators = {
   discordSendMessage: discordValidator,
   discordSendEmbed: discordValidator,
   discordEmbed: discordValidator,
+  discordCreateChannel: discordCreateChannelValidator,
   discord: discordValidator,
 };
 

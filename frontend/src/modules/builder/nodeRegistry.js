@@ -9,6 +9,7 @@ import {
   Terminal,
   FileOutput,
   MessageSquare,
+  FolderPlus,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -26,6 +27,7 @@ export const NODE_TYPES = {
   PDF_GENERATOR: 'pdfGenerator',
   // Discord
   DISCORD_SEND_MESSAGE: 'discordSendMessage',
+  DISCORD_CREATE_CHANNEL: 'discordCreateChannel',
   DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
@@ -236,6 +238,27 @@ export const NODE_REGISTRY = {
       suppressEmbeds: false,
     },
   },
+  [NODE_TYPES.DISCORD_CREATE_CHANNEL]: {
+    type: NODE_TYPES.DISCORD_CREATE_CHANNEL,
+    category: 'Communication',
+    label: 'Discord → Create Channel',
+    description: 'Create a new Text Channel, Voice Channel, or Category in a Discord Server.',
+    icon: FolderPlus,
+    color: 'indigo',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      channelType: 0,
+      name: '',
+      topic: '',
+      nsfw: false,
+      slowmode: 0,
+      parentId: '',
+      bitrate: 64000,
+      userLimit: 0,
+    },
+  },
   [NODE_TYPES.DISCORD]: {
     type: NODE_TYPES.DISCORD,
     category: 'Communication',
@@ -256,3 +279,4 @@ export const NODE_REGISTRY = {
     },
   },
 };
+

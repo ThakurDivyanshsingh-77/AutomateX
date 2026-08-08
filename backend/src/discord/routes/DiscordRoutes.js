@@ -34,5 +34,7 @@ router.post('/send-message', DiscordController.sendMessage);
 router.post('/messages/send', DiscordController.sendMessage);
 router.post('/send-embed', DiscordController.sendEmbed);
 router.post('/embeds/send', DiscordController.sendEmbed);
+router.post('/create-channel', DiscordController.createChannel);
+router.post('/channels/create', DiscordController.createChannel);
 
 export default router;

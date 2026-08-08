@@ -1,8 +1,9 @@
-import { MessageSquare, Layout } from 'lucide-react';
+import { MessageSquare, Layout, FolderPlus } from 'lucide-react';
 
 export const DISCORD_NODE_TYPES = {
   SEND_MESSAGE: 'discordSendMessage',
   SEND_EMBED: 'discordSendEmbed',
+  CREATE_CHANNEL: 'discordCreateChannel',
   DISCORD_EMBED: 'discordEmbed',
   DISCORD: 'discord',
 };
@@ -49,6 +50,19 @@ export const discordEmbedValidator = (config) => {
     errors.push(`Maximum 25 fields allowed (${config.fields.length}/25).`);
   }
 
+  return { isValid: errors.length === 0, errors };
+};
+
+export const discordCreateChannelValidator = (config) => {
+  const errors = [];
+  if (!config.credentialId) errors.push('Discord Credential is required.');
+  if (!config.guildId) errors.push('Discord Server (Guild) selection is required.');
+  const trimmedName = (config.name || config.channelName || '').trim();
+  if (!trimmedName) {
+    errors.push('Channel Name is required.');
+  } else if (trimmedName.length > 100) {
+    errors.push(`Channel Name exceeds 100 characters limit (${trimmedName.length}/100).`);
+  }
   return { isValid: errors.length === 0, errors };
 };
 
@@ -116,9 +130,40 @@ export const discordSendEmbedDefinition = {
   validate: discordEmbedValidator,
 };
 
+export const discordCreateChannelDefinition = {
+  id: DISCORD_NODE_TYPES.CREATE_CHANNEL,
+  type: DISCORD_NODE_TYPES.CREATE_CHANNEL,
+  name: 'discordCreateChannel',
+  label: 'Discord → Create Channel',
+  displayName: 'Discord → Create Channel',
+  category: 'Communication',
+  description: 'Create a new Text Channel, Voice Channel, or Category in a Discord Server.',
+  icon: FolderPlus,
+  color: 'indigo',
+  badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    guildId: '',
+    channelType: 0,
+    name: '',
+    topic: '',
+    nsfw: false,
+    slowmode: 0,
+    parentId: '',
+    bitrate: 64000,
+    userLimit: 0,
+  },
+  validate: discordCreateChannelValidator,
+};
+
 export const discordNodeDefinitions = {
   [DISCORD_NODE_TYPES.SEND_MESSAGE]: discordSendMessageDefinition,
   [DISCORD_NODE_TYPES.SEND_EMBED]: discordSendEmbedDefinition,
+  [DISCORD_NODE_TYPES.CREATE_CHANNEL]: discordCreateChannelDefinition,
   [DISCORD_NODE_TYPES.DISCORD_EMBED]: {
     ...discordSendEmbedDefinition,
     id: DISCORD_NODE_TYPES.DISCORD_EMBED,
@@ -132,3 +177,4 @@ export const discordNodeDefinitions = {
     name: 'discord',
   },
 };
+

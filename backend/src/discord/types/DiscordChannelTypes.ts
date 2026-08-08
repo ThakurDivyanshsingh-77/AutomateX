@@ -2,10 +2,12 @@
  * Strict TypeScript Definitions for Discord Channels (Step 3)
  */
 
-export type DiscordChannelTypeName = 'GUILD_TEXT' | 'GUILD_ANNOUNCEMENT' | 'GUILD_FORUM';
+export type DiscordChannelTypeName = 'GUILD_TEXT' | 'GUILD_VOICE' | 'GUILD_CATEGORY' | 'GUILD_ANNOUNCEMENT' | 'GUILD_FORUM';
 
 export enum DiscordChannelTypeEnum {
   GUILD_TEXT = 0,
+  GUILD_VOICE = 2,
+  GUILD_CATEGORY = 4,
   GUILD_ANNOUNCEMENT = 5,
   GUILD_FORUM = 15,
 }

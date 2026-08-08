@@ -332,6 +332,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 ### **Bug Fix — Google Sheets Properties JSX Syntax Error** — ✅ COMPLETED
 - **Frontend Syntax Repair**: Fixed `',' expected` JSX parsing error in [GoogleSheetsProperties.jsx](file:///c:/Users/divya/OneDrive/Desktop/Workflow%20Automation%20Platform/frontend/src/features/workflow/nodes/googleSheets/GoogleSheetsProperties.jsx#L430) where unquoted double curly braces (`e.g. {{item.email}}`) were improperly evaluated by JSX parser as an invalid JavaScript object literal instead of literal string expression (`e.g. {"{{item.email}}"}`).
 
+### **Phase 20 Complete — Discord → Create Channel Workflow Node** — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/discord/`)**:
+  - `DiscordCreateChannelTypes.js` & `DiscordCreateChannelTypes.ts`: Channel type constants (`TEXT = 0`, `VOICE = 2`, `CATEGORY = 4`), validation limits (Name 1-100, Slowmode 0-21600, Bitrate 8000-384000, User limit 0-99).
+  - `DiscordCreateChannelValidator.js`: Input validation for Discord credentials, Guild, Channel Type, trimmed Channel Name, Topic, Slowmode, Bitrate, and User limit.
+  - `DiscordApiClient.js`: Added `createChannel(guildId, payload)` targeting `POST /guilds/{guildId}/channels`.
+  - `DiscordCreateChannelService.js`: Full 10-step channel creation service including `MANAGE_CHANNELS` (`0x10`) or `ADMINISTRATOR` (`0x8`) permission checking, channel payload building (omitting empty optional properties), cache invalidation via `DiscordChannelService.clearCache()`, and structured logging.
+  - `DiscordController.js` & `DiscordRoutes.js`: Mounted `POST /api/v1/discord/create-channel` & `POST /api/v1/discord/channels/create`.
+  - `DiscordNodeExecutor.js` & `ExecutorRegistry.js`: Wired `discordCreateChannel` node type to `DiscordCreateChannelService.createChannel()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `DiscordCategoryDropdown.jsx`: Searchable dropdown component to select existing parent category (`type === 4`) with a 1-click **Refresh Categories** button.
+  - `DiscordCreateChannelProperties.jsx`: Production properties panel featuring credential selector, guild picker, channel type dropdown (Text, Voice, Category), channel name input with live character counter & validation errors, conditional fields (Topic, NSFW, Slowmode, Category for Text; Category, Bitrate, User Limit for Voice; Name only for Category), and a **Create Channel** manual test execution button with success result card and clickable Discord link.
+  - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Create Channel` under **Communication → Discord** category, searchable by `Discord` and `Create Channel`.
+- **Automated Test Suite**: Passed all unit and integration tests in `test_discord_create_channel.js`.
+
+
 ---
 
 ## 🛠️ Complete Tech Stack

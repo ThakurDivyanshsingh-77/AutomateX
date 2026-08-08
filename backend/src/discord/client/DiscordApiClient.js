@@ -127,4 +127,15 @@ export class DiscordApiClient {
       body: JSON.stringify(body),
     });
   }
+
+  async createChannel(guildId, body) {
+    if (!guildId) {
+      throw new Error('createChannel requires a valid guildId');
+    }
+    return await this.request(`/guilds/${guildId}/channels`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
 }
+
