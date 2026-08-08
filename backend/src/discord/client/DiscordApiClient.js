@@ -128,6 +128,24 @@ export class DiscordApiClient {
     });
   }
 
+  async getBotMember(guildId) {
+    if (!guildId) {
+      throw new Error('getBotMember requires a valid guildId');
+    }
+    return await this.request(`/guilds/${guildId}/members/@me`, {
+      method: 'GET',
+    });
+  }
+
+  async getGuildRoles(guildId) {
+    if (!guildId) {
+      throw new Error('getGuildRoles requires a valid guildId');
+    }
+    return await this.request(`/guilds/${guildId}/roles`, {
+      method: 'GET',
+    });
+  }
+
   async createChannel(guildId, body) {
     if (!guildId) {
       throw new Error('createChannel requires a valid guildId');
@@ -138,4 +156,5 @@ export class DiscordApiClient {
     });
   }
 }
+
 

@@ -60,37 +60,85 @@ export class DiscordCreateChannelService {
 
     const client = new DiscordApiClient({ botToken });
 
-    // Step 4: Verify Guild & Bot Permissions (MANAGE_CHANNELS)
-    let userGuilds = [];
+    // Step 4: Verify Guild & Bot Permissions (MANAGE_CHANNELS / ADMINISTRATOR)
+    const MANAGE_CHANNELS = 16n;
+    const ADMINISTRATOR = 8n;
+
+    let botPermissions = null;
+
+    // A. Resolve bot member permissions in the selected Guild
     try {
-      userGuilds = await client.getCurrentUserGuilds();
-    } catch (err) {
-      console.warn(`[DiscordCreateChannel] ⚠️ Failed to fetch bot guilds during permission check: ${err.message}`);
+      const member = await client.getBotMember(guildId);
+      if (member && member.permissions !== undefined && member.permissions !== null) {
+        botPermissions = BigInt(member.permissions);
+      } else if (member && Array.isArray(member.roles)) {
+        // Fallback: compute bitfield from guild roles assigned to bot
+        try {
+          const roles = await client.getGuildRoles(guildId);
+          if (Array.isArray(roles)) {
+            let perms = 0n;
+            const everyoneRole = roles.find((r) => r.id === guildId);
+            if (everyoneRole && everyoneRole.permissions) {
+              perms |= BigInt(everyoneRole.permissions);
+            }
+            for (const roleId of member.roles) {
+              const role = roles.find((r) => r.id === roleId);
+              if (role && role.permissions) {
+                perms |= BigInt(role.permissions);
+              }
+            }
+            botPermissions = perms;
+          }
+        } catch (roleErr) {
+          console.warn(`[DiscordCreateChannel] ⚠️ Could not fetch guild roles for calculation: ${roleErr.message}`);
+        }
+      }
+    } catch (memberErr) {
+      console.warn(`[DiscordCreateChannel] ⚠️ Failed to fetch bot member info: ${memberErr.message}`);
+      const norm = DiscordUtils.normalizeDiscordError(memberErr);
+      if (norm.statusCode === 404 || memberErr.statusCode === 404) {
+        const err = new Error('Discord server was not found.');
+        err.statusCode = 404;
+        throw err;
+      }
+      if (norm.statusCode === 401 || memberErr.statusCode === 401) {
+        const err = new Error('Discord Bot Token is invalid or expired.');
+        err.statusCode = 401;
+        throw err;
+      }
     }
 
-    const matchingGuild = Array.isArray(userGuilds) ? userGuilds.find((g) => g.id === guildId) : null;
-    if (userGuilds.length > 0 && !matchingGuild) {
-      const err = new Error('Guild Not Found: Bot is not a member of the specified Discord server.');
-      err.statusCode = 404;
-      throw err;
-    }
-
-    if (matchingGuild && matchingGuild.permissions !== undefined) {
+    // B. Fallback: resolve matching guild from user's guilds if permissions still unknown
+    if (botPermissions === null) {
       try {
-        const permsBigInt = BigInt(matchingGuild.permissions);
-        const MANAGE_CHANNELS = 0x10n; // Bit 4
-        const ADMINISTRATOR = 0x8n;     // Bit 3
-
-        const hasManageChannels = (permsBigInt & MANAGE_CHANNELS) !== 0n || (permsBigInt & ADMINISTRATOR) !== 0n;
-        if (!hasManageChannels) {
-          console.warn(`[DiscordCreateChannel] 🚫 Permission missing for Bot in Guild ${guildId}. Permissions bitfield: ${matchingGuild.permissions}`);
-          const err = new Error('Bot requires Manage Channels permission.');
-          err.statusCode = 403;
+        const userGuilds = await client.getCurrentUserGuilds();
+        const matchingGuild = Array.isArray(userGuilds) ? userGuilds.find((g) => g.id === guildId) : null;
+        if (Array.isArray(userGuilds) && userGuilds.length > 0 && !matchingGuild) {
+          const err = new Error('Discord server was not found.');
+          err.statusCode = 404;
           throw err;
         }
-      } catch (err) {
-        if (err.statusCode === 403) throw err;
-        // Ignore BigInt parse issues and proceed to API request
+        if (matchingGuild && matchingGuild.permissions !== undefined && matchingGuild.permissions !== null) {
+          botPermissions = BigInt(matchingGuild.permissions);
+        }
+      } catch (guildsErr) {
+        console.warn(`[DiscordCreateChannel] ⚠️ Failed to fetch user guilds: ${guildsErr.message}`);
+      }
+    }
+
+    // C. Evaluate effective permission bitfield
+    if (botPermissions !== null) {
+      const hasManageChannels = (botPermissions & MANAGE_CHANNELS) === MANAGE_CHANNELS;
+      const hasAdmin = (botPermissions & ADMINISTRATOR) === ADMINISTRATOR;
+      const hasPermission = hasManageChannels || hasAdmin;
+
+      console.log(`[DiscordCreateChannel] 🛡️ Permission check bitfield=${botPermissions.toString()}, MANAGE_CHANNELS=${hasManageChannels}, ADMINISTRATOR=${hasAdmin}`);
+
+      if (!hasPermission) {
+        console.warn(`[DiscordCreateChannel] 🚫 Permission missing for Bot in Guild ${guildId}. Perms bitfield: ${botPermissions.toString()}`);
+        const err = new Error('Bot requires Manage Channels permission in this server.');
+        err.statusCode = 403;
+        throw err;
       }
     }
 
@@ -150,15 +198,29 @@ export class DiscordCreateChannelService {
     } catch (err) {
       const normalized = DiscordUtils.normalizeDiscordError(err);
       if (normalized.statusCode === 403) {
-        throw new Error('Bot does not have permission to create channels in this server.');
+        const createErr = new Error('Bot does not have permission to create channels in this server.');
+        createErr.statusCode = 403;
+        throw createErr;
       } else if (normalized.statusCode === 400) {
-        throw new Error('Discord rejected the channel configuration.');
+        const createErr = new Error('Discord rejected the channel configuration.');
+        createErr.statusCode = 400;
+        throw createErr;
       } else if (normalized.statusCode === 404) {
-        throw new Error('Guild Not Found: Specified Discord server does not exist.');
+        const createErr = new Error('Discord server was not found.');
+        createErr.statusCode = 404;
+        throw createErr;
+      } else if (normalized.statusCode === 401) {
+        const createErr = new Error('Discord Bot Token is invalid or expired.');
+        createErr.statusCode = 401;
+        throw createErr;
       } else if (normalized.statusCode === 429) {
-        throw new Error('Discord rate limit reached. Please try again shortly.');
+        const createErr = new Error('Discord rate limit reached. Please try again.');
+        createErr.statusCode = 429;
+        throw createErr;
       } else if (normalized.statusCode >= 500) {
-        throw new Error('Discord API Error: Service is currently unavailable.');
+        const createErr = new Error('Discord API Error');
+        createErr.statusCode = normalized.statusCode;
+        throw createErr;
       }
       throw err;
     }

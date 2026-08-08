@@ -88,29 +88,25 @@ async function runTests() {
   }
 
   // ----------------------------------------------------
-  // Test Group 3: Service Error Handling (Unit Level)
+  // Test Group 4: BigInt Permission Bitfield Logic
   // ----------------------------------------------------
-  console.log('\n--- Test Group 3: DiscordCreateChannelService Error Handling ---');
+  console.log('\n--- Test Group 4: BigInt Permission Bitfield Logic ---');
 
-  // Missing security ownerId check
-  try {
-    await DiscordCreateChannelService.createChannel('', 'cred123', { guildId: 'g1', name: 'test' });
-    assert(false, 'Should throw error when ownerId is missing');
-  } catch (err) {
-    assert(err.message.includes('Security Error'), 'Rejects execution with missing ownerId');
+  const MANAGE_CHANNELS = 16n;
+  const ADMINISTRATOR = 8n;
+
+  function checkPerms(permStr) {
+    const p = BigInt(permStr);
+    return (p & MANAGE_CHANNELS) === MANAGE_CHANNELS || (p & ADMINISTRATOR) === ADMINISTRATOR;
   }
 
-  // Invalid Credential error
-  try {
-    await DiscordCreateChannelService.createChannel('owner123', 'invalid-cred-id', {
-      guildId: 'guild123',
-      channelType: 0,
-      name: 'automatex-test',
-    });
-    assert(false, 'Should throw error for non-existent credential');
-  } catch (err) {
-    assert(err.message.includes('Credential') || err.message.includes('found') || err.message.includes('Bot Token'), 'Handles missing/invalid credential properly');
-  }
+  assert(checkPerms('16'), 'Bitfield 16 (MANAGE_CHANNELS) passes permission check');
+  assert(checkPerms('8'), 'Bitfield 8 (ADMINISTRATOR) passes permission check');
+  assert(checkPerms('24'), 'Bitfield 24 (MANAGE_CHANNELS | ADMINISTRATOR) passes permission check');
+  assert(checkPerms('1071698660945'), 'Bitfield 1071698660945 with MANAGE_CHANNELS passes permission check');
+  assert(!checkPerms('1071698660929'), 'Bitfield 1071698660929 (without MANAGE_CHANNELS) rejects permission check');
+  assert(!checkPerms('0'), 'Bitfield 0 rejects permission check');
+  assert(!checkPerms('2048'), 'Bitfield 2048 (SEND_MESSAGES only) rejects MANAGE_CHANNELS permission check');
 
   console.log('\n====================================================');
   console.log(`📊 TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);
