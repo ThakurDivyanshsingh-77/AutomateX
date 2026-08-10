@@ -46,11 +46,15 @@
 
 /* ─── Base Layer ─────────────────────────────────────────────────────────── */
 @layer base {
-  /* Dashboard / app shell keeps the existing dark theme (slate-950).
-     Landing-page-specific overrides are applied on the .zap-landing wrapper. */
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     @apply antialiased;
+    /* Background is set per-page (dark for dashboard, cream for landing) */
+    background-color: #0f172a;
+    color: #f8fafc;
   }
 }
 
