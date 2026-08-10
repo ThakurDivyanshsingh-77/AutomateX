@@ -110,14 +110,10 @@ export class GeminiProvider extends AIProvider {
       }
 
       const PRIORITY_FALLBACKS = [
-        'gemini-3.6-flash',
-        'gemini-3.5-flash',
-        'gemini-3.5-flash-lite',
-        'gemini-2.5-flash',
-        'gemini-2.5-flash-lite',
         'gemini-2.0-flash',
         'gemini-1.5-flash',
         'gemini-1.5-pro',
+        'gemini-2.0-flash-lite',
         'gemini-1.0-pro',
       ];
 
@@ -128,20 +124,24 @@ export class GeminiProvider extends AIProvider {
         selectedModel = matchedFallback || availableNames[0];
       }
     } else {
-      // Auto Select Disabled: use user-provided model
-      if (discovery.totalModelsCount > 0 && availableModels.length > 0 && !discovery.isAvailable) {
-        const err = new Error(`Selected Gemini model "${requestedModel}" is unavailable or invalid for this credential.`);
-        err.statusCode = 404;
-        throw err;
+      // Auto Select Disabled: try requestedModel if available, else fallback to available model
+      if (discovery.isAvailable && discovery.supportsGenContent) {
+        selectedModel = requestedModel;
+      } else if (availableModels.length > 0) {
+        const PRIORITY_FALLBACKS = [
+          'gemini-2.0-flash',
+          'gemini-1.5-flash',
+          'gemini-1.5-pro',
+          'gemini-2.0-flash-lite',
+          'gemini-1.0-pro',
+        ];
+        const availableNames = availableModels.map((m) => m.cleanName);
+        const matchedFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
+        selectedModel = matchedFallback || availableNames[0];
+        console.warn(`[Gemini] ⚠️ Requested model "${requestedModel}" is unavailable for this credential. Falling back to available model "${selectedModel}".`);
+      } else {
+        selectedModel = requestedModel;
       }
-
-      if (discovery.totalModelsCount > 0 && availableModels.length === 0) {
-        const err = new Error('No available Gemini model supports generateContent for this credential.');
-        err.statusCode = 404;
-        throw err;
-      }
-
-      selectedModel = requestedModel;
     }
 
     // Normalize final selected model name
