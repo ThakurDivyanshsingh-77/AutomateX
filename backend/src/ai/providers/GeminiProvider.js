@@ -22,7 +22,7 @@ export class GeminiProvider extends AIProvider {
 
   /**
    * Safely discover and validate model availability via GET /v1beta/models?key={apiKey}.
-   * Logs required diagnostic tags without exposing API key.
+   * Returns list of available models that support generateContent.
    */
   static async validateModelAvailability(apiKey, requestedModel) {
     const cleanModel = GeminiProvider.normalizeModelName(requestedModel);
@@ -32,40 +32,53 @@ export class GeminiProvider extends AIProvider {
       const res = await fetch(modelsUrl);
       if (!res.ok) {
         console.warn(`[Gemini] ⚠️ Could not query models.list (HTTP ${res.status})`);
-        return { isAvailable: false, supportsGenContent: false };
+        return { isAvailable: false, supportsGenContent: false, availableModels: [] };
       }
 
       const data = await res.json();
-      const models = data.models || [];
+      const rawModels = data.models || [];
 
-      const foundObj = models.find((m) => {
-        const name = m.name || '';
-        const cleanName = name.replace(/^models\//, '');
-        return cleanName === cleanModel || name === `models/${cleanModel}`;
-      });
+      const availableModels = rawModels
+        .filter((m) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+        .map((m) => {
+          const name = m.name || '';
+          return {
+            fullName: name,
+            cleanName: name.replace(/^models\//, ''),
+            displayName: m.displayName || name,
+          };
+        });
+
+      const foundObj = availableModels.find((m) => m.cleanName === cleanModel || m.fullName === `models/${cleanModel}`);
 
       const isAvailable = Boolean(foundObj);
-      const supportsGenContent = Boolean(
-        foundObj &&
-        Array.isArray(foundObj.supportedGenerationMethods) &&
-        foundObj.supportedGenerationMethods.includes('generateContent')
-      );
+      const supportsGenContent = Boolean(foundObj);
 
-      console.log(`[Gemini] Model requested: ${cleanModel}`);
-      console.log(`[Gemini] Model available: ${isAvailable ? 'true' : 'false'}`);
-      console.log(`[Gemini] Supports generateContent: ${supportsGenContent ? 'true' : 'false'}`);
-
-      return { isAvailable, supportsGenContent, modelDetails: foundObj, totalModelsCount: models.length };
+      return {
+        isAvailable,
+        supportsGenContent,
+        modelDetails: foundObj,
+        availableModels,
+        totalModelsCount: rawModels.length,
+      };
     } catch (err) {
       console.warn(`[Gemini] ⚠️ Error during models.list check: ${err.message}`);
-      return { isAvailable: false, supportsGenContent: false };
+      return { isAvailable: false, supportsGenContent: false, availableModels: [] };
     }
+  }
+
+  /**
+   * Retrieve list of valid Gemini models supporting generateContent for an API key.
+   */
+  static async listAvailableModels(apiKey) {
+    const { availableModels } = await GeminiProvider.validateModelAvailability(apiKey, '');
+    return availableModels;
   }
 
   /**
    * Execute Google Gemini text generation via /v1beta/models/{model}:generateContent.
    */
-  async generateText({ apiKey, model = 'gemini-1.5-flash', prompt, temperature = 0.7, maxTokens = 500 }) {
+  async generateText({ apiKey, model = 'gemini-1.5-flash', prompt, temperature = 0.7, maxTokens = 500, autoSelectModel = false }) {
     if (!apiKey) {
       const err = new Error('Gemini API Key is required for execution.');
       err.statusCode = 401;
@@ -78,12 +91,55 @@ export class GeminiProvider extends AIProvider {
       throw err;
     }
 
-    const selectedModel = GeminiProvider.normalizeModelName(model);
+    const requestedModel = GeminiProvider.normalizeModelName(model);
 
-    // Perform safe model discovery check via models.list
-    await GeminiProvider.validateModelAvailability(apiKey, selectedModel);
+    // Step 1: Query models.list for available generateContent models
+    const discovery = await GeminiProvider.validateModelAvailability(apiKey, requestedModel);
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    let finalModel = requestedModel;
+    let fallbackUsed = false;
+
+    if (!autoSelectModel && discovery.isAvailable && discovery.supportsGenContent) {
+      finalModel = requestedModel;
+      fallbackUsed = false;
+    } else {
+      // Priority fallback search order
+      const PRIORITY_FALLBACKS = [
+        'gemini-3.6-flash',
+        'gemini-3.5-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-2.5-flash',
+        'gemini-2.5-flash-lite',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+        'gemini-1.0-pro',
+      ];
+
+      const availableNames = discovery.availableModels.map((m) => m.cleanName);
+
+      if (availableNames.length === 0) {
+        const err = new Error('No Gemini model available for generateContent with this API credential. Check the API key/project/model access.');
+        err.statusCode = 404;
+        throw err;
+      }
+
+      let chosenFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
+      if (!chosenFallback) {
+        chosenFallback = availableNames[0];
+      }
+
+      if (autoSelectModel || !discovery.isAvailable || !discovery.supportsGenContent) {
+        finalModel = chosenFallback;
+        fallbackUsed = finalModel !== requestedModel;
+      }
+    }
+
+    console.log(`[Gemini] Requested model: ${requestedModel}`);
+    console.log(`[Gemini] Selected model: ${finalModel}`);
+    console.log(`[Gemini] Fallback used: ${fallbackUsed ? 'true' : 'false'}`);
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(finalModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const parsedTemp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
     const validTemp = isNaN(parsedTemp) ? 0.7 : Math.max(0, Math.min(2, parsedTemp));
@@ -107,7 +163,7 @@ export class GeminiProvider extends AIProvider {
       },
     };
 
-    console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${selectedModel})...`);
+    console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${finalModel})...`);
 
     const startTime = Date.now();
     const controller = new AbortController();

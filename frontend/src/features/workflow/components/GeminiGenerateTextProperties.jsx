@@ -27,8 +27,11 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
   const isPredefined = GEMINI_MODELS.some((m) => m.value !== 'custom' && m.value === rawModel);
 
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
+  const [autoSelectModel, setAutoSelectModel] = useState(config.autoSelectModel || false);
   const [modelSelect, setModelSelect] = useState(isPredefined ? rawModel : (rawModel ? 'custom' : 'gemini-1.5-flash'));
   const [customModelText, setCustomModelText] = useState(isPredefined ? '' : rawModel);
+  const [apiModels, setApiModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState(false);
   const [prompt, setPrompt] = useState(config.prompt || '');
   const [temperature, setTemperature] = useState(
     config.temperature !== undefined ? config.temperature : 0.7
@@ -41,13 +44,32 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
     fetchGeminiCredentials();
   }, []);
 
+  useEffect(() => {
+    if (credentialId) {
+      fetchAvailableModels(credentialId);
+    }
+  }, [credentialId]);
+
+  const fetchAvailableModels = async (credId) => {
+    setLoadingModels(true);
+    try {
+      const res = await api.get(`/ai/gemini-models?credentialId=${credId}`);
+      if (res.data && res.data.success && Array.isArray(res.data.models)) {
+        setApiModels(res.data.models);
+      }
+    } catch (err) {
+      console.warn('[GeminiGenerateTextProperties] Could not load dynamic Gemini models:', err.message);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
   const fetchGeminiCredentials = async () => {
     setLoadingCreds(true);
     setCredError('');
     try {
       const res = await credentialService.getCredentials();
       const allCreds = res.data || [];
-      // Filter ONLY Gemini credentials (or google service fallback)
       const geminiCreds = allCreds.filter((c) => c.service === 'gemini' || c.service === 'google');
       setCredentials(geminiCreds);
 
@@ -71,6 +93,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
     let nextSelect = modelSelect;
     let nextCustomText = customModelText;
     let nextCred = credentialId;
+    let nextAutoSelect = autoSelectModel;
     let nextPrompt = prompt;
     let nextTemp = temperature;
     let nextMaxTokens = maxTokens;
@@ -81,6 +104,8 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
       nextCustomText = val;
     } else if (field === 'credentialId') {
       nextCred = val;
+    } else if (field === 'autoSelectModel') {
+      nextAutoSelect = val;
     } else if (field === 'prompt') {
       nextPrompt = val;
     } else if (field === 'temperature') {
@@ -96,6 +121,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
       credentialId: nextCred,
       provider: 'gemini',
       model: activeModel,
+      autoSelectModel: nextAutoSelect,
       prompt: nextPrompt,
       temperature: nextTemp,
       maxTokens: nextMaxTokens,
@@ -111,7 +137,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
     if (!prompt.trim()) return toast.error('Prompt cannot be empty.');
 
     const activeModel = (modelSelect === 'custom' ? customModelText : modelSelect).trim();
-    if (!activeModel) return toast.error('Gemini model is required.');
+    if (!activeModel && !autoSelectModel) return toast.error('Gemini model is required.');
 
     setTesting(true);
     setTestResult(null);
@@ -121,6 +147,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
         credentialId,
         provider: 'gemini',
         model: activeModel,
+        autoSelectModel,
         prompt: prompt.trim(),
         temperature: parseFloat(temperature) || 0.7,
         maxTokens: parseInt(maxTokens, 10) || 500,
@@ -128,7 +155,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
 
       if (res.data.success) {
         setTestResult(res.data);
-        toast.success('Gemini Text Generated Successfully!');
+        toast.success(`Gemini Text Generated (${res.data.model})!`);
       } else {
         toast.error(res.data.message || 'Gemini request failed.');
       }
@@ -207,41 +234,76 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
         )}
       </div>
 
-      {/* 2. Model Selector */}
-      <div className="space-y-1">
-        <label className="block text-xs font-semibold text-slate-300">
-          Model <span className="text-rose-400">*</span>
-        </label>
-        <select
-          value={modelSelect}
+      {/* Auto-Select Available Model Toggle */}
+      <div className="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-xl">
+        <input
+          type="checkbox"
+          id="autoSelectModel"
+          checked={autoSelectModel}
           onChange={(e) => {
-            const val = e.target.value;
-            setModelSelect(val);
-            updateConfigField('modelSelect', val);
+            const checked = e.target.checked;
+            setAutoSelectModel(checked);
+            updateConfigField('autoSelectModel', checked);
           }}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer"
-        >
-          {GEMINI_MODELS.map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+          className="w-3.5 h-3.5 text-sky-500 rounded border-slate-700 bg-slate-900 focus:ring-sky-500 cursor-pointer"
+        />
+        <label htmlFor="autoSelectModel" className="text-xs text-slate-300 font-medium cursor-pointer">
+          Auto Select Best Available Model from API
+        </label>
+      </div>
 
-        {modelSelect === 'custom' && (
-          <input
-            type="text"
-            placeholder="Enter Gemini model identifier (e.g. gemini-2.5-flash)"
-            value={customModelText}
+      {/* 2. Model Selector */}
+      {!autoSelectModel && (
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label className="block text-xs font-semibold text-slate-300">
+              Model <span className="text-rose-400">*</span>
+            </label>
+            {loadingModels && (
+              <span className="text-[10px] text-sky-400 flex items-center gap-1">
+                <Loader2 className="w-2.5 h-2.5 animate-spin" /> Verifying models...
+              </span>
+            )}
+          </div>
+
+          <select
+            value={modelSelect}
             onChange={(e) => {
               const val = e.target.value;
-              setCustomModelText(val);
-              updateConfigField('customModelText', val);
+              setModelSelect(val);
+              updateConfigField('modelSelect', val);
             }}
-            className="w-full mt-1.5 bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500"
-          />
-        )}
-      </div>
+            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer"
+          >
+            {apiModels.length > 0
+              ? apiModels.map((m) => (
+                  <option key={m.cleanName} value={m.cleanName}>
+                    {m.cleanName} ({m.displayName})
+                  </option>
+                ))
+              : GEMINI_MODELS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+            <option value="custom">Custom Model Identifier...</option>
+          </select>
+
+          {modelSelect === 'custom' && (
+            <input
+              type="text"
+              placeholder="Enter Gemini model identifier (e.g. gemini-2.5-flash)"
+              value={customModelText}
+              onChange={(e) => {
+                const val = e.target.value;
+                setCustomModelText(val);
+                updateConfigField('customModelText', val);
+              }}
+              className="w-full mt-1.5 bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500"
+            />
+          )}
+        </div>
+      )}
 
       {/* 3. Prompt Textarea */}
       <div className="space-y-1">

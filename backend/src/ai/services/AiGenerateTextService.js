@@ -145,4 +145,42 @@ requestStarted: true`);
       usage: result.usage || { promptTokens: null, completionTokens: null, totalTokens: null },
     };
   }
+
+  /**
+   * Fetch list of available Gemini models for a specific user credential from vault.
+   */
+  static async getGeminiModels(ownerId, credentialId) {
+    if (!ownerId || ownerId === 'system' || ownerId === 'undefined') {
+      throw new Error('Security Error: Missing authenticated ownerId during Gemini models lookup.');
+    }
+    if (!credentialId) {
+      throw new Error('Gemini credential ID is required.');
+    }
+
+    const credInfo = await credentialService.getCredentialForExecution(credentialId, ownerId);
+    if (!credInfo || !credInfo.secret) {
+      throw new Error('Gemini credential authorization failed.');
+    }
+
+    let secretData = credInfo.secret;
+    if (typeof secretData === 'string') {
+      secretData = secretData.trim();
+      if (secretData.startsWith('{') || secretData.startsWith('"')) {
+        try { secretData = JSON.parse(secretData); } catch {}
+      }
+    }
+
+    let apiKey = typeof secretData === 'string' ? secretData : (secretData?.apiKey || secretData?.secret || '');
+    apiKey = String(apiKey || '').trim().replace(/^["']|["']$/g, '');
+
+    if (!apiKey) {
+      throw new Error('Gemini API key is empty in decrypted credential.');
+    }
+
+    const models = await GeminiProvider.listAvailableModels(apiKey);
+    return {
+      success: true,
+      models,
+    };
+  }
 }

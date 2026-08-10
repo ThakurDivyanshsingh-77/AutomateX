@@ -39,4 +39,36 @@ export class AiController {
       });
     }
   }
+
+  /**
+   * Controller handler for GET /api/v1/ai/gemini-models endpoint.
+   */
+  static async getGeminiModels(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized: User context required',
+        });
+      }
+
+      const credentialId = req.query.credentialId || req.body?.credentialId;
+      if (!credentialId) {
+        return res.status(400).json({
+          success: false,
+          message: 'credentialId query parameter is required.',
+        });
+      }
+
+      const result = await AiGenerateTextService.getGeminiModels(String(ownerId), String(credentialId));
+      res.status(200).json(result);
+    } catch (error) {
+      const statusCode = error?.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to fetch Gemini models.',
+      });
+    }
+  }
 }

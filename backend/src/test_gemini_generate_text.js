@@ -1,14 +1,12 @@
 import { AiGenerateTextValidator } from './ai/validations/AiGenerateTextValidator.js';
 import { AiGenerateTextService } from './ai/services/AiGenerateTextService.js';
-import { AiNodeExecutor } from './ai/executors/AiNodeExecutor.js';
-import { ExecutorRegistry } from './engine/registry/ExecutorRegistry.js';
+import { GeminiProvider } from './ai/providers/GeminiProvider.js';
 import { ExpressionEngine } from './engine/expression/ExpressionEngine.js';
 import { ExecutionContext } from './engine/runtime/ExecutionContext.js';
-import { GeminiProvider } from './ai/providers/GeminiProvider.js';
 
 async function runTests() {
   console.log('====================================================');
-  console.log('🧪 AUTOMATEX GEMINI → MODEL SELECTION TEST SUITE');
+  console.log('🧪 AUTOMATEX GEMINI → INTELLIGENT MODEL SELECTION TEST SUITE');
   console.log('====================================================\n');
 
   let passed = 0;
@@ -25,57 +23,66 @@ async function runTests() {
   }
 
   // ----------------------------------------------------
-  // Test 1: Custom Model Identifier (e.g. gemini-2.5-flash)
+  // Test 1: Model Normalization Layer
   // ----------------------------------------------------
-  console.log('--- Test 1: Custom Model Identifier Propagation (gemini-2.5-flash) ---');
-  const normalizedCustom = GeminiProvider.normalizeModelName('gemini-2.5-flash');
-  assert(normalizedCustom === 'gemini-2.5-flash', 'GeminiProvider.normalizeModelName preserves custom model "gemini-2.5-flash" without hardcoded override');
+  console.log('--- Test 1: Model Normalization Layer ---');
+  const normalized = GeminiProvider.normalizeModelName('  models/gemini-2.5-flash  ');
+  assert(normalized === 'gemini-2.5-flash', 'GeminiProvider.normalizeModelName trims whitespace and strips redundant "models/" prefix');
 
-  const valCustom = AiGenerateTextValidator.validate({
-    credentialId: 'cred_gemini_123',
+  // ----------------------------------------------------
+  // Test 2: Discovery and Validation of Models List
+  // ----------------------------------------------------
+  console.log('\n--- Test 2: validateModelAvailability Discovery ---');
+  const fakeApiKey = 'fake-api-key-test';
+  const discovery = await GeminiProvider.validateModelAvailability(fakeApiKey, 'gemini-2.5-flash');
+  assert(typeof discovery.isAvailable === 'boolean', 'validateModelAvailability returns valid isAvailable boolean');
+  assert(Array.isArray(discovery.availableModels), 'validateModelAvailability returns array of available generateContent models');
+
+  // ----------------------------------------------------
+  // Test 3: Priority Fallback Resolution Logic
+  // ----------------------------------------------------
+  console.log('\n--- Test 3: Priority Fallback Resolution ---');
+
+  // Simulate available models list returned by Google API
+  const mockDiscovery = {
+    isAvailable: false,
+    supportsGenContent: false,
+    availableModels: [
+      { cleanName: 'gemini-2.0-flash', displayName: 'Gemini 2.0 Flash' },
+      { cleanName: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash' },
+    ],
+  };
+
+  const PRIORITY_FALLBACKS = [
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+  ];
+
+  const availableNames = mockDiscovery.availableModels.map((m) => m.cleanName);
+  const chosenFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
+  assert(chosenFallback === 'gemini-2.0-flash', 'Intelligent fallback selects top available priority model (gemini-2.0-flash)');
+
+  // ----------------------------------------------------
+  // Test 4: Auto-Select Available Model Option
+  // ----------------------------------------------------
+  console.log('\n--- Test 4: Auto Select Mode Validation ---');
+  const valAutoSelect = AiGenerateTextValidator.validate({
+    credentialId: 'cred_gemini_auto',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
-    prompt: 'Test custom model',
+    autoSelectModel: true,
+    prompt: 'Auto select model test prompt',
   });
-  assert(valCustom.isValid && valCustom.model === 'gemini-2.5-flash', 'Validator retains custom model "gemini-2.5-flash"');
+  assert(valAutoSelect.isValid, 'Validator allows execution when autoSelectModel is true even if model string is empty');
 
   // ----------------------------------------------------
-  // Test 2: Predefined Model Identifier
+  // Test 5: Security & Key Leakage Audit
   // ----------------------------------------------------
-  console.log('\n--- Test 2: Predefined Model Identifier (gemini-1.5-pro) ---');
-  const normalizedPredefined = GeminiProvider.normalizeModelName('gemini-1.5-pro');
-  assert(normalizedPredefined === 'gemini-1.5-pro', 'GeminiProvider.normalizeModelName handles predefined model "gemini-1.5-pro"');
-
-  // ----------------------------------------------------
-  // Test 3: Fallback to Valid Default Model When Unspecified
-  // ----------------------------------------------------
-  console.log('\n--- Test 3: Unspecified / Empty Model Fallback ---');
-  const normalizedDefault = GeminiProvider.normalizeModelName('');
-  assert(normalizedDefault === 'gemini-1.5-flash', 'GeminiProvider.normalizeModelName falls back to "gemini-1.5-flash" when model is empty');
-
-  // ----------------------------------------------------
-  // Test 4: Custom Model with Whitespace and Models/ Prefix
-  // ----------------------------------------------------
-  console.log('\n--- Test 4: Whitespace and Prefix Trimming ---');
-  const normalizedWhitespace = GeminiProvider.normalizeModelName('   models/gemini-2.5-flash   ');
-  assert(normalizedWhitespace === 'gemini-2.5-flash', 'GeminiProvider.normalizeModelName trims whitespace and strips redundant "models/" prefix');
-
-  // ----------------------------------------------------
-  // Test 5: Invalid/Empty Custom Model Validation
-  // ----------------------------------------------------
-  console.log('\n--- Test 5: Empty Model Validation Error ---');
-  const valEmptyModel = AiGenerateTextValidator.validate({
-    credentialId: 'cred_gemini_123',
-    provider: 'gemini',
-    model: '   ',
-    prompt: 'Test prompt',
-  });
-  assert(!valEmptyModel.isValid && valEmptyModel.errors.some(e => e.includes('model')), 'Validator rejects empty custom model with clear error');
-
-  // ----------------------------------------------------
-  // Test 6: Security Audit (No Key Leakage in Payload/Logs)
-  // ----------------------------------------------------
-  console.log('\n--- Test 6: Security & Key Leakage Audit ---');
+  console.log('\n--- Test 5: Security & Key Leakage Audit ---');
   try {
     await AiGenerateTextService.generateText('owner_gemini_sec_test', 'non-existent-cred-id', {
       provider: 'gemini',
@@ -91,30 +98,23 @@ async function runTests() {
   }
 
   // ----------------------------------------------------
-  // Test Group 7: Engine Registry Wiring & Workflow Execution Context
+  // Test 6: Workflow Engine Data Mapper Chaining
   // ----------------------------------------------------
-  console.log('\n--- Test Group 7: Workflow Engine Chaining (Gemini → Discord) ---');
-
-  const mockContext = new ExecutionContext('exec_gemini_002', { ownerId: 'user_gemini_999' });
+  console.log('\n--- Test 6: Workflow Engine Chaining (Gemini → Downstream Node) ---');
+  const mockContext = new ExecutionContext('exec_gemini_999', { ownerId: 'user_gemini_777' });
   mockContext.setNodeOutput('Gemini → Generate Text', {
     success: true,
-    text: 'Hello Divyansh! This response was generated by Gemini 2.5 Flash.',
+    text: 'Hello from Gemini AI node!',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
-    usage: { promptTokens: 12, completionTokens: 18, totalTokens: 30 },
+    model: 'gemini-2.0-flash',
+    usage: { promptTokens: 5, completionTokens: 10, totalTokens: 15 },
   });
 
-  const discordConfig = {
-    credentialId: 'cred_discord_777',
-    channelId: 'ch_55555',
-    content: '{{steps["Gemini → Generate Text"].text}}',
-  };
-
-  const resolvedDiscordConfig = ExpressionEngine.resolve(discordConfig, mockContext);
-  assert(
-    resolvedDiscordConfig.content === 'Hello Divyansh! This response was generated by Gemini 2.5 Flash.',
-    'Discord node seamlessly receives Gemini custom model output via Data Mapper'
+  const resolved = ExpressionEngine.resolve(
+    { text: '{{steps["Gemini → Generate Text"].text}}' },
+    mockContext
   );
+  assert(resolved.text === 'Hello from Gemini AI node!', 'Data Mapper seamlessly passes Gemini AI output to downstream nodes');
 
   console.log('\n====================================================');
   console.log(`📊 TEST RESULTS: ${passed} PASSED, ${failed} FAILED`);

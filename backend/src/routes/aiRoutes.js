@@ -20,5 +20,6 @@ router.post('/fix', fixWorkflow);
 
 router.post('/generate-text', AiController.generateText);
 router.post('/text/generate', AiController.generateText);
+router.get('/gemini-models', AiController.getGeminiModels);
 
 export default router;
