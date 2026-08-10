@@ -563,9 +563,8 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Updated `AiGenerateTextService.js` to extract `requestedModel` from `config.model || config.modelIdentifier || validation.model` and pass `autoSelectModel` explicitly to `providerImpl.generateText()`.
   - Updated `AiGenerateTextValidator.js` to support `config.modelIdentifier` and fallback to provider-specific defaults (`gemini-1.5-flash` for Gemini vs `gpt-4o-mini` for OpenAI).
 
-- **Automated Verification**:
-  - Passed all 7 assertions in `test_gemini_generate_text.js`.
-  - Passed end-to-end prompt test in `test_gemini_hi_kya_haal_hai.js` (prompt: `"hi kya haal hai"`, model: `"gemini-2.5-flash"`).
+- **Automatic Deprecated Model Fallback (`GeminiProvider.js`)**:
+  - Added intelligent fallback: If user enters an unavailable or retired model name (e.g. `gemini-2.5-flash`), `GeminiProvider` queries `validateModelAvailability()` and automatically selects the highest priority supported model (e.g. `gemini-2.0-flash` or `gemini-1.5-flash`) for that credential. Logs warning `[Gemini] ⚠️ Requested model "..." is unavailable for this credential. Falling back to available model "..."` and executes request seamlessly.
 
 ---
 
