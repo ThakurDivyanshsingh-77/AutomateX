@@ -10,24 +10,41 @@ export const NodeToolbar = () => {
     event.dataTransfer.effectAllowed = 'move';
   };
 
-  const allNodes = Object.values(NODE_REGISTRY);
+  // Deduplicate node definitions by id/type
+  const uniqueNodesMap = new Map();
+  Object.values(NODE_REGISTRY).forEach((node) => {
+    if (node && node.type && !uniqueNodesMap.has(node.type)) {
+      uniqueNodesMap.set(node.type, node);
+    }
+  });
+  const allNodes = Array.from(uniqueNodesMap.values());
+
+  const searchLower = searchTerm.toLowerCase().trim();
 
   // Filter nodes based on search term
-  const filteredNodes = allNodes.filter(
-    (node) =>
-      node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (Array.isArray(node.searchKeywords) && node.searchKeywords.some((k) => k.toLowerCase().includes(searchTerm.toLowerCase())))
-  );
+  const filteredNodes = allNodes.filter((node) => {
+    if (!searchLower) return true;
+    const labelMatch = (node.label || '').toLowerCase().includes(searchLower);
+    const descMatch = (node.description || '').toLowerCase().includes(searchLower);
+    const catMatch = (node.category || '').toLowerCase().includes(searchLower);
+    const provMatch = (node.provider || '').toLowerCase().includes(searchLower);
+    const typeMatch = (node.type || '').toLowerCase().includes(searchLower);
+    const kwMatch = Array.isArray(node.searchKeywords) && node.searchKeywords.some((k) => (k || '').toLowerCase().includes(searchLower));
+    return labelMatch || descMatch || catMatch || provMatch || typeMatch || kwMatch;
+  });
 
   // Group filtered nodes by category
-  const baseCategories = ['Triggers', 'Trigger', 'Communication', 'Database', 'Logic', 'Action', 'Utility', 'Output', 'Google'];
+  const baseCategories = ['Triggers', 'Communication', 'Database', 'Logic', 'Action', 'Utility', 'Output', 'Google'];
   const extraCategories = Array.from(new Set(filteredNodes.map((n) => n.category))).filter((c) => c && !baseCategories.includes(c));
   const categories = [...baseCategories, ...extraCategories];
 
   const groupedNodes = categories.reduce((acc, cat) => {
-    acc[cat] = filteredNodes.filter((n) => n.category === cat);
+    acc[cat] = filteredNodes.filter((n) => {
+      if (n.category === cat) return true;
+      if (cat === 'Triggers' && (n.category === 'Trigger' || (n.type && n.type.toLowerCase().includes('trigger')))) return true;
+      if (cat === 'Communication' && (n.provider === 'Discord' || n.category === 'Discord')) return true;
+      return false;
+    });
     return acc;
   }, {});
 
