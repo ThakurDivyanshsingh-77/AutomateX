@@ -594,8 +594,10 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Inspector panel allowing credential selection, server/channel filtering, and `ignoreBotMessages` / `onlyBotMentioned` toggles.
 
 - **Data Mapper & Downstream Workflow Integration**:
-  - Formats output structure containing `message.id`, `message.content`, `message.channelId`, `message.guildId`, `message.author` alongside top-level `content` and `channelId`.
-  - End-to-end verified with `Discord → Message Received` → `Gemini → Generate Text` → `Discord → Send Message`.
+  - Formats output structure containing `messageId`, `channelId`, `guildId`, `authorId`, `authorName`, `content`, `timestamp`, `message.id`, `message.content`, `message.channelId`, `message.guildId`, `message.author`.
+  - Created `DiscordTriggerScheduler.js` background service that automatically scans DB for published workflows on server boot and subscribes Gateway connections seamlessly.
+  - Added trigger lifecycle hooks in `workflowService.js` and `PublishManager.js` to automatically register/unregister Discord Gateway connections when workflows are published, updated, deleted, or archived.
+  - End-to-end verified with `Discord → Message Received` → `Gemini → Generate Text` → `Discord → Send Message` (5/5 unit tests passed).
 
 ---
 

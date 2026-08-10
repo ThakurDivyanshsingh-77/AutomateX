@@ -127,7 +127,7 @@ export class DiscordGatewayManager {
       };
 
       ws.onopen = () => {
-        console.log(`[DiscordGatewayManager] 🔌 Gateway WebSocket Connected for Credential "${credId}"`);
+        console.log(`[Discord Trigger] Gateway connected for Credential "${credId}"`);
       };
 
       ws.onmessage = (event) => {
@@ -265,7 +265,10 @@ export class DiscordGatewayManager {
     const channelId = String(msg.channel_id || '');
     const guildId = String(msg.guild_id || '');
 
-    console.log(`[DiscordGatewayManager] 📩 MESSAGE_CREATE Received | Author: "${author.username}" (bot: ${isBot}) | Channel: ${channelId} | Guild: ${guildId}`);
+    console.log(`[Discord Trigger] Message received: "${content}"`);
+    console.log(`[Discord Trigger] Guild ID: ${guildId || 'Direct Message'}`);
+    console.log(`[Discord Trigger] Channel ID: ${channelId}`);
+    console.log(`[Discord Trigger] Author ID: ${author.id || 'Unknown'} (${author.username || 'user'})`);
 
     // 2. Find matching subscribed workflows
     for (const [workflowId, sub] of this.subscriptions.entries()) {
@@ -276,7 +279,7 @@ export class DiscordGatewayManager {
       // Filter: Ignore Bot Messages (default true)
       const ignoreBot = cfg.ignoreBotMessages !== false && cfg.ignoreBotMessages !== 'false';
       if (ignoreBot && isBot) {
-        console.log(`[DiscordGatewayManager] ⏭️ Ignored bot message for workflow "${workflowId}"`);
+        console.log(`[Discord Trigger] Ignoring bot message from "${author.username}" for workflow "${workflowId}"`);
         continue;
       }
 
@@ -299,8 +302,15 @@ export class DiscordGatewayManager {
         }
       }
 
-      // Format payload structure expected by Data Mapper
+      // Format payload structure expected by Data Mapper & prompt expressions
       const triggerPayload = {
+        messageId,
+        channelId,
+        guildId,
+        authorId: String(author.id || ''),
+        authorName: String(author.username || ''),
+        content,
+        timestamp: new Date().toISOString(),
         message: {
           id: messageId,
           content,
@@ -312,9 +322,6 @@ export class DiscordGatewayManager {
             bot: isBot,
           },
         },
-        content,
-        channelId,
-        guildId,
         author: {
           id: String(author.id || ''),
           username: String(author.username || ''),
@@ -327,20 +334,22 @@ export class DiscordGatewayManager {
       try {
         // Fetch active workflow document from database
         const workflowDoc = await Workflow.findById(workflowId);
-        if (!workflowDoc || workflowDoc.status !== 'published') {
-          console.log(`[DiscordGatewayManager] ℹ️ Workflow "${workflowId}" is not published (status: ${workflowDoc?.status || 'NOT_FOUND'}). Skipping trigger execution.`);
+        if (!workflowDoc || (workflowDoc.status !== 'published' && workflowDoc.status !== 'active')) {
+          console.log(`[Discord Trigger] Workflow "${workflowId}" is not published/active (status: ${workflowDoc?.status || 'NOT_FOUND'}). Skipping trigger execution.`);
           continue;
         }
 
-        console.log(`[DiscordGatewayManager] 🚀 Triggering Workflow "${workflowDoc.name}" (${workflowId}) for Message: "${content}"`);
+        console.log(`[Discord Trigger] Starting workflow: "${workflowDoc.name}" (${workflowId})`);
 
-        await RuntimeManager.triggerExecution(
+        const execResult = await RuntimeManager.triggerExecution(
           'discordMessageReceived',
           workflowDoc,
           triggerPayload
         );
+
+        console.log(`[Discord Trigger] Execution created: ${execResult?.executionId || execResult?._id || 'Started'}`);
       } catch (triggerErr) {
-        console.error(`[DiscordGatewayManager] ❌ Error triggering workflow "${workflowId}": ${triggerErr.message}`);
+        console.error(`[Discord Trigger] ❌ Error triggering workflow "${workflowId}": ${triggerErr.message}`);
       }
     }
   }

@@ -3,6 +3,7 @@ import app from './app.js';
 import { connectDB } from './config/db.js';
 import { CronScheduler } from './runtime/scheduler/CronScheduler.js';
 import { GoogleSheetsTriggerScheduler } from './runtime/scheduler/GoogleSheetsTriggerScheduler.js';
+import { DiscordTriggerScheduler } from './runtime/scheduler/DiscordTriggerScheduler.js';
 
 // Connect to MongoDB Database and initialize background Schedulers
 connectDB().then(() => {
@@ -11,6 +12,9 @@ connectDB().then(() => {
   });
   GoogleSheetsTriggerScheduler.start().catch((err) => {
     console.error('🟢 [GoogleSheetsTriggerScheduler]: Failed to start scheduler on server boot:', err.message);
+  });
+  DiscordTriggerScheduler.start().catch((err) => {
+    console.error('💬 [DiscordTriggerScheduler]: Failed to start scheduler on server boot:', err.message);
   });
 });
 

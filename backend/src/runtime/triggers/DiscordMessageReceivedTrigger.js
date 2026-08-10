@@ -13,6 +13,12 @@ export class DiscordMessageReceivedTrigger extends BaseTrigger {
     return {
       triggerType: 'discordMessageReceived',
       timestamp: payload.triggeredAt || new Date().toISOString(),
+      messageId: msgId,
+      channelId,
+      guildId,
+      authorId: String(author.id || ''),
+      authorName: String(author.username || ''),
+      content,
       message: {
         id: msgId,
         content,
@@ -24,9 +30,6 @@ export class DiscordMessageReceivedTrigger extends BaseTrigger {
           bot: Boolean(author.bot),
         },
       },
-      content,
-      channelId,
-      guildId,
       author: {
         id: String(author.id || ''),
         username: String(author.username || ''),
@@ -38,6 +41,7 @@ export class DiscordMessageReceivedTrigger extends BaseTrigger {
         channelId,
         guildId,
         messageId: msgId,
+        authorId: String(author.id || ''),
         authorName: String(author.username || ''),
       },
       raw: payload,
