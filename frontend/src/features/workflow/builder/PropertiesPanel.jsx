@@ -229,6 +229,7 @@ export const PropertiesPanel = ({
               <AiGenerateTextProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
             ) : isDiscordMessageReceivedNode ? (
               <DiscordMessageReceivedProperties
                 nodeData={selectedNode.data}
