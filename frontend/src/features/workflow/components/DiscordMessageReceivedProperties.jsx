@@ -19,8 +19,11 @@ export const DiscordMessageReceivedProperties = ({ nodeData, onUpdateConfig }) =
   const [ignoreBotMessages, setIgnoreBotMessages] = useState(
     config.ignoreBotMessages !== undefined ? config.ignoreBotMessages : true
   );
+  const [responseMode, setResponseMode] = useState(
+    config.responseMode || (config.onlyBotMentioned ? 'mention' : 'all')
+  );
   const [onlyBotMentioned, setOnlyBotMentioned] = useState(
-    config.onlyBotMentioned !== undefined ? config.onlyBotMentioned : false
+    config.onlyBotMentioned !== undefined ? config.onlyBotMentioned : (responseMode === 'mention')
   );
 
   const [testing, setTesting] = useState(false);
@@ -56,13 +59,20 @@ export const DiscordMessageReceivedProperties = ({ nodeData, onUpdateConfig }) =
     let nextGuild = guildId;
     let nextChannel = channelId;
     let nextIgnoreBot = ignoreBotMessages;
+    let nextMode = responseMode;
     let nextOnlyMentioned = onlyBotMentioned;
 
     if (field === 'credentialId') nextCred = val;
     else if (field === 'guildId') nextGuild = val;
     else if (field === 'channelId') nextChannel = val;
     else if (field === 'ignoreBotMessages') nextIgnoreBot = val;
-    else if (field === 'onlyBotMentioned') nextOnlyMentioned = val;
+    else if (field === 'responseMode') {
+      nextMode = val;
+      nextOnlyMentioned = val === 'mention';
+    } else if (field === 'onlyBotMentioned') {
+      nextOnlyMentioned = val;
+      nextMode = val ? 'mention' : 'all';
+    }
 
     const updated = {
       ...config,
@@ -72,6 +82,7 @@ export const DiscordMessageReceivedProperties = ({ nodeData, onUpdateConfig }) =
       guildId: nextGuild,
       channelId: nextChannel,
       ignoreBotMessages: nextIgnoreBot,
+      responseMode: nextMode,
       onlyBotMentioned: nextOnlyMentioned,
     };
 
@@ -209,7 +220,59 @@ export const DiscordMessageReceivedProperties = ({ nodeData, onUpdateConfig }) =
         </div>
       </div>
 
-      {/* 4. Options & Filtering Toggles */}
+      {/* 4. Response Mode Section */}
+      <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+        <label className="block text-xs font-semibold text-slate-300">
+          Response Mode
+        </label>
+        <p className="text-[10px] text-slate-400 leading-tight">
+          Choose whether the bot replies to every message or only when it is mentioned.
+        </p>
+
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => {
+              setResponseMode('all');
+              setOnlyBotMentioned(false);
+              updateConfigField('responseMode', 'all');
+            }}
+            className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all ${
+              responseMode === 'all'
+                ? 'bg-indigo-500/10 border-indigo-500 text-white ring-1 ring-indigo-500/30'
+                : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+            }`}
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="font-semibold text-xs">All Messages</span>
+              {responseMode === 'all' && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">Reply to every user message</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setResponseMode('mention');
+              setOnlyBotMentioned(true);
+              updateConfigField('responseMode', 'mention');
+            }}
+            className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all ${
+              responseMode === 'mention'
+                ? 'bg-indigo-500/10 border-indigo-500 text-white ring-1 ring-indigo-500/30'
+                : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+            }`}
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="font-semibold text-xs">Only When Mentioned</span>
+              {responseMode === 'mention' && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+            </div>
+            <span className="text-[10px] text-slate-400 mt-1">Only reply when @bot mentioned</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 5. Options & Filtering Toggles */}
       <div className="space-y-2 pt-2 border-t border-slate-800/80">
         <div className="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-xl">
           <input
@@ -225,23 +288,6 @@ export const DiscordMessageReceivedProperties = ({ nodeData, onUpdateConfig }) =
           />
           <label htmlFor="ignoreBotMessages" className="text-xs text-slate-300 font-medium cursor-pointer flex-1">
             Ignore Bot Messages <span className="text-[10px] text-emerald-400 font-mono">(Prevents Infinite Loops)</span>
-          </label>
-        </div>
-
-        <div className="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-xl">
-          <input
-            type="checkbox"
-            id="onlyBotMentioned"
-            checked={onlyBotMentioned}
-            onChange={(e) => {
-              const checked = e.target.checked;
-              setOnlyBotMentioned(checked);
-              updateConfigField('onlyBotMentioned', checked);
-            }}
-            className="w-3.5 h-3.5 text-indigo-500 rounded border-slate-700 bg-slate-900 focus:ring-indigo-500 cursor-pointer"
-          />
-          <label htmlFor="onlyBotMentioned" className="text-xs text-slate-300 font-medium cursor-pointer">
-            Only Trigger When Bot Is Mentioned (@bot)
           </label>
         </div>
       </div>

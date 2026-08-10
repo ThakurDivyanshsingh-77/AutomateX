@@ -459,6 +459,7 @@ export const NODE_REGISTRY = {
       triggerType: 'discordMessageReceived',
       guildId: 'all',
       channelId: 'all',
+      responseMode: 'all',
       ignoreBotMessages: true,
       onlyBotMentioned: false,
     },

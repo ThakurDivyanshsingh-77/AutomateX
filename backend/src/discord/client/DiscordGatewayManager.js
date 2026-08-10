@@ -241,8 +241,14 @@ export class DiscordGatewayManager {
     }
 
     // Opcode 0: Dispatch Event
-    if (op === 0 && t === 'MESSAGE_CREATE') {
-      this.handleIncomingMessage(connObj, d);
+    if (op === 0) {
+      if (t === 'READY' && d && d.user) {
+        connObj.botId = String(d.user.id);
+        connObj.botUsername = String(d.user.username);
+        console.log(`[Discord Trigger] Gateway Ready for Bot: "${connObj.botUsername}" (ID: ${connObj.botId})`);
+      } else if (t === 'MESSAGE_CREATE') {
+        this.handleIncomingMessage(connObj, d);
+      }
     }
   }
 
@@ -293,13 +299,43 @@ export class DiscordGatewayManager {
         continue;
       }
 
-      // Filter: Only Trigger When Bot Is Mentioned
-      if (cfg.onlyBotMentioned) {
-        const mentions = msg.mentions || [];
-        const botMentioned = mentions.some((m) => m.id === connObj.botId || m.bot);
-        if (!botMentioned && !content.includes(`<@`)) {
-          continue;
+      // Filter: Response Mode ('all' vs 'mention')
+      const responseMode = cfg.responseMode || (cfg.onlyBotMentioned ? 'mention' : 'all');
+
+      if (responseMode === 'mention') {
+        const mentions = Array.isArray(msg.mentions) ? msg.mentions : [];
+        const botId = connObj.botId || '';
+
+        let isBotMentioned = false;
+
+        if (botId) {
+          isBotMentioned = mentions.some((m) => String(m.id) === String(botId));
+        } else {
+          isBotMentioned = mentions.some((m) => Boolean(m.bot));
         }
+
+        if (!isBotMentioned && botId) {
+          if (content.includes(`<@${botId}>`) || content.includes(`<@!${botId}>`)) {
+            isBotMentioned = true;
+          }
+        }
+
+        if (!isBotMentioned && !botId && content.includes('<@')) {
+          isBotMentioned = true;
+        }
+
+        console.log(`[Discord Trigger] Response mode: mention`);
+        console.log(`[Discord Trigger] Bot mentioned: ${isBotMentioned}`);
+
+        if (!isBotMentioned) {
+          console.log(`[Discord Trigger] Ignoring message`);
+          continue;
+        } else {
+          console.log(`[Discord Trigger] Processing message`);
+        }
+      } else {
+        console.log(`[Discord Trigger] Response mode: all`);
+        console.log(`[Discord Trigger] Processing message`);
       }
 
       // Format payload structure expected by Data Mapper & prompt expressions

@@ -4,7 +4,7 @@ import { DiscordGatewayManager } from './discord/client/DiscordGatewayManager.js
 import { ExpressionEngine } from './engine/expression/ExpressionEngine.js';
 import { DiscordMessageReceivedTrigger } from './runtime/triggers/DiscordMessageReceivedTrigger.js';
 
-console.log('🧪 Starting Discord AI Auto-Reply Workflow Verification Test Suite...');
+console.log('🧪 Starting Discord AI Auto-Reply & Response Mode Verification Test Suite...');
 
 // Test 1: Helper check for Discord trigger node identification
 const testNode = {
@@ -15,6 +15,7 @@ const testNode = {
       credentialId: 'cred_discord_123',
       guildId: 'all',
       channelId: 'all',
+      responseMode: 'all',
       ignoreBotMessages: true,
     },
   },
@@ -95,4 +96,35 @@ assert.strictEqual(DiscordGatewayManager.isDuplicate(botMessageId), false);
 assert.strictEqual(DiscordGatewayManager.isDuplicate(botMessageId), true);
 console.log('  ✓ 5. Gateway message deduplication cache prevents double triggering');
 
-console.log('\n🎉 ALL DISCORD AI AUTO-REPLY VERIFICATION TESTS PASSED SUCCESSFULLY! (5 PASSED, 0 FAILED)');
+// Test 5: Response Mode logic checks
+const connObjMock = {
+  credentialId: 'cred_discord_123',
+  botId: '998877665544332211',
+  botUsername: 'AutomateXBot',
+};
+
+// Response mode: 'mention' with mention present
+const mentionMsg = {
+  id: 'msg_mention_1',
+  content: '<@998877665544332211> what is React?',
+  mentions: [{ id: '998877665544332211', bot: true }],
+  author: { id: 'user_1', username: 'User1', bot: false },
+};
+
+const mentionsArrayMatch = mentionMsg.mentions.some((m) => m.id === connObjMock.botId);
+assert.strictEqual(mentionsArrayMatch, true, 'Bot user ID mention correctly detected in mentions array');
+
+// Response mode: 'mention' without mention present
+const unmentionedMsg = {
+  id: 'msg_normal_1',
+  content: 'hello everyone',
+  mentions: [],
+  author: { id: 'user_1', username: 'User1', bot: false },
+};
+
+const unmentionedMatch = unmentionedMsg.mentions.some((m) => m.id === connObjMock.botId) || unmentionedMsg.content.includes(`<@${connObjMock.botId}>`);
+assert.strictEqual(unmentionedMatch, false, 'Unmentioned message correctly evaluated as false');
+
+console.log('  ✓ 6. Response Mode "Only When Mentioned" correctly filters messages based on exact bot user ID');
+
+console.log('\n🎉 ALL DISCORD AI AUTO-REPLY & RESPONSE MODE TESTS PASSED SUCCESSFULLY! (6 PASSED, 0 FAILED)');

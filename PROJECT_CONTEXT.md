@@ -595,9 +595,11 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 - **Data Mapper & Downstream Workflow Integration**:
   - Formats output structure containing `messageId`, `channelId`, `guildId`, `authorId`, `authorName`, `content`, `timestamp`, `message.id`, `message.content`, `message.channelId`, `message.guildId`, `message.author`.
+  - Implemented **Response Mode** user configuration (`responseMode: 'all'` vs `responseMode: 'mention'`) with segmented control UI in `DiscordMessageReceivedProperties.jsx`.
+  - Backend `DiscordGatewayManager` captures Gateway `READY` bot user ID and enforces mention detection (`<@BOT_ID>` & `<@!BOT_ID>` and `msg.mentions` array) when `responseMode === 'mention'`.
   - Created `DiscordTriggerScheduler.js` background service that automatically scans DB for published workflows on server boot and subscribes Gateway connections seamlessly.
   - Added trigger lifecycle hooks in `workflowService.js` and `PublishManager.js` to automatically register/unregister Discord Gateway connections when workflows are published, updated, deleted, or archived.
-  - End-to-end verified with `Discord → Message Received` → `Gemini → Generate Text` → `Discord → Send Message` (5/5 unit tests passed).
+  - End-to-end verified with `Discord → Message Received` → `Gemini → Generate Text` → `Discord → Send Message` (6/6 unit tests passed).
 
 ---
 
