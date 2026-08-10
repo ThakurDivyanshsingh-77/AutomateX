@@ -532,6 +532,8 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - `frontend/src/pages/landing/components/LandingFooter.jsx` — 4-column footer (Product / Solutions / Resources / Company) + legal bar
 
 **Modified Files**:
+- `frontend/index.html` — Removed global `overflow-hidden` utility class from `<body>` tag so full-page scrolling is enabled across public marketing pages.
+- `frontend/src/pages/landing/LandingPage.jsx` — Configured `overflowX: 'clip'` to prevent horizontal overflow without trapping vertical page scroll.
 - `frontend/tailwind.config.js` — Added `orange`, `cream`, `ink` color token families + 9 Tailwind animation/keyframe entries
 - `frontend/src/index.css` — Added `html { scroll-behavior: smooth }` + base body default reset
 - `frontend/src/App.jsx` — Swapped `Landing` import for `LandingPage`
