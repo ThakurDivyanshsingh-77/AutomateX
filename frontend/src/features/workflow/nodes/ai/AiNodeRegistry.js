@@ -1,18 +1,22 @@
 import { Sparkles } from 'lucide-react';
 import { OpenAiIcon } from '../../components/OpenAiIcon';
+import { GeminiIcon } from '../../components/GeminiIcon';
 
 export const AI_NODE_TYPES = {
   GENERATE_TEXT: 'aiGenerateText',
   OPENAI_GENERATE_TEXT: 'openaiGenerateText',
+  GEMINI_GENERATE_TEXT: 'geminiGenerateText',
   AI: 'ai',
 };
 
 export const aiGenerateTextValidator = (config) => {
   const errors = [];
-  if (!config.credentialId) errors.push('OpenAI Credential is required.');
+  if (!config.credentialId) errors.push('AI Credential is required.');
   const provider = String(config.provider || 'openai').toLowerCase().trim();
-  if (provider !== 'openai') errors.push('Unsupported AI provider.');
-  if (!config.model) errors.push('OpenAI Model selection is required.');
+  if (provider !== 'openai' && provider !== 'gemini' && provider !== 'google') {
+    errors.push('Unsupported AI provider.');
+  }
+  if (!config.model) errors.push('AI Model selection is required.');
   if (!config.prompt || !String(config.prompt).trim()) errors.push('Prompt cannot be empty.');
 
   if (config.temperature !== undefined && config.temperature !== null && config.temperature !== '') {
@@ -33,6 +37,7 @@ export const aiGenerateTextValidator = (config) => {
 };
 
 export const openaiGenerateTextValidator = aiGenerateTextValidator;
+export const geminiGenerateTextValidator = aiGenerateTextValidator;
 
 export const aiGenerateTextDefinition = {
   id: AI_NODE_TYPES.GENERATE_TEXT,
@@ -86,9 +91,36 @@ export const openaiGenerateTextDefinition = {
   validate: openaiGenerateTextValidator,
 };
 
+export const geminiGenerateTextDefinition = {
+  id: AI_NODE_TYPES.GEMINI_GENERATE_TEXT,
+  type: AI_NODE_TYPES.GEMINI_GENERATE_TEXT,
+  name: 'geminiGenerateText',
+  label: 'Gemini → Generate Text',
+  displayName: 'Gemini → Generate Text',
+  category: 'AI',
+  description: 'Generate text using a Google Gemini model from a user-provided prompt.',
+  icon: GeminiIcon,
+  color: 'sky',
+  badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    provider: 'gemini',
+    model: 'gemini-2.5-flash',
+    prompt: '',
+    temperature: 0.7,
+    maxTokens: 500,
+  },
+  validate: geminiGenerateTextValidator,
+};
+
 export const aiNodeDefinitions = {
   [AI_NODE_TYPES.GENERATE_TEXT]: aiGenerateTextDefinition,
   [AI_NODE_TYPES.OPENAI_GENERATE_TEXT]: openaiGenerateTextDefinition,
+  [AI_NODE_TYPES.GEMINI_GENERATE_TEXT]: geminiGenerateTextDefinition,
   [AI_NODE_TYPES.AI]: {
     ...aiGenerateTextDefinition,
     id: AI_NODE_TYPES.AI,

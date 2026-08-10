@@ -70,6 +70,8 @@ export class ExecutorRegistry {
     ['ai', aiNodeExecutor],
     ['openaiGenerateText', aiNodeExecutor],
     ['openAiGenerateText', aiNodeExecutor],
+    ['geminiGenerateText', aiNodeExecutor],
+    ['googleGeminiGenerateText', aiNodeExecutor],
 
 
 

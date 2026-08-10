@@ -12,8 +12,8 @@ export class AiGenerateTextValidator {
     }
 
     const provider = String(config.provider || 'openai').toLowerCase().trim();
-    if (provider !== 'openai') {
-      errors.push(`AI provider "${provider}" is currently not supported. Supported provider: "openai".`);
+    if (provider !== 'openai' && provider !== 'gemini' && provider !== 'google') {
+      errors.push(`AI provider "${provider}" is currently not supported. Supported providers: "openai", "gemini".`);
     }
 
     const model = String(config.model || 'gpt-4o-mini').trim();

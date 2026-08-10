@@ -442,6 +442,19 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Node Registries (`AiNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `OpenAI → Generate Text` under category `AI` with `OpenAiIcon` / `Sparkles` icon and `emerald` badge.
 - **Automated Test Suite**: Passed **10/10** unit and integration tests in `test_openai_generate_text.js`.
 
+### Phase 28 Complete — Gemini → Generate Text Workflow Node — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/ai/`)**:
+  - `GeminiProvider.js` & `GeminiProvider.ts`: Subclassed `AIProvider` to integrate Google Gemini v1beta REST API (`POST /v1beta/models/{model}:generateContent?key={apiKey}`). Maps `maxTokens` to `generationConfig.maxOutputTokens`, normalizes candidate responses, and extracts `usageMetadata` (`promptTokenCount`, `candidatesTokenCount`, `totalTokenCount`).
+  - `Credential.js`: Added `'gemini'` to credential service enum.
+  - `AiGenerateTextService.js`: Added provider dispatch for `provider === 'gemini'` or `'google'`.
+  - `AiNodeExecutor.js` & `ExecutorRegistry.js`: Wired `geminiGenerateText` and `googleGeminiGenerateText` node types to `AiGenerateTextService.generateText()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `GeminiIcon.jsx`: SVG component representing official Google Gemini logo mark.
+  - `GeminiGenerateTextProperties.jsx`: Provider-specific Node Properties panel featuring official Gemini branding header badge, Gemini credential selector (strictly filtered for `service === 'gemini'` or `'google'` displaying `My Gemini (••••••••)` and showing `"No Gemini credentials found. Add a Gemini credential first."` when missing), model selector (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-pro`, `gemini-1.5-flash`, custom model text input), prompt textarea with placeholder `"Write your prompt here..."` supporting AutomateX dynamic variables (`{{projectName}}` or `{{steps["Previous Node"].text}}`), temperature slider ($0 - 2$, default $0.7$), max tokens input (default $500$), and **Test Generate** button with loading state (`Generating...`) and live output display.
+  - `Credentials.jsx`: Added Google Gemini option to vault credential creation form.
+  - Node Registries (`AiNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Gemini → Generate Text` under category `AI` with `GeminiIcon` / `Sparkles` icon and `sky` badge.
+- **Automated Test Suite**: Passed **11/11** unit and integration tests in `test_gemini_generate_text.js`.
+
 ---
 
 

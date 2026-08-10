@@ -1,0 +1,126 @@
+import { AIProvider } from './AIProvider.js';
+
+export class GeminiProvider extends AIProvider {
+  /**
+   * Execute Google Gemini text generation via /v1beta/models/{model}:generateContent.
+   */
+  async generateText({ apiKey, model = 'gemini-2.5-flash', prompt, temperature = 0.7, maxTokens = 500 }) {
+    if (!apiKey) {
+      const err = new Error('Gemini API Key is required for execution.');
+      err.statusCode = 401;
+      throw err;
+    }
+
+    if (!prompt || !String(prompt).trim()) {
+      const err = new Error('Prompt cannot be empty.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const selectedModel = model || 'gemini-2.5-flash';
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+    const parsedTemp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
+    const validTemp = isNaN(parsedTemp) ? 0.7 : Math.max(0, Math.min(2, parsedTemp));
+
+    const parsedMaxTokens = typeof maxTokens === 'number' ? maxTokens : parseInt(maxTokens, 10);
+    const validMaxTokens = isNaN(parsedMaxTokens) || parsedMaxTokens < 1 ? 500 : parsedMaxTokens;
+
+    const payload = {
+      contents: [
+        {
+          parts: [
+            {
+              text: String(prompt),
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: validTemp,
+        maxOutputTokens: validMaxTokens,
+      },
+    };
+
+    console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${selectedModel})...`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+    let response;
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        const err = new Error('Gemini request timed out.');
+        err.statusCode = 408;
+        throw err;
+      }
+      const err = new Error(`Gemini provider network request failed: ${fetchErr.message}`);
+      err.statusCode = 503;
+      throw err;
+    }
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      let errData = {};
+      try {
+        errData = await response.json();
+      } catch {
+        const textErr = await response.text();
+        errData = { error: { message: textErr } };
+      }
+
+      const status = response.status;
+      const providerMsg = errData?.error?.message || response.statusText;
+
+      if (status === 401 || status === 403) {
+        const err = new Error('Gemini authentication failed. Check your Gemini credential.');
+        err.statusCode = status;
+        throw err;
+      } else if (status === 404) {
+        const err = new Error(`Selected Gemini model "${selectedModel}" is unavailable or invalid.`);
+        err.statusCode = 404;
+        throw err;
+      } else if (status === 429) {
+        const err = new Error('Gemini rate limit reached. Please try again later.');
+        err.statusCode = 429;
+        throw err;
+      } else if (status === 400) {
+        const err = new Error(`Gemini request failed. Please check the model and request configuration: ${providerMsg}`);
+        err.statusCode = 400;
+        throw err;
+      } else {
+        const err = new Error(`Gemini request failed (${status}): ${providerMsg}`);
+        err.statusCode = status;
+        throw err;
+      }
+    }
+
+    const data = await response.json();
+    const candidatePart = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const generatedText = candidatePart || '';
+
+    const usageMeta = data.usageMetadata || {};
+
+    return {
+      success: true,
+      text: generatedText,
+      provider: 'gemini',
+      model: selectedModel,
+      usage: {
+        promptTokens: usageMeta.promptTokenCount ?? null,
+        completionTokens: usageMeta.candidatesTokenCount ?? null,
+        totalTokens: usageMeta.totalTokenCount ?? null,
+      },
+    };
+  }
+}

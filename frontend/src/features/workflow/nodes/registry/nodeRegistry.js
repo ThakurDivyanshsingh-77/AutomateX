@@ -158,6 +158,8 @@ export const nodeValidators = {
   aiGenerateText: aiGenerateTextValidator,
   openaiGenerateText: aiGenerateTextValidator,
   openAiGenerateText: aiGenerateTextValidator,
+  geminiGenerateText: aiGenerateTextValidator,
+  googleGeminiGenerateText: aiGenerateTextValidator,
   ai: aiGenerateTextValidator,
 };
 

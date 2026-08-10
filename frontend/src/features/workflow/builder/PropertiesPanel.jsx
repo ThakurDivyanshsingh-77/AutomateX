@@ -24,6 +24,7 @@ import { DiscordAddRoleToMemberProperties } from '../components/DiscordAddRoleTo
 import { DiscordRemoveRoleFromMemberProperties } from '../components/DiscordRemoveRoleFromMemberProperties';
 import { AiGenerateTextProperties } from '../components/AiGenerateTextProperties';
 import { OpenAiGenerateTextProperties } from '../components/OpenAiGenerateTextProperties';
+import { GeminiGenerateTextProperties } from '../components/GeminiGenerateTextProperties';
 
 
 
@@ -64,7 +65,8 @@ export const PropertiesPanel = ({
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
   const isOpenAiGenerateTextNode = selectedNode.type === 'openaiGenerateText' || selectedNode.type === 'openAiGenerateText' || (selectedNode.type.toLowerCase().includes('openai') && selectedNode.type.toLowerCase().includes('generatetext'));
-  const isAiGenerateTextNode = !isOpenAiGenerateTextNode && (selectedNode.type === 'aiGenerateText' || selectedNode.type === 'ai' || (selectedNode.type.toLowerCase().includes('ai') && selectedNode.type.toLowerCase().includes('generatetext')));
+  const isGeminiGenerateTextNode = selectedNode.type === 'geminiGenerateText' || selectedNode.type === 'googleGeminiGenerateText' || (selectedNode.type.toLowerCase().includes('gemini') && selectedNode.type.toLowerCase().includes('generatetext'));
+  const isAiGenerateTextNode = !isOpenAiGenerateTextNode && !isGeminiGenerateTextNode && (selectedNode.type === 'aiGenerateText' || selectedNode.type === 'ai' || (selectedNode.type.toLowerCase().includes('ai') && selectedNode.type.toLowerCase().includes('generatetext')));
   const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
   const isDiscordDeleteChannelNode = selectedNode.type === 'discordDeleteChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deletechannel'));
   const isDiscordCreateRoleNode = selectedNode.type === 'discordCreateRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createrole'));
@@ -213,6 +215,11 @@ export const PropertiesPanel = ({
               />
             ) : isOpenAiGenerateTextNode ? (
               <OpenAiGenerateTextProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isGeminiGenerateTextNode ? (
+              <GeminiGenerateTextProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />

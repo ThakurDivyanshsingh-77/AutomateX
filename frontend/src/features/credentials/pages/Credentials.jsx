@@ -215,6 +215,7 @@ export const Credentials = () => {
                   <option value="telegram">Telegram</option>
                   <option value="github">GitHub</option>
                   <option value="openai">OpenAI</option>
+                  <option value="gemini">Google Gemini</option>
                   <option value="http">HTTP REST</option>
                 </select>
               </div>

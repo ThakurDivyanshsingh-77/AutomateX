@@ -1,5 +1,6 @@
 import { credentialService } from '../../credentials/credentialService.js';
 import { OpenAIProvider } from '../providers/OpenAIProvider.js';
+import { GeminiProvider } from '../providers/GeminiProvider.js';
 import { AiGenerateTextValidator } from '../validations/AiGenerateTextValidator.js';
 import { ExpressionEngine } from '../../engine/expression/ExpressionEngine.js';
 
@@ -79,11 +80,13 @@ export class AiGenerateTextService {
     console.log(`[AiGenerateTextService] 🤖 Authenticated AI Credential Name: "${credInfo.name}" (${maskedKey})`);
 
     // Step 4: Dispatch Provider
-    const providerName = validation.provider;
+    const providerName = String(validation.provider || 'openai').toLowerCase();
     let providerImpl;
 
     if (providerName === 'openai') {
       providerImpl = new OpenAIProvider();
+    } else if (providerName === 'gemini' || providerName === 'google') {
+      providerImpl = new GeminiProvider();
     } else {
       const err = new Error(`AI provider "${providerName}" is not supported.`);
       err.statusCode = 400;
