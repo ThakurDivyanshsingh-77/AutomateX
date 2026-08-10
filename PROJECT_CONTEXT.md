@@ -453,7 +453,9 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `GeminiGenerateTextProperties.jsx`: Provider-specific Node Properties panel featuring official Gemini branding header badge, Gemini credential selector (strictly filtered for `service === 'gemini'` or `'google'` displaying `My Gemini (••••••••)` and showing `"No Gemini credentials found. Add a Gemini credential first."` when missing), model selector (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-pro`, `gemini-1.5-flash`, custom model text input), prompt textarea with placeholder `"Write your prompt here..."` supporting AutomateX dynamic variables (`{{projectName}}` or `{{steps["Previous Node"].text}}`), temperature slider ($0 - 2$, default $0.7$), max tokens input (default $500$), and **Test Generate** button with loading state (`Generating...`) and live output display.
   - `Credentials.jsx`: Added Google Gemini option to vault credential creation form.
   - Node Registries (`AiNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Gemini → Generate Text` under category `AI` with `GeminiIcon` / `Sparkles` icon and `sky` badge.
-- **Automated Test Suite**: Passed **11/11** unit and integration tests in `test_gemini_generate_text.js`.
+- **Automated Test Suite**: Passed **8/8** custom model selection & propagation tests in `test_gemini_generate_text.js` and **10/10** tests in `test_openai_generate_text.js`.
+  - Added `GeminiProvider.normalizeModelName()` model normalization layer (trims whitespace, strips redundant `models/` prefix if present, preserves custom model identifiers like `gemini-2.5-flash` or `gemini-2.0-flash` without hardcoded model replacement).
+  - Updated `GeminiGenerateTextProperties.jsx` state initialization and bindings so custom model inputs (`modelSelect: 'custom'` + `customModelText`) serialize cleanly into workflow node configuration and execute through `AiGenerateTextService` and `GeminiProvider`.
 
 ---
 

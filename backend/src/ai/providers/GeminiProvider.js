@@ -2,6 +2,25 @@ import { AIProvider } from './AIProvider.js';
 
 export class GeminiProvider extends AIProvider {
   /**
+   * Safe model normalization layer.
+   * Trims whitespace, strips accidental "models/" prefix if present,
+   * and preserves custom model identifiers (e.g. "gemini-2.5-flash", "gemini-2.0-flash").
+   */
+  static normalizeModelName(rawModel) {
+    if (!rawModel || typeof rawModel !== 'string') {
+      return 'gemini-1.5-flash';
+    }
+    let normalized = rawModel.trim();
+    // Strip accidental outer quotes if present
+    normalized = normalized.replace(/^["']|["']$/g, '').trim();
+    // Strip accidental "models/" prefix if user typed or SDK added it twice
+    if (normalized.toLowerCase().startsWith('models/')) {
+      normalized = normalized.substring(7).trim();
+    }
+    return normalized || 'gemini-1.5-flash';
+  }
+
+  /**
    * Execute Google Gemini text generation via /v1beta/models/{model}:generateContent.
    */
   async generateText({ apiKey, model = 'gemini-1.5-flash', prompt, temperature = 0.7, maxTokens = 500 }) {
@@ -17,11 +36,7 @@ export class GeminiProvider extends AIProvider {
       throw err;
     }
 
-    let selectedModel = model || 'gemini-1.5-flash';
-    if (selectedModel === 'gemini-2.5-flash' || selectedModel.includes('2.5')) {
-      console.log(`[GeminiProvider] 🔄 Auto-migrating deprecated model "${selectedModel}" to "gemini-1.5-flash"`);
-      selectedModel = 'gemini-1.5-flash';
-    }
+    const selectedModel = GeminiProvider.normalizeModelName(model);
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 

@@ -23,14 +23,12 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
   const [testResult, setTestResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const rawModel = config.model || 'gemini-1.5-flash';
-  const initialModel = rawModel === 'gemini-2.5-flash' ? 'gemini-1.5-flash' : rawModel;
+  const rawModel = (config.model || '').trim();
+  const isPredefined = GEMINI_MODELS.some((m) => m.value !== 'custom' && m.value === rawModel);
 
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
-  const [model, setModel] = useState(initialModel);
-  const [customModel, setCustomModel] = useState(
-    GEMINI_MODELS.some((m) => m.value === initialModel) ? '' : initialModel || ''
-  );
+  const [modelSelect, setModelSelect] = useState(isPredefined ? rawModel : (rawModel ? 'custom' : 'gemini-1.5-flash'));
+  const [customModelText, setCustomModelText] = useState(isPredefined ? '' : rawModel);
   const [prompt, setPrompt] = useState(config.prompt || '');
   const [temperature, setTemperature] = useState(
     config.temperature !== undefined ? config.temperature : 0.7
@@ -70,17 +68,39 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
   };
 
   const updateConfigField = (field, val) => {
-    const activeModel = model === 'custom' ? customModel : model;
+    let nextSelect = modelSelect;
+    let nextCustomText = customModelText;
+    let nextCred = credentialId;
+    let nextPrompt = prompt;
+    let nextTemp = temperature;
+    let nextMaxTokens = maxTokens;
+
+    if (field === 'modelSelect') {
+      nextSelect = val;
+    } else if (field === 'customModelText') {
+      nextCustomText = val;
+    } else if (field === 'credentialId') {
+      nextCred = val;
+    } else if (field === 'prompt') {
+      nextPrompt = val;
+    } else if (field === 'temperature') {
+      nextTemp = val;
+    } else if (field === 'maxTokens') {
+      nextMaxTokens = val;
+    }
+
+    const activeModel = (nextSelect === 'custom' ? nextCustomText : nextSelect).trim() || 'gemini-1.5-flash';
+
     const updated = {
       ...config,
-      credentialId,
+      credentialId: nextCred,
       provider: 'gemini',
-      model: field === 'model' && val !== 'custom' ? val : activeModel,
-      prompt,
-      temperature,
-      maxTokens,
-      [field]: val,
+      model: activeModel,
+      prompt: nextPrompt,
+      temperature: nextTemp,
+      maxTokens: nextMaxTokens,
     };
+
     if (onUpdateConfig) {
       onUpdateConfig(updated);
     }
@@ -90,8 +110,8 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
     if (!credentialId) return toast.error('Gemini credential is required.');
     if (!prompt.trim()) return toast.error('Prompt cannot be empty.');
 
-    const activeModel = model === 'custom' ? customModel : model;
-    if (!activeModel.trim()) return toast.error('Gemini model is required.');
+    const activeModel = (modelSelect === 'custom' ? customModelText : modelSelect).trim();
+    if (!activeModel) return toast.error('Gemini model is required.');
 
     setTesting(true);
     setTestResult(null);
@@ -193,11 +213,11 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
           Model <span className="text-rose-400">*</span>
         </label>
         <select
-          value={model}
+          value={modelSelect}
           onChange={(e) => {
             const val = e.target.value;
-            setModel(val);
-            updateConfigField('model', val === 'custom' ? customModel : val);
+            setModelSelect(val);
+            updateConfigField('modelSelect', val);
           }}
           className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer"
         >
@@ -208,15 +228,15 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
           ))}
         </select>
 
-        {model === 'custom' && (
+        {modelSelect === 'custom' && (
           <input
             type="text"
             placeholder="Enter Gemini model identifier (e.g. gemini-2.5-flash)"
-            value={customModel}
+            value={customModelText}
             onChange={(e) => {
               const val = e.target.value;
-              setCustomModel(val);
-              updateConfigField('model', val);
+              setCustomModelText(val);
+              updateConfigField('customModelText', val);
             }}
             className="w-full mt-1.5 bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500"
           />
