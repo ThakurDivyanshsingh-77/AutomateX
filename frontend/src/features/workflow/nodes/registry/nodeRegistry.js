@@ -19,7 +19,7 @@ import { gmailValidator } from '../validators/gmailValidator';
 import { googleSheetsValidator } from '../googleSheets/googleSheetsValidator';
 
 import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
-import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator, discordCreateChannelValidator, discordDeleteChannelValidator, discordCreateRoleValidator, discordDeleteRoleValidator, discordAddRoleToMemberValidator, discordRemoveRoleFromMemberValidator } from '../discord/DiscordNodeRegistry';
+import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator, discordCreateChannelValidator, discordDeleteChannelValidator, discordCreateRoleValidator, discordDeleteRoleValidator, discordAddRoleToMemberValidator, discordRemoveRoleFromMemberValidator, discordMessageReceivedValidator } from '../discord/DiscordNodeRegistry';
 import { AI_NODE_TYPES, aiNodeDefinitions, aiGenerateTextValidator } from '../ai/AiNodeRegistry';
 
 export const NODE_TYPES = {
@@ -85,6 +85,8 @@ export const nodeDefinitions = {
   [NODE_TYPES.PDF_GENERATOR]: pdfGeneratorManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
+  discordMessageReceived: discordNodeDefinitions.discordMessageReceived,
+  discordMessageReceivedTrigger: discordNodeDefinitions.discordMessageReceived,
   discordSendMessage: discordNodeDefinitions.discordSendMessage,
   discord: discordNodeDefinitions.discord,
   ...discordNodeDefinitions,
@@ -145,6 +147,8 @@ export const nodeValidators = {
   [GOOGLE_SHEETS_NODE_TYPES.DELETE_WORKSHEET]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.GET_SPREADSHEET_INFO]: googleSheetsValidator,
   googleSheets: googleSheetsValidator,
+  discordMessageReceived: discordMessageReceivedValidator,
+  discordMessageReceivedTrigger: discordMessageReceivedValidator,
   discordSendMessage: discordValidator,
   discordSendEmbed: discordValidator,
   discordEmbed: discordValidator,
