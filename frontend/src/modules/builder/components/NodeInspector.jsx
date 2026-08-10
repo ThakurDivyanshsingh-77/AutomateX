@@ -1,6 +1,7 @@
 import React from 'react';
 import { NODE_REGISTRY } from '../nodeRegistry';
 import { X, Trash2, Sliders, CheckCircle2, Code2, Globe, Clock, GitBranch, Terminal } from 'lucide-react';
+import { DiscordMessageReceivedProperties } from '../../../features/workflow/components/DiscordMessageReceivedProperties';
 
 export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClose }) => {
   if (!selectedNode) return null;
@@ -244,6 +245,18 @@ export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClos
               POST /api/v1/webhooks/YOUR_TOKEN
             </div>
           </div>
+        )}
+
+        {(nodeType === 'discordMessageReceived' || nodeType === 'discordMessageReceivedTrigger' || nodeType === 'DISCORD_MESSAGE_RECEIVED') && (
+          <DiscordMessageReceivedProperties
+            nodeData={selectedNode.data}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
+            }}
+          />
         )}
       </div>
 

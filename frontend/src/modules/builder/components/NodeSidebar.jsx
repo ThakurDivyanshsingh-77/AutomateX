@@ -13,7 +13,13 @@ export const NodeSidebar = () => {
       n.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const triggers = filteredNodes.filter((n) => n.category === 'TRIGGER' || n.category === 'Trigger');
+  const triggers = filteredNodes.filter(
+    (n) =>
+      n.category === 'TRIGGER' ||
+      n.category === 'Trigger' ||
+      n.category === 'Triggers' ||
+      (n.type && (n.type.toLowerCase().includes('trigger') || n.type === 'discordMessageReceived'))
+  );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
   const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
   const communication = filteredNodes.filter((n) => n.category === 'Communication' || n.category === 'COMMUNICATION');

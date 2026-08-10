@@ -432,7 +432,7 @@ export const NODE_REGISTRY = {
   [NODE_TYPES.DISCORD_MESSAGE_RECEIVED]: {
     type: NODE_TYPES.DISCORD_MESSAGE_RECEIVED,
     id: 'discordMessageReceived',
-    category: 'Triggers',
+    category: 'TRIGGER',
     provider: 'Discord',
     label: 'Discord → Message Received',
     description: 'Start a workflow whenever the connected Discord bot receives a message.',
