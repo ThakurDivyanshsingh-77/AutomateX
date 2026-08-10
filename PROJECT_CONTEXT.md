@@ -563,8 +563,10 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Updated `AiGenerateTextService.js` to extract `requestedModel` from `config.model || config.modelIdentifier || validation.model` and pass `autoSelectModel` explicitly to `providerImpl.generateText()`.
   - Updated `AiGenerateTextValidator.js` to support `config.modelIdentifier` and fallback to provider-specific defaults (`gemini-1.5-flash` for Gemini vs `gpt-4o-mini` for OpenAI).
 
-- **Automatic Deprecated Model Fallback (`GeminiProvider.js`)**:
-  - Added intelligent fallback: If user enters an unavailable or retired model name (e.g. `gemini-2.5-flash`), `GeminiProvider` queries `validateModelAvailability()` and automatically selects the highest priority supported model (e.g. `gemini-2.0-flash` or `gemini-1.5-flash`) for that credential. Logs warning `[Gemini] ⚠️ Requested model "..." is unavailable for this credential. Falling back to available model "..."` and executes request seamlessly.
+- **Automatic Deprecated Model Fallback & 404 Auto-Retry (`GeminiProvider.js` & `GeminiGenerateTextProperties.jsx`)**:
+  - Added text-model filter (`findBestFallback()`) that excludes image, audio, robotics, and tts preview models, prioritizing active text generation models (`gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-2.0-flash`, `gemini-1.5-flash`).
+  - Added automatic 404/400 retry: If Google returns `404/400` ("is no longer available to new users" / "not found") on the requested model, `GeminiProvider` automatically retries with the top available text model for that API key, ensuring workflow execution succeeds seamlessly without failing.
+  - Added `gemini-3.5-flash` and `gemini-3.6-flash` options to `GeminiGenerateTextProperties.jsx`.
 
 ---
 
