@@ -5,12 +5,20 @@ import { Search, Plus, Layers } from 'lucide-react';
 export const NodeSidebar = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const nodesList = Object.values(NODE_REGISTRY);
+  const rawList = Object.values(NODE_REGISTRY);
+  const uniqueNodesMap = new Map();
+  rawList.forEach((n) => {
+    if (n && n.type && !uniqueNodesMap.has(n.type)) {
+      uniqueNodesMap.set(n.type, n);
+    }
+  });
+  const nodesList = Array.from(uniqueNodesMap.values());
 
   const filteredNodes = nodesList.filter(
     (n) =>
       n.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.description.toLowerCase().includes(searchTerm.toLowerCase())
+      n.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (n.type && n.type.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const triggers = filteredNodes.filter(
@@ -22,7 +30,13 @@ export const NodeSidebar = () => {
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
   const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
-  const communication = filteredNodes.filter((n) => n.category === 'Communication' || n.category === 'COMMUNICATION');
+  const communication = filteredNodes.filter(
+    (n) =>
+      n.category === 'Communication' ||
+      n.category === 'COMMUNICATION' ||
+      n.provider === 'Discord' ||
+      (n.type && n.type.toLowerCase().includes('discord'))
+  );
   const googleSheets = filteredNodes.filter((n) => n.category === 'Google Sheets');
   const logic = filteredNodes.filter((n) => n.category === 'LOGIC' || n.category === 'Logic');
 

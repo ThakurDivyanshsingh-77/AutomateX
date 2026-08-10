@@ -12,7 +12,7 @@ export const CustomNode = memo(({ id, type, data, selected }) => {
   };
 
   const IconComponent = meta.icon || Zap;
-  const isTrigger = meta.category === 'TRIGGER';
+  const isTrigger = meta.category === 'TRIGGER' || meta.category === 'Triggers' || type === 'discordMessageReceived' || type === 'discordMessageReceivedTrigger';
   const config = data?.config || {};
 
   // Status highlights during active test execution
