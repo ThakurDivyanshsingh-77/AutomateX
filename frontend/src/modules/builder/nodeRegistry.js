@@ -12,6 +12,7 @@ import {
   FolderPlus,
   Trash2,
   ShieldPlus,
+  ShieldX,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -32,6 +33,7 @@ export const NODE_TYPES = {
   DISCORD_CREATE_CHANNEL: 'discordCreateChannel',
   DISCORD_DELETE_CHANNEL: 'discordDeleteChannel',
   DISCORD_CREATE_ROLE: 'discordCreateRole',
+  DISCORD_DELETE_ROLE: 'discordDeleteRole',
   DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
@@ -294,6 +296,22 @@ export const NODE_REGISTRY = {
       hoist: false,
       mentionable: false,
       reason: '',
+    },
+  },
+  [NODE_TYPES.DISCORD_DELETE_ROLE]: {
+    type: NODE_TYPES.DISCORD_DELETE_ROLE,
+    category: 'Communication',
+    label: 'Discord → Delete Role',
+    description: 'Delete an existing Discord role from a selected Discord server.',
+    icon: ShieldX,
+    color: 'rose',
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      roleId: '',
+      reason: '',
+      confirmDelete: false,
     },
   },
   [NODE_TYPES.DISCORD]: {

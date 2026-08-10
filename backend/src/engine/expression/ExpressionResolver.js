@@ -171,6 +171,20 @@ export class ExpressionResolver {
   static resolvePath(path, context) {
     if (!path || !context) return undefined;
 
+    // Handle steps["Node Label"] or steps['Node Label'] or steps.nodeId syntax
+    const stepsBracketMatch = path.match(/^steps\[['"]([^'"]+)['"]\](?:\.(.*))?$/);
+    if (stepsBracketMatch) {
+      const stepKey = stepsBracketMatch[1];
+      const subPath = stepsBracketMatch[2] || '';
+      return this.resolveStepOutput(stepKey, subPath, context);
+    }
+    const stepsDotMatch = path.match(/^steps\.([a-zA-Z0-9_]+)(?:\.(.*))?$/);
+    if (stepsDotMatch) {
+      const stepKey = stepsDotMatch[1];
+      const subPath = stepsDotMatch[2] || '';
+      return this.resolveStepOutput(stepKey, subPath, context);
+    }
+
     const parts = path.split('.');
     const firstSegment = parts[0].replace(/\[.*\]/, ''); // e.g. "trigger" from "trigger.body.email"
     const lowerFirst = firstSegment.toLowerCase();
@@ -243,6 +257,52 @@ export class ExpressionResolver {
     if (context.variables) {
       const res = getValueByPath(context.variables, path);
       if (res !== undefined) return res;
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Resolve output from step key (e.g. "Discord → Create Role", "discordCreateRole") and subPath (e.g. "role.id").
+   */
+  static resolveStepOutput(stepKey, subPath, context) {
+    if (!stepKey || !context) return undefined;
+    const lowerKey = stepKey.toLowerCase();
+
+    if (context.nodeOutputs) {
+      const keysToTry = [stepKey, lowerKey];
+      for (const k of keysToTry) {
+        if (context.nodeOutputs.has && context.nodeOutputs.has(k)) {
+          const output = context.nodeOutputs.get(k);
+          return subPath ? getValueByPath(output, subPath) : output;
+        } else if (context.nodeOutputs[k]) {
+          const output = context.nodeOutputs[k];
+          return subPath ? getValueByPath(output, subPath) : output;
+        }
+      }
+
+      // Fuzzy search in nodeOutputs Map or Object
+      const entries = context.nodeOutputs.entries
+        ? Array.from(context.nodeOutputs.entries())
+        : Object.entries(context.nodeOutputs);
+
+      for (const [nodeId, output] of entries) {
+        const normalizedId = String(nodeId).toLowerCase();
+        if (
+          normalizedId === lowerKey ||
+          normalizedId.includes(lowerKey) ||
+          lowerKey.includes(normalizedId)
+        ) {
+          return subPath ? getValueByPath(output, subPath) : output;
+        }
+      }
+    }
+
+    if (context.currentData) {
+      const res = getValueByPath(context.currentData, stepKey);
+      if (res !== undefined) {
+        return subPath ? getValueByPath(res, subPath) : res;
+      }
     }
 
     return undefined;

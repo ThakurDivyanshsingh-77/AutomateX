@@ -42,4 +42,16 @@ router.post('/messages/send', DiscordController.sendMessage);
 router.post('/send-embed', DiscordController.sendEmbed);
 router.post('/embeds/send', DiscordController.sendEmbed);
 
+// Role & Channel Operations
+router.post('/create-channel', DiscordController.createChannel);
+router.post('/channels/create', DiscordController.createChannel);
+router.post('/delete-channel', DiscordController.deleteChannel);
+router.post('/channels/delete', DiscordController.deleteChannel);
+router.post('/create-role', DiscordController.createRole);
+router.post('/roles/create', DiscordController.createRole);
+router.get('/roles', DiscordController.getRoles);
+router.post('/roles/refresh', DiscordController.refreshRoles);
+router.post('/delete-role', DiscordController.deleteRole);
+router.post('/roles/delete', DiscordController.deleteRole);
+
 export default router;

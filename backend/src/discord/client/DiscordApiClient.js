@@ -179,6 +179,23 @@ export class DiscordApiClient {
       body: JSON.stringify(body),
     });
   }
+
+  async deleteRole(guildId, roleId, reason) {
+    if (!guildId) {
+      throw new Error('deleteRole requires a valid guildId');
+    }
+    if (!roleId) {
+      throw new Error('deleteRole requires a valid roleId');
+    }
+    const headers = {};
+    if (reason && String(reason).trim()) {
+      headers['X-Audit-Log-Reason'] = encodeURIComponent(String(reason).trim());
+    }
+    return await this.request(`/guilds/${guildId}/roles/${roleId}`, {
+      method: 'DELETE',
+      headers,
+    });
+  }
 }
 
 

@@ -375,7 +375,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Frontend Subsystem (`frontend/src/features/workflow/`)**:
   - `DiscordCreateRoleProperties.jsx`: Production properties panel with credential selector, guild picker, role name input (with live character counter), role color picker/HEX text input (with live color preview badge), hoist toggle, mentionable toggle, audit log reason input, and a **Create Role** manual test execution button.
   - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Create Role` under **Communication → Discord** category, searchable by `Discord` and `Create Role`.
-- **Automated Test Suite**: Passed **11/11** unit and integration tests in `test_discord_create_role.js`.
+### Phase 23 Complete — Discord → Delete Role Workflow Node — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/discord/`)**:
+  - `DiscordDeleteRoleTypes.js` & `DiscordDeleteRoleTypes.ts`: Interface structures for role deletion payloads.
+  - `DiscordDeleteRoleValidator.js`: Input validator checking required credential, guild ID (optional if dynamic expression), role ID (optional if dynamic expression), mandatory `confirmDelete === true` checkbox, and `@everyone` role protection (`roleId === guildId` or name `@everyone` -> blocked with `"The @everyone role cannot be deleted."`).
+  - `DiscordApiClient.js`: Added `deleteRole(guildId, roleId, reason)` targeting `DELETE /guilds/{guildId}/roles/{roleId}` with `X-Audit-Log-Reason` header and explicit HTTP 204 No Content success handling.
+  - `DiscordRoleService.js` & `DiscordRoleService.ts`: Full role fetching & caching service executing `GET /guilds/{guildId}/roles` with TTL memory caching, forced refresh support, and cache invalidation.
+  - `DiscordDeleteRoleService.js` & `DiscordDeleteRoleService.ts`: Full role deletion service resolving decrypted bot token, validating mandatory user confirmation, checking `@everyone` restriction, executing `DELETE /guilds/{guildId}/roles/{roleId}`, invalidating role cache in `DiscordRoleService`, and returning normalized output `{ success: true, deleted: true, role: { id, name, guildId } }`.
+  - `DiscordController.js` & `DiscordRoutes.js`: Mounted `GET /api/v1/discord/roles`, `POST /api/v1/discord/roles/refresh`, `POST /api/v1/discord/delete-role`, and `POST /api/v1/discord/roles/delete`.
+  - `DiscordNodeExecutor.js` & `ExecutorRegistry.js`: Wired `discordDeleteRole` node type to `DiscordDeleteRoleService.deleteRole()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `DiscordRoleDropdown.jsx`: Searchable role picker component fetching roles via `GET /discord/roles`, displaying role name, color badge, role ID, marking protected `@everyone` role, and providing manual refresh support.
+  - `DiscordDeleteRoleProperties.jsx`: Production properties panel featuring credential selector, guild picker, role selector (supporting searchable role dropdown or dynamic variable expressions e.g. `{{steps["Discord → Create Role"].role.id}}`), optional audit log reason, red permanent deletion warning banner, mandatory confirmation checkbox, and a **Delete Role** manual test execution button.
+  - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Delete Role` under **Communication → Discord** category.
+- **Automated Test Suite**: Passed **11/11** unit and integration tests in `test_discord_delete_role.js`.
 
 ---
 

@@ -70,9 +70,15 @@ export class WorkflowEngine {
       if (retryResult.success) {
         const stepOutput = retryResult.result?.output !== undefined ? retryResult.result.output : (retryResult.result || {});
 
-        // Store step log and node outputs (by nodeId AND by nodeType)
+        // Store step log and node outputs (by nodeId, nodeType, and node label)
         context.setNodeOutput(currentNode.id, stepOutput);
         context.setNodeOutput(currentNode.type, stepOutput);
+        if (currentNode.data?.label) {
+          context.setNodeOutput(currentNode.data.label, stepOutput);
+        }
+        if (currentNode.label) {
+          context.setNodeOutput(currentNode.label, stepOutput);
+        }
 
         const logStatus = retryResult.recovered ? 'recovered' : 'success';
         const stepLog = ExecutionLogger.createStepLog(

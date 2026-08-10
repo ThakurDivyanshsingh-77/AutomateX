@@ -5,6 +5,8 @@ import { DiscordEmbedService } from '../services/DiscordEmbedService.js';
 import { DiscordCreateChannelService } from '../services/DiscordCreateChannelService.js';
 import { DiscordDeleteChannelService } from '../services/DiscordDeleteChannelService.js';
 import { DiscordCreateRoleService } from '../services/DiscordCreateRoleService.js';
+import { DiscordRoleService } from '../services/DiscordRoleService.js';
+import { DiscordDeleteRoleService } from '../services/DiscordDeleteRoleService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 
@@ -400,6 +402,123 @@ export class DiscordController {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
       console.warn(`[DiscordController] ⚠️ Error creating role on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+        error: normalized,
+      });
+    }
+  }
+
+  static async getRoles(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
+        res.status(401).json({
+          success: false,
+          isUserAuthTokenError: true,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const credentialId = req.query.credentialId || req.query.credential;
+      const guildId = req.query.guildId || req.query.guild;
+
+      if (!credentialId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId query parameter is required' });
+        return;
+      }
+
+      if (!guildId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'guildId query parameter is required' });
+        return;
+      }
+
+      const refresh = req.query.refresh === 'true' || req.query.bypassCache === 'true';
+      const result = await DiscordRoleService.getRoles(String(ownerId), credentialId, guildId, refresh);
+
+      res.status(200).json({
+        success: true,
+        roles: result.roles,
+      });
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error fetching roles on ${req.originalUrl}: ${normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+        error: normalized,
+      });
+    }
+  }
+
+  static async refreshRoles(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      const { credentialId, guildId } = req.body;
+
+      if (!credentialId || !guildId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId and guildId body parameters are required' });
+        return;
+      }
+
+      const result = await DiscordRoleService.refreshRoles(String(ownerId), credentialId, guildId);
+      res.status(200).json({
+        success: true,
+        roles: result.roles,
+      });
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordController] ⚠️ Error refreshing roles on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(normalized.statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+      });
+    }
+  }
+
+  static async deleteRole(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
+        res.status(401).json({
+          success: false,
+          isUserAuthTokenError: true,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const { credentialId } = req.body;
+      const targetCredId = credentialId || req.body.credential;
+
+      const result = await DiscordDeleteRoleService.deleteRole(
+        String(ownerId),
+        targetCredId,
+        req.body
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error deleting role on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
       res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,

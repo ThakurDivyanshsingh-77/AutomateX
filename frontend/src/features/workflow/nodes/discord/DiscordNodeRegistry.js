@@ -1,4 +1,4 @@
-import { MessageSquare, Layout, FolderPlus, Trash2, ShieldPlus } from 'lucide-react';
+import { MessageSquare, Layout, FolderPlus, Trash2, ShieldPlus, ShieldX } from 'lucide-react';
 
 export const DISCORD_NODE_TYPES = {
   SEND_MESSAGE: 'discordSendMessage',
@@ -6,6 +6,7 @@ export const DISCORD_NODE_TYPES = {
   CREATE_CHANNEL: 'discordCreateChannel',
   DELETE_CHANNEL: 'discordDeleteChannel',
   CREATE_ROLE: 'discordCreateRole',
+  DELETE_ROLE: 'discordDeleteRole',
   DISCORD_EMBED: 'discordEmbed',
   DISCORD: 'discord',
 };
@@ -91,6 +92,31 @@ export const discordCreateRoleValidator = (config) => {
     errors.push('Role Name is required.');
   } else if (trimmedName.length > 100) {
     errors.push(`Role Name exceeds 100 characters limit (${trimmedName.length}/100).`);
+  }
+  return { isValid: errors.length === 0, errors };
+};
+
+export const discordDeleteRoleValidator = (config) => {
+  const errors = [];
+  if (!config.credentialId) errors.push('Discord Credential is required.');
+  const targetRoleId = (config.roleId || config.role || config.id || '').trim();
+  if (!targetRoleId) {
+    errors.push('Discord Role selection or dynamic Role ID expression is required.');
+  }
+  const targetGuildId = (config.guildId || config.guild || '').trim();
+  const targetRoleName = (config.roleName || config.name || '').trim();
+
+  if (
+    (targetGuildId && targetRoleId && targetRoleId === targetGuildId) ||
+    targetRoleId.toLowerCase() === '@everyone' ||
+    targetRoleName.toLowerCase() === '@everyone'
+  ) {
+    errors.push('The @everyone role cannot be deleted.');
+  }
+
+  const isConfirmed = Boolean(config.confirmDelete === true || config.confirmDelete === 'true');
+  if (!isConfirmed) {
+    errors.push('Confirmation is required to delete a Discord role permanently.');
   }
   return { isValid: errors.length === 0, errors };
 };
@@ -240,12 +266,38 @@ export const discordCreateRoleDefinition = {
   validate: discordCreateRoleValidator,
 };
 
+export const discordDeleteRoleDefinition = {
+  id: DISCORD_NODE_TYPES.DELETE_ROLE,
+  type: DISCORD_NODE_TYPES.DELETE_ROLE,
+  name: 'discordDeleteRole',
+  label: 'Discord → Delete Role',
+  displayName: 'Discord → Delete Role',
+  category: 'Communication',
+  description: 'Delete an existing Discord role from a selected Discord server.',
+  icon: ShieldX,
+  color: 'rose',
+  badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    guildId: '',
+    roleId: '',
+    reason: '',
+    confirmDelete: false,
+  },
+  validate: discordDeleteRoleValidator,
+};
+
 export const discordNodeDefinitions = {
   [DISCORD_NODE_TYPES.SEND_MESSAGE]: discordSendMessageDefinition,
   [DISCORD_NODE_TYPES.SEND_EMBED]: discordSendEmbedDefinition,
   [DISCORD_NODE_TYPES.CREATE_CHANNEL]: discordCreateChannelDefinition,
   [DISCORD_NODE_TYPES.DELETE_CHANNEL]: discordDeleteChannelDefinition,
   [DISCORD_NODE_TYPES.CREATE_ROLE]: discordCreateRoleDefinition,
+  [DISCORD_NODE_TYPES.DELETE_ROLE]: discordDeleteRoleDefinition,
   [DISCORD_NODE_TYPES.DISCORD_EMBED]: {
     ...discordSendEmbedDefinition,
     id: DISCORD_NODE_TYPES.DISCORD_EMBED,
@@ -259,6 +311,7 @@ export const discordNodeDefinitions = {
     name: 'discord',
   },
 };
+
 
 
 

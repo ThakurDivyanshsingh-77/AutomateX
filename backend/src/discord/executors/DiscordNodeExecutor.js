@@ -3,6 +3,7 @@ import { DiscordEmbedService } from '../services/DiscordEmbedService.js';
 import { DiscordCreateChannelService } from '../services/DiscordCreateChannelService.js';
 import { DiscordDeleteChannelService } from '../services/DiscordDeleteChannelService.js';
 import { DiscordCreateRoleService } from '../services/DiscordCreateRoleService.js';
+import { DiscordDeleteRoleService } from '../services/DiscordDeleteRoleService.js';
 
 export class DiscordNodeExecutor {
   async execute(nodeData, context) {
@@ -45,6 +46,10 @@ export class DiscordNodeExecutor {
 
     if (nodeType.includes('createrole') || nodeType === 'discordcreaterole') {
       return await DiscordCreateRoleService.createRole(ownerId, credentialId, config);
+    }
+
+    if (nodeType.includes('deleterole') || nodeType === 'discorddeleterole') {
+      return await DiscordDeleteRoleService.deleteRole(ownerId, credentialId, { ...config, context });
     }
 
 

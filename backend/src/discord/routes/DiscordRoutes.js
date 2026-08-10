@@ -40,5 +40,9 @@ router.post('/delete-channel', DiscordController.deleteChannel);
 router.post('/channels/delete', DiscordController.deleteChannel);
 router.post('/create-role', DiscordController.createRole);
 router.post('/roles/create', DiscordController.createRole);
+router.get('/roles', DiscordController.getRoles);
+router.post('/roles/refresh', DiscordController.refreshRoles);
+router.post('/delete-role', DiscordController.deleteRole);
+router.post('/roles/delete', DiscordController.deleteRole);
 
 export default router;
