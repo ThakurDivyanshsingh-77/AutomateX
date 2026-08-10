@@ -4,7 +4,7 @@ export class GeminiProvider extends AIProvider {
   /**
    * Execute Google Gemini text generation via /v1beta/models/{model}:generateContent.
    */
-  async generateText({ apiKey, model = 'gemini-2.5-flash', prompt, temperature = 0.7, maxTokens = 500 }) {
+  async generateText({ apiKey, model = 'gemini-1.5-flash', prompt, temperature = 0.7, maxTokens = 500 }) {
     if (!apiKey) {
       const err = new Error('Gemini API Key is required for execution.');
       err.statusCode = 401;
@@ -17,7 +17,7 @@ export class GeminiProvider extends AIProvider {
       throw err;
     }
 
-    const selectedModel = model || 'gemini-2.5-flash';
+    const selectedModel = model || 'gemini-1.5-flash';
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const parsedTemp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
@@ -44,6 +44,7 @@ export class GeminiProvider extends AIProvider {
 
     console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${selectedModel})...`);
 
+    const startTime = Date.now();
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
@@ -70,6 +71,11 @@ export class GeminiProvider extends AIProvider {
     }
     clearTimeout(timeoutId);
 
+    const duration = Date.now() - startTime;
+    console.log(`[GeminiDebug]
+geminiResponseStatus: ${response.status}
+requestDuration: ${duration}ms`);
+
     if (!response.ok) {
       let errData = {};
       try {
@@ -80,22 +86,26 @@ export class GeminiProvider extends AIProvider {
       }
 
       const status = response.status;
-      const providerMsg = errData?.error?.message || response.statusText;
+      const providerMsg = errData?.error?.message || response.statusText || 'Unknown Gemini API error';
 
-      if (status === 401 || status === 403) {
-        const err = new Error('Gemini authentication failed. Check your Gemini credential.');
-        err.statusCode = status;
+      if (status === 401) {
+        const err = new Error(`Gemini authentication failed: ${providerMsg}`);
+        err.statusCode = 401;
+        throw err;
+      } else if (status === 403) {
+        const err = new Error(`Gemini API permission denied: ${providerMsg}`);
+        err.statusCode = 403;
         throw err;
       } else if (status === 404) {
-        const err = new Error(`Selected Gemini model "${selectedModel}" is unavailable or invalid.`);
+        const err = new Error(`Selected Gemini model "${selectedModel}" is unavailable or invalid: ${providerMsg}`);
         err.statusCode = 404;
         throw err;
       } else if (status === 429) {
-        const err = new Error('Gemini rate limit reached. Please try again later.');
+        const err = new Error(`Gemini rate limit reached: ${providerMsg}`);
         err.statusCode = 429;
         throw err;
       } else if (status === 400) {
-        const err = new Error(`Gemini request failed. Please check the model and request configuration: ${providerMsg}`);
+        const err = new Error(`Gemini request configuration invalid: ${providerMsg}`);
         err.statusCode = 400;
         throw err;
       } else {

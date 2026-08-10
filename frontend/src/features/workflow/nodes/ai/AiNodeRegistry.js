@@ -109,7 +109,7 @@ export const geminiGenerateTextDefinition = {
   defaultConfig: {
     credentialId: '',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     prompt: '',
     temperature: 0.7,
     maxTokens: 500,

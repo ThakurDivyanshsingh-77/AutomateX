@@ -62,15 +62,29 @@ export class AiGenerateTextService {
       throw err;
     }
 
-    // Extract API Key securely (string or object)
-    let apiKey = '';
-    if (typeof credInfo.secret === 'string') {
-      apiKey = credInfo.secret;
-    } else if (typeof credInfo.secret === 'object') {
-      apiKey = credInfo.secret.apiKey || credInfo.secret.secretKey || credInfo.secret.token || credInfo.secret.key || '';
+    // Robustly extract API Key securely (string, JSON object, or double-encoded string)
+    let secretData = credInfo.secret;
+    if (typeof secretData === 'string') {
+      secretData = secretData.trim();
+      if (secretData.startsWith('{') || secretData.startsWith('"')) {
+        try {
+          secretData = JSON.parse(secretData);
+        } catch {
+          // Keep as string if JSON.parse fails
+        }
+      }
     }
 
-    if (!apiKey || !String(apiKey).trim()) {
+    let apiKey = '';
+    if (typeof secretData === 'string') {
+      apiKey = secretData.trim();
+    } else if (typeof secretData === 'object' && secretData !== null) {
+      apiKey = secretData.apiKey || secretData.secretKey || secretData.token || secretData.key || secretData.secret || secretData.connectionUri || secretData.botToken || '';
+    }
+
+    apiKey = String(apiKey || '').trim().replace(/^["']|["']$/g, '');
+
+    if (!apiKey) {
       const err = new Error('AI authentication failed. Decrypted credential contains no valid API key.');
       err.statusCode = 401;
       throw err;
@@ -79,8 +93,22 @@ export class AiGenerateTextService {
     const maskedKey = apiKey.length > 8 ? `${apiKey.slice(0, 4)}••••${apiKey.slice(-4)}` : '••••••••';
     console.log(`[AiGenerateTextService] 🤖 Authenticated AI Credential Name: "${credInfo.name}" (${maskedKey})`);
 
-    // Step 4: Dispatch Provider
     const providerName = String(validation.provider || 'openai').toLowerCase();
+
+    if (providerName === 'gemini' || providerName === 'google') {
+      console.log(`[GeminiDebug]
+userId: present
+credentialId: present
+credentialOwnerMatches: true
+provider: gemini
+credentialFound: true
+decryptedCredentialType: ${typeof credInfo.secret}
+apiKeyExtracted: ${Boolean(apiKey && apiKey.length > 5)}
+model: ${validation.model}
+requestStarted: true`);
+    }
+
+    // Step 4: Dispatch Provider
     let providerImpl;
 
     if (providerName === 'openai') {

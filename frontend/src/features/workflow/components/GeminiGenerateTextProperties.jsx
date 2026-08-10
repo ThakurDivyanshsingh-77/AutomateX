@@ -6,10 +6,10 @@ import { GeminiIcon } from './GeminiIcon';
 import { Loader2, AlertCircle, CheckCircle2, Copy, Check, Sliders } from 'lucide-react';
 
 const GEMINI_MODELS = [
-  { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Recommended - Next-Gen Fast)' },
-  { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash (High Performance & Speed)' },
+  { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash (Recommended - Fast & Cost Effective)' },
   { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro (Complex Reasoning Flagship)' },
-  { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash (Fast & Cost Effective)' },
+  { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash (High Performance Next-Gen)' },
+  { value: 'gemini-1.0-pro', label: 'gemini-1.0-pro (Legacy Model)' },
   { value: 'custom', label: 'Custom Model Identifier...' },
 ];
 
@@ -24,7 +24,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
   const [copied, setCopied] = useState(false);
 
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
-  const [model, setModel] = useState(config.model || 'gemini-2.5-flash');
+  const [model, setModel] = useState(config.model || 'gemini-1.5-flash');
   const [customModel, setCustomModel] = useState(
     GEMINI_MODELS.some((m) => m.value === config.model) ? '' : config.model || ''
   );

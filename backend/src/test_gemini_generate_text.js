@@ -32,7 +32,7 @@ async function runTests() {
   // Test 1.1: Missing credential
   const valNoCred = AiGenerateTextValidator.validate({
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     prompt: 'Write a welcome message',
   });
   assert(!valNoCred.isValid && valNoCred.errors.some(e => e.includes('credential')), 'Rejects configuration with missing Gemini credential');
@@ -41,7 +41,7 @@ async function runTests() {
   const valEmptyPrompt = AiGenerateTextValidator.validate({
     credentialId: 'cred_gemini_123',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     prompt: '   ',
   });
   assert(!valEmptyPrompt.isValid && valEmptyPrompt.errors.includes('Prompt cannot be empty.'), 'Rejects configuration with empty prompt');
@@ -68,7 +68,7 @@ async function runTests() {
   const valValid = AiGenerateTextValidator.validate({
     credentialId: 'cred_gemini_123',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     prompt: 'Write a greeting for {{projectName}}',
     temperature: 0.7,
     maxTokens: 500,
@@ -77,7 +77,7 @@ async function runTests() {
     valValid.isValid &&
     valValid.credentialId === 'cred_gemini_123' &&
     valValid.provider === 'gemini' &&
-    valValid.model === 'gemini-2.5-flash' &&
+    valValid.model === 'gemini-1.5-flash' &&
     valValid.temperature === 0.7 &&
     valValid.maxTokens === 500,
     'Validates correct Gemini → Generate Text configuration'
@@ -112,7 +112,7 @@ async function runTests() {
   const rawConfig = {
     credentialId: 'cred_gemini_789',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     prompt: 'Create a greeting for {{steps["Start Trigger"].user.name}} regarding {{steps["Start Trigger"].projectName}}.',
   };
 
@@ -163,7 +163,7 @@ async function runTests() {
     success: true,
     text: 'Hello Divyansh! Welcome to AutomateX AI Engine powered by Google Gemini.',
     provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     usage: {
       promptTokens: 16,
       completionTokens: 22,
