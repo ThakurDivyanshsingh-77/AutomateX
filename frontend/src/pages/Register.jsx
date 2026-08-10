@@ -2,10 +2,21 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
-import { Zap, User, Mail, Lock } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+
+/* ─── Bolt wordmark ─────────────────────────────────────────────────────── */
+const BoltMark = () => (
+  <svg width={40} height={40} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <rect width="32" height="32" rx="8" fill="#ff4f00" />
+    <path d="M19 4L9 18h8l-4 10 14-16h-9l3-8z" fill="#fffefb" strokeLinejoin="round" />
+  </svg>
+);
+
+const PERKS = [
+  'Free forever — no credit card needed',
+  '5 active workflows immediately',
+  'AI nodes: OpenAI & Gemini included',
+];
 
 export const Register = () => {
   const { register: registerAuth, loading } = useAuth();
@@ -21,114 +32,188 @@ export const Register = () => {
   const password = watch('password', '');
 
   const onSubmit = async (data) => {
-    const res = await registerAuth({
-      name: data.name,
-      email: data.email,
-      password: data.password,
-    });
+    const res = await registerAuth({ name: data.name, email: data.email, password: data.password });
     if (res.success) {
       navigate('/dashboard', { replace: true });
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 select-none relative overflow-hidden font-sans">
-      <div className="w-full max-w-md">
-        <Card className="space-y-6">
-          <div className="text-center space-y-2">
-            <Link to="/" className="inline-block">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600/10 border border-indigo-600/20 text-indigo-400 mx-auto flex items-center justify-center">
-                <Zap className="w-6 h-6 fill-indigo-400" />
-              </div>
+    <div
+      className="min-h-screen flex flex-col lg:flex-row"
+      style={{ backgroundColor: 'var(--color-canvas)', fontFamily: "'Inter', system-ui, sans-serif" }}
+    >
+      {/* ── Left panel (cream-soft) — brand / perks ───────────────────── */}
+      <div
+        className="hidden lg:flex flex-col justify-center p-16"
+        style={{ backgroundColor: 'var(--color-canvas-soft)', flex: '0 0 420px', borderRight: '1px solid var(--color-mute)' }}
+      >
+        <div className="space-y-10">
+          <div>
+            <Link to="/" className="flex items-center gap-2 no-underline mb-10" style={{ textDecoration: 'none' }}>
+              <BoltMark />
+              <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--color-ink)' }}>AutomateX</span>
             </Link>
-            <h2 className="text-xl font-bold text-white tracking-tight">Create an account</h2>
-            <p className="text-xs text-slate-400">Join AutomateX Workflow Automation Platform</p>
+            <h2 style={{ fontSize: 36, fontWeight: 500, color: 'var(--color-ink)', lineHeight: '40px', letterSpacing: '-0.02em' }}>
+              Automate anything.<br />
+              <span style={{ color: 'var(--color-primary)' }}>No code.</span>
+            </h2>
+            <p style={{ fontSize: 17, color: 'var(--color-body)', marginTop: 12, lineHeight: '26px' }}>
+              Join 12,000+ teams who use AutomateX to connect apps, run AI workflows, and ship faster.
+            </p>
+          </div>
+          <ul className="space-y-4">
+            {PERKS.map((perk) => (
+              <li key={perk} className="flex items-center gap-3">
+                <CheckCircle2 size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                <span style={{ fontSize: 16, color: 'var(--color-ink-mid)' }}>{perk}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* ── Right panel — registration form ─────────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        {/* Mobile wordmark */}
+        <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden no-underline" style={{ textDecoration: 'none' }}>
+          <BoltMark />
+          <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--color-ink)' }}>AutomateX</span>
+        </Link>
+
+        <div className="w-full" style={{ maxWidth: 440 }}>
+          <div className="mb-7">
+            <h1 style={{ fontSize: 28, fontWeight: 600, color: 'var(--color-ink)', lineHeight: '34px', letterSpacing: '-0.4px', margin: 0 }}>
+              Create your account
+            </h1>
+            <p style={{ fontSize: 16, color: 'var(--color-body)', marginTop: 6 }}>
+              It's free. No credit card required.
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <Input
-              label="Full Name"
-              placeholder="Divyansh Kumar"
-              icon={User}
-              autoComplete="name"
-              error={errors.name?.message}
-              {...register('name', {
-                required: 'Full name is required',
-                minLength: {
-                  value: 3,
-                  message: 'Name must be at least 3 characters long',
-                },
-                maxLength: {
-                  value: 50,
-                  message: 'Name cannot exceed 50 characters',
-                },
-              })}
-            />
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+            {/* Full name */}
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+                Full name
+              </label>
+              <div style={{ position: 'relative' }}>
+                <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+                <input
+                  type="text"
+                  placeholder="Divyansh Kumar"
+                  autoComplete="name"
+                  className="zap-input"
+                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.name ? '#DC2626' : 'var(--color-ink)' }}
+                  {...register('name', {
+                    required: 'Full name is required',
+                    minLength: { value: 3, message: 'At least 3 characters' },
+                    maxLength: { value: 50, message: 'At most 50 characters' },
+                  })}
+                />
+              </div>
+              {errors.name && <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.name.message}</p>}
+            </div>
 
-            <Input
-              label="Email Address"
-              type="email"
-              placeholder="engineer@company.com"
-              icon={Mail}
-              autoComplete="email"
-              error={errors.email?.message}
-              {...register('email', {
-                required: 'Email address is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Please enter a valid email address',
-                },
-              })}
-            />
+            {/* Email */}
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+                Email address
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+                <input
+                  type="email"
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  className="zap-input"
+                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.email ? '#DC2626' : 'var(--color-ink)' }}
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Enter a valid email' },
+                  })}
+                />
+              </div>
+              {errors.email && <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.email.message}</p>}
+            </div>
 
-            <Input
-              label="Password"
-              type="password"
-              placeholder="At least 8 characters"
-              icon={Lock}
-              autoComplete="new-password"
-              error={errors.password?.message}
-              {...register('password', {
-                required: 'Password is required',
-                minLength: {
-                  value: 8,
-                  message: 'Password must be at least 8 characters long',
-                },
-              })}
-            />
+            {/* Password */}
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+                <input
+                  type="password"
+                  placeholder="At least 8 characters"
+                  autoComplete="new-password"
+                  className="zap-input"
+                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.password ? '#DC2626' : 'var(--color-ink)' }}
+                  {...register('password', {
+                    required: 'Password is required',
+                    minLength: { value: 8, message: 'At least 8 characters' },
+                  })}
+                />
+              </div>
+              {errors.password && <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.password.message}</p>}
+            </div>
 
-            <Input
-              label="Confirm Password"
-              type="password"
-              placeholder="Repeat your password"
-              icon={Lock}
-              autoComplete="new-password"
-              error={errors.confirmPassword?.message}
-              {...register('confirmPassword', {
-                required: 'Please confirm your password',
-                validate: (value) =>
-                  value === password || 'Passwords do not match',
-              })}
-            />
+            {/* Confirm password */}
+            <div>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+                Confirm password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+                <input
+                  type="password"
+                  placeholder="Repeat your password"
+                  autoComplete="new-password"
+                  className="zap-input"
+                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.confirmPassword ? '#DC2626' : 'var(--color-ink)' }}
+                  {...register('confirmPassword', {
+                    required: 'Please confirm your password',
+                    validate: (v) => v === password || 'Passwords do not match',
+                  })}
+                />
+              </div>
+              {errors.confirmPassword && (
+                <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.confirmPassword.message}</p>
+              )}
+            </div>
 
-            <Button
+            {/* Submit */}
+            <button
               type="submit"
-              variant="primary"
-              size="md"
-              className="w-full"
-              isLoading={loading}
+              disabled={loading}
+              className="zap-btn-primary zap-btn-md"
+              style={{ width: '100%', justifyContent: 'center', opacity: loading ? 0.65 : 1, marginTop: 4 }}
             >
-              Create Account
-            </Button>
+              {loading ? (
+                <span className="zap-pulse">Creating account…</span>
+              ) : (
+                <>
+                  Create free account <ArrowRight size={18} />
+                </>
+              )}
+            </button>
           </form>
 
-          <p className="text-center text-xs text-slate-500">
+          <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--color-body)', marginTop: 20 }}>
             Already have an account?{' '}
-            <Link to="/login" className="text-indigo-400 font-semibold hover:underline">
-              Sign in here
+            <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
+              Sign in
             </Link>
           </p>
-        </Card>
+
+          <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--color-body-mid)', marginTop: 16 }}>
+            By creating an account you agree to our{' '}
+            <a href="#" style={{ color: 'var(--color-body)', textDecoration: 'underline' }}>Terms</a>{' '}
+            and{' '}
+            <a href="#" style={{ color: 'var(--color-body)', textDecoration: 'underline' }}>Privacy Policy</a>.
+          </p>
+        </div>
       </div>
     </div>
   );

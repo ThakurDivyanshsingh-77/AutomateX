@@ -1,25 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── AutomateX / Zapier-inspired Design System ─────────────────────────────
+   Warm cream canvas · Coffee ink · Single saturated orange CTA accent
+   Reference: Zapier design analysis (alpha)
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Brand & Accent */
+  --color-primary:      #ff4f00;
+  --color-on-primary:   #fffefb;
+
+  /* Text Ink Ladder */
+  --color-ink:          #201515;
+  --color-ink-soft:     #2f2a26;
+  --color-ink-mid:      #36342e;
+  --color-body:         #605d52;
+  --color-body-mid:     #939084;
+  --color-mute:         #c5c0b1;
+
+  /* Surface Canvas */
+  --color-canvas:       #fffefb;
+  --color-canvas-soft:  #f8f4f0;
+
+  /* Border Radius */
+  --rounded-none: 0px;
+  --rounded-sm:   6px;
+  --rounded-md:   12px;
+  --rounded-pill: 9999px;
+
+  /* Spacing */
+  --space-xxs: 2px;
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-lg:  16px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
+}
+
+/* ─── Base Layer ─────────────────────────────────────────────────────────── */
 @layer base {
+  /* Dashboard / app shell keeps the existing dark theme (slate-950).
+     Landing-page-specific overrides are applied on the .zap-landing wrapper. */
   body {
-    @apply bg-slate-950 text-slate-100 font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply antialiased;
   }
 }
 
-/* Custom Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ─── Landing-page Surface Reset ────────────────────────────────────────── */
+.zap-surface {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: 'Inter', system-ui, sans-serif;
 }
-::-webkit-scrollbar-track {
-  background: #0f172a;
+
+/* ─── Typography utilities ───────────────────────────────────────────────── */
+/* Hero headline — 56px / 500 — Degular Display substitute: Inter 500 */
+.zap-display-xl {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 56px;
+  font-weight: 500;
+  line-height: 56px;
+  letter-spacing: -0.02em;
 }
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+
+/* Display Large — 48px / 500 */
+.zap-display-lg {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 48px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+
+/* Display Medium — 32px / 500 */
+.zap-display-md {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 36px;
+  letter-spacing: 1px;
 }
+
+/* Display Sub Small — 24px / 600 */
+.zap-display-sub-sm {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+  letter-spacing: -0.6px;
+}
+
+/* Display XS — 20px / 700 */
+.zap-display-xs {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 25px;
+  letter-spacing: -0.5px;
+}
+
+/* Body Large — 20px / 400 */
+.zap-body-lg {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 30px;
+  letter-spacing: -0.2px;
+}
+
+/* Body Medium — 18px / 400 */
+.zap-body-md {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 27px;
+}
+
+/* Body Small — 16px / 400 */
+.zap-body-sm {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+/* Eyebrow uppercase — 14px / 500 / 1px tracking */
+.zap-eyebrow {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Button medium — 18px / 600 */
+.zap-btn-md {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+}
+
+/* Button small — 14.4px / 700 */
+.zap-btn-sm {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14.4px;
+  font-weight: 700;
+  line-height: 14.4px;
+  letter-spacing: 0.144px;
+}
+
+/* Caption — 14px / 400 */
+.zap-caption {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+/* ─── Component primitives ───────────────────────────────────────────────── */
+
+/* Primary CTA — orange fill */
+.zap-btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--rounded-md);
+  padding: var(--space-md) var(--space-xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.zap-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+.zap-btn-primary:active { transform: translateY(0); }
+
+/* Secondary CTA — coffee ink fill */
+.zap-btn-secondary {
+  background-color: var(--color-ink);
+  color: var(--color-on-primary);
+  border-radius: var(--rounded-md);
+  padding: var(--space-md) var(--space-xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.zap-btn-secondary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+/* Tertiary CTA — outline */
+.zap-btn-tertiary {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--rounded-md);
+  padding: var(--space-md) var(--space-xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.zap-btn-tertiary:hover { background-color: var(--color-canvas-soft); transform: translateY(-1px); }
+
+/* Feature card — cream */
+.zap-card {
+  background-color: var(--color-canvas-soft);
+  color: var(--color-ink);
+  border-radius: var(--rounded-md);
+  padding: var(--space-xl);
+}
+
+/* Feature card — dark coffee */
+.zap-card-dark {
+  background-color: var(--color-ink);
+  color: var(--color-on-primary);
+  border-radius: var(--rounded-md);
+  padding: var(--space-xl);
+}
+
+/* Pricing card — outlined */
+.zap-pricing-card {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--rounded-md);
+  padding: var(--space-xl);
+}
+
+/* Pricing card — featured dark */
+.zap-pricing-card-featured {
+  background-color: var(--color-ink);
+  color: var(--color-on-primary);
+  border-radius: var(--rounded-md);
+  padding: var(--space-xl);
+}
+
+/* Badge pill */
+.zap-badge {
+  background-color: var(--color-canvas-soft);
+  color: var(--color-ink);
+  border-radius: var(--rounded-pill);
+  padding: var(--space-xs) var(--space-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Text input */
+.zap-input {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--rounded-sm);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 18px;
+  line-height: 27px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.zap-input::placeholder { color: var(--color-body-mid); }
+.zap-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 79, 0, 0.12);
+}
+
+/* Auth form card */
+.zap-auth-card {
+  background-color: var(--color-canvas-soft);
+  color: var(--color-ink);
+  border-radius: var(--rounded-md);
+  padding: var(--space-xl);
+}
+
+/* Navbar */
+.zap-nav {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-mute);
+}
+
+/* Footer */
+.zap-footer {
+  background-color: var(--color-ink);
+  color: var(--color-canvas-soft);
+  padding: var(--space-3xl) var(--space-xl);
+}
+
+/* ─── Scrollbar — kept dark for dashboard ───────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ─── Micro-animations ───────────────────────────────────────────────────── */
+@keyframes zapFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.zap-fade-up { animation: zapFadeUp 0.55s ease both; }
+.zap-fade-up-1 { animation-delay: 0.05s; }
+.zap-fade-up-2 { animation-delay: 0.15s; }
+.zap-fade-up-3 { animation-delay: 0.25s; }
+.zap-fade-up-4 { animation-delay: 0.35s; }
+.zap-fade-up-5 { animation-delay: 0.45s; }
+
+@keyframes zapPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+.zap-pulse { animation: zapPulse 2.4s ease-in-out infinite; }
+

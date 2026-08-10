@@ -463,7 +463,49 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 
 
-## 🛠️ Complete Tech Stack
+### **Design System Phase Complete — Zapier-Inspired Visual Identity** — ✅ COMPLETED
+
+**Scope**: Replaced the dark slate/indigo Linear-style palette across the public-facing pages with a confident-warm Zapier-inspired design language.
+
+- **Design Token System (`frontend/src/index.css`)**:
+  - CSS custom properties for the full Zapier-inspired palette: canvas `#fffefb`, canvas-soft `#f8f4f0`, ink `#201515`, ink-soft/mid, body/body-mid/mute, primary orange `#ff4f00`, on-primary `#fffefb`.
+  - Border radius tokens: `--rounded-sm` (6px), `--rounded-md` (12px), `--rounded-pill`.
+  - Spacing tokens: `--space-xxs` through `--space-4xl`.
+  - Typography utility classes: `zap-display-xl` (56px/500), `zap-display-lg`, `zap-display-md`, `zap-display-sub-sm`, `zap-display-xs`, `zap-body-lg`, `zap-body-md`, `zap-body-sm`, `zap-eyebrow`, `zap-btn-md`, `zap-btn-sm`, `zap-caption`.
+  - Component primitives: `zap-btn-primary` (orange fill), `zap-btn-secondary` (coffee ink), `zap-btn-tertiary` (outline), `zap-card`, `zap-card-dark`, `zap-pricing-card`, `zap-pricing-card-featured`, `zap-badge`, `zap-input` (with orange focus ring), `zap-auth-card`, `zap-nav`, `zap-footer`, `zap-surface`.
+  - Micro-animations: `zapFadeUp` (staggered entrance, 5 delay levels), `zapPulse` (live indicator).
+  - Google Fonts: Inter (400, 500, 600, 700) imported at CSS root. Dashboard dark theme untouched (Tailwind dark classes retained).
+
+- **Landing Page (`frontend/src/pages/Landing.jsx`)** — Full redesign:
+  - **Sticky Navbar**: cream canvas with coffee ink brand/links and orange CTA buttons.
+  - **Hero Section**: animated badge, 56px display headline with orange accent, body copy, dual CTAs, star rating trust signal, SVG workflow canvas illustration with live pulse animation.
+  - **Stats Band**: coffee-ink dark band — 12K+ users, 2.4M runs/month, 50+ integrations, 4.9★.
+  - **Integrations Grid**: 6 integration tiles (Gmail, Discord, Webhooks, AI/LLM, MongoDB, Conditions) on cream-soft panel.
+  - **Features Grid**: 6 feature cards (alternating cream / dark coffee) with hover lift: Visual Builder, AI Nodes, 50+ Node Types, Credential Vault, Cron/Webhook Triggers, Execution History.
+  - **Orange CTA Band**: Full-width saturated orange with white CTA button.
+  - **Pricing Section**: 3-tier cards (Starter/Free, Pro/$29, Enterprise/Custom) — outlined, dark featured, outlined. Most Popular badge on Pro tier.
+  - **FAQ Accordion**: 4 FAQs with animated chevron expand/collapse.
+  - **Footer**: Dark coffee footer with brand, 3-column link grid, copyright.
+
+- **Login Page (`frontend/src/pages/Login.jsx`)** — Full redesign:
+  - Single cream-soft auth card (max-w-440px, 12px radius).
+  - Inline icon inputs (Mail, Lock) with coffee ink border and orange focus ring.
+  - Orange primary submit button with ArrowRight icon.
+  - No external UI library dependency — pure `zap-*` CSS classes.
+
+- **Register Page (`frontend/src/pages/Register.jsx`)** — Full redesign:
+  - Split-panel layout on desktop: cream-soft brand/perks sidebar (420px) + cream form panel.
+  - Perks list with orange CheckCircle2 icons.
+  - 4-field form (name, email, password, confirm password) with inline validation.
+  - Fully consistent with Login design language.
+
+**Design Language Note**: Inter 500 used as Degular Display substitute at hero scale. Dashboard pages retain their existing dark slate-950 theme. No Tailwind utilities were removed; the `zap-*` classes extend alongside the existing dark-mode utilities.
+
+---
+
+
+
+
 
 ### **Backend (`/backend`)**
 - **Runtime**: Node.js (ES Modules `"type": "module"`)
