@@ -33,7 +33,7 @@ export function LandingPage() {
         fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale',
-        overflowX: 'hidden',
+        overflowX: 'clip',
       }}
     >
       {/* ① Sticky navigation */}
