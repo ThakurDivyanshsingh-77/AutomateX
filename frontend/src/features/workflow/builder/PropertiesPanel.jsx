@@ -25,6 +25,7 @@ import { DiscordRemoveRoleFromMemberProperties } from '../components/DiscordRemo
 import { AiGenerateTextProperties } from '../components/AiGenerateTextProperties';
 import { OpenAiGenerateTextProperties } from '../components/OpenAiGenerateTextProperties';
 import { GeminiGenerateTextProperties } from '../components/GeminiGenerateTextProperties';
+import { DiscordMessageReceivedProperties } from '../components/DiscordMessageReceivedProperties';
 
 
 
@@ -67,14 +68,15 @@ export const PropertiesPanel = ({
   const isOpenAiGenerateTextNode = selectedNode.type === 'openaiGenerateText' || selectedNode.type === 'openAiGenerateText' || (selectedNode.type.toLowerCase().includes('openai') && selectedNode.type.toLowerCase().includes('generatetext'));
   const isGeminiGenerateTextNode = selectedNode.type === 'geminiGenerateText' || selectedNode.type === 'googleGeminiGenerateText' || (selectedNode.type.toLowerCase().includes('gemini') && selectedNode.type.toLowerCase().includes('generatetext'));
   const isAiGenerateTextNode = !isOpenAiGenerateTextNode && !isGeminiGenerateTextNode && (selectedNode.type === 'aiGenerateText' || selectedNode.type === 'ai' || (selectedNode.type.toLowerCase().includes('ai') && selectedNode.type.toLowerCase().includes('generatetext')));
+  const isDiscordMessageReceivedNode = selectedNode.type === 'discordMessageReceived' || selectedNode.type === 'discordMessageReceivedTrigger' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('messagereceived'));
   const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
   const isDiscordDeleteChannelNode = selectedNode.type === 'discordDeleteChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deletechannel'));
   const isDiscordCreateRoleNode = selectedNode.type === 'discordCreateRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createrole'));
   const isDiscordDeleteRoleNode = selectedNode.type === 'discordDeleteRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deleterole'));
   const isDiscordAddRoleToMemberNode = selectedNode.type === 'discordAddRoleToMember' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('addroletomember'));
   const isDiscordRemoveRoleFromMemberNode = selectedNode.type === 'discordRemoveRoleFromMember' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('removerolefrommember'));
-  const isDiscordEmbedNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
-  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+  const isDiscordEmbedNode = !isDiscordMessageReceivedNode && !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
+  const isDiscordNode = !isDiscordMessageReceivedNode && !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
 
 
 
@@ -225,6 +227,10 @@ export const PropertiesPanel = ({
               />
             ) : isAiGenerateTextNode ? (
               <AiGenerateTextProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+            ) : isDiscordMessageReceivedNode ? (
+              <DiscordMessageReceivedProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />

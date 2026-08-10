@@ -1,4 +1,4 @@
-import { ManualTriggerExecutor, WebhookTriggerExecutor, ScheduleTriggerExecutor } from '../executors/TriggerExecutors.js';
+import { ManualTriggerExecutor, WebhookTriggerExecutor, ScheduleTriggerExecutor, DiscordMessageReceivedTriggerExecutor } from '../executors/TriggerExecutors.js';
 import { HttpExecutor } from '../executors/HttpExecutor.js';
 import { DelayExecutor } from '../executors/DelayExecutor.js';
 import { LogExecutor } from '../executors/LogExecutor.js';
@@ -25,6 +25,7 @@ const googleSheetsDeleteWorksheetExecutor = new GoogleSheetsDeleteWorksheetExecu
 const googleSheetsGetSpreadsheetInfoExecutor = new GoogleSheetsGetSpreadsheetInfoExecutor();
 const discordNodeExecutor = new DiscordNodeExecutor();
 const aiNodeExecutor = new AiNodeExecutor();
+const discordMessageReceivedExecutor = new DiscordMessageReceivedTriggerExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -32,6 +33,9 @@ export class ExecutorRegistry {
     ['webhook', new WebhookTriggerExecutor()],
     ['cron', new ScheduleTriggerExecutor()],
     ['schedule', new ScheduleTriggerExecutor()],
+    ['discordMessageReceived', discordMessageReceivedExecutor],
+    ['discordMessageReceivedTrigger', discordMessageReceivedExecutor],
+    ['discord_message_received', discordMessageReceivedExecutor],
     ['http', new HttpExecutor()],
     ['delay', new DelayExecutor()],
     ['log', new LogExecutor()],

@@ -1,6 +1,7 @@
 import { MessageSquare, Layout, FolderPlus, Trash2, ShieldPlus, ShieldX, UserPlus, UserMinus } from 'lucide-react';
 
 export const DISCORD_NODE_TYPES = {
+  MESSAGE_RECEIVED: 'discordMessageReceived',
   SEND_MESSAGE: 'discordSendMessage',
   SEND_EMBED: 'discordSendEmbed',
   CREATE_CHANNEL: 'discordCreateChannel',
@@ -393,7 +394,42 @@ export const discordRemoveRoleFromMemberDefinition = {
   validate: discordRemoveRoleFromMemberValidator,
 };
 
+export const discordMessageReceivedValidator = (config) => {
+  const errors = [];
+  if (!config.credentialId) errors.push('Discord Credential is required.');
+  return { isValid: errors.length === 0, errors };
+};
+
+export const discordMessageReceivedDefinition = {
+  id: 'discordMessageReceived',
+  type: 'discordMessageReceived',
+  name: 'discordMessageReceived',
+  label: 'Discord → Message Received',
+  category: 'Triggers',
+  provider: 'Discord',
+  description: 'Start a workflow whenever the connected Discord bot receives a message.',
+  searchKeywords: ['Discord', 'Message Received', 'Message', 'Trigger'],
+  icon: MessageSquare,
+  color: 'indigo',
+  badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  hasInputHandle: false,
+  hasOutputHandle: true,
+  inputs: [],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    provider: 'discord',
+    triggerType: 'discordMessageReceived',
+    guildId: 'all',
+    channelId: 'all',
+    ignoreBotMessages: true,
+    onlyBotMentioned: false,
+  },
+  validate: discordMessageReceivedValidator,
+};
+
 export const discordNodeDefinitions = {
+  [DISCORD_NODE_TYPES.MESSAGE_RECEIVED]: discordMessageReceivedDefinition,
   [DISCORD_NODE_TYPES.SEND_MESSAGE]: discordSendMessageDefinition,
   [DISCORD_NODE_TYPES.SEND_EMBED]: discordSendEmbedDefinition,
   [DISCORD_NODE_TYPES.CREATE_CHANNEL]: discordCreateChannelDefinition,

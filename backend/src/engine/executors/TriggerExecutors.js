@@ -56,3 +56,45 @@ export class ScheduleTriggerExecutor extends BaseExecutor {
     };
   }
 }
+
+export class DiscordMessageReceivedTriggerExecutor extends BaseExecutor {
+  async execute(node, context) {
+    const raw = context.initialPayload || context.currentData || {};
+    const message = raw.message || raw;
+    const author = message.author || raw.author || {};
+
+    const msgId = String(message.id || raw.id || '');
+    const content = String(message.content || raw.content || '');
+    const channelId = String(message.channelId || raw.channelId || '');
+    const guildId = String(message.guildId || raw.guildId || '');
+
+    const output = {
+      message: {
+        id: msgId,
+        content,
+        channelId,
+        guildId,
+        author: {
+          id: String(author.id || ''),
+          username: String(author.username || ''),
+          bot: Boolean(author.bot),
+        },
+      },
+      content,
+      channelId,
+      guildId,
+      author: {
+        id: String(author.id || ''),
+        username: String(author.username || ''),
+        bot: Boolean(author.bot),
+      },
+      id: msgId,
+      triggeredAt: raw.triggeredAt || new Date().toISOString(),
+    };
+
+    return {
+      status: 'success',
+      output,
+    };
+  }
+}

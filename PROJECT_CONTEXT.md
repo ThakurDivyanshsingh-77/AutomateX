@@ -570,6 +570,35 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ---
 
+### **Discord → Message Received Trigger Node Implementation** — ✅ COMPLETED
+
+**Scope**: Built and integrated the real-time `Discord → Message Received` trigger node powered by Discord's WebSocket Gateway v10 (`wss://gateway.discord.gg/?v=10&encoding=json`).
+
+- **Server-Side WebSocket Gateway Manager (`DiscordGatewayManager.js`)**:
+  - Implemented single-connection-per-credential Gateway WebSocket client.
+  - Receives Opcode 10 `Hello` and maintains heartbeat loop at `heartbeat_interval`.
+  - Identifies with intents `37377` (`GUILDS` | `GUILD_MESSAGES` | `DIRECT_MESSAGES` | `MESSAGE_CONTENT`).
+  - Automatically catches Opcode 4014 missing Message Content intent error and displays setup guidance.
+  - Implemented LRU message ID deduplication cache (1000 items, 10 min TTL).
+  - Ignores bot messages by default (`ignoreBotMessages !== false`) to prevent infinite loop recursion.
+
+- **Backend Runtime & Registries (`TriggerRegistry.js` & `ExecutorRegistry.js`)**:
+  - Registered `DiscordMessageReceivedTrigger` in `TriggerRegistry`.
+  - Registered `DiscordMessageReceivedTriggerExecutor` in `ExecutorRegistry`.
+  - Created `DiscordMessageReceivedService.js` for trigger activation, deactivation, and test payload generation.
+
+- **Frontend UI & Node Palette (`DiscordMessageReceivedProperties.jsx` & `DiscordMessageReceivedNode.jsx`)**:
+  - Registered under **Category: Triggers**, **Provider: Discord**.
+  - Searchable by keywords: `Discord`, `Message Received`, `Message`, `Trigger`.
+  - Custom canvas node with right output handle.
+  - Inspector panel allowing credential selection, server/channel filtering, and `ignoreBotMessages` / `onlyBotMentioned` toggles.
+
+- **Data Mapper & Downstream Workflow Integration**:
+  - Formats output structure containing `message.id`, `message.content`, `message.channelId`, `message.guildId`, `message.author` alongside top-level `content` and `channelId`.
+  - End-to-end verified with `Discord → Message Received` → `Gemini → Generate Text` → `Discord → Send Message`.
+
+---
+
 
 
 

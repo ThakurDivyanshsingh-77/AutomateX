@@ -2,8 +2,10 @@ import { ManualTrigger } from '../triggers/ManualTrigger.js';
 import { WebhookTrigger } from '../triggers/WebhookTrigger.js';
 import { CronTrigger } from '../triggers/CronTrigger.js';
 import { GoogleSheetsTrigger } from '../triggers/GoogleSheetsTrigger.js';
+import { DiscordMessageReceivedTrigger } from '../triggers/DiscordMessageReceivedTrigger.js';
 
 const googleSheetsTrigger = new GoogleSheetsTrigger();
+const discordMessageReceivedTrigger = new DiscordMessageReceivedTrigger();
 
 export class TriggerRegistry {
   static triggers = new Map([
@@ -18,6 +20,11 @@ export class TriggerRegistry {
     ['google_sheets', googleSheetsTrigger],
     ['google_sheets_trigger', googleSheetsTrigger],
     ['GOOGLE_SHEETS', googleSheetsTrigger],
+    ['discordmessagereceived', discordMessageReceivedTrigger],
+    ['discordmessagereceivedtrigger', discordMessageReceivedTrigger],
+    ['discordMessageReceived', discordMessageReceivedTrigger],
+    ['discordMessageReceivedTrigger', discordMessageReceivedTrigger],
+    ['discord_message_received', discordMessageReceivedTrigger],
   ]);
 
   static isTrigger(type) {
