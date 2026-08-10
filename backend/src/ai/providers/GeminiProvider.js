@@ -92,18 +92,23 @@ export class GeminiProvider extends AIProvider {
     }
 
     const requestedModel = GeminiProvider.normalizeModelName(model);
+    let selectedModel = requestedModel;
+    const autoSelect = Boolean(autoSelectModel);
 
     // Step 1: Query models.list for available generateContent models
     const discovery = await GeminiProvider.validateModelAvailability(apiKey, requestedModel);
+    const availableModels = discovery.availableModels || [];
 
-    let finalModel = requestedModel;
-    let fallbackUsed = false;
+    if (autoSelect) {
+      // Auto Select Mode: pick best available model that supports generateContent
+      const availableNames = availableModels.map((m) => m.cleanName);
 
-    if (!autoSelectModel && discovery.isAvailable && discovery.supportsGenContent) {
-      finalModel = requestedModel;
-      fallbackUsed = false;
-    } else {
-      // Priority fallback search order
+      if (availableNames.length === 0) {
+        const err = new Error('No available Gemini model supports generateContent for this credential.');
+        err.statusCode = 404;
+        throw err;
+      }
+
       const PRIORITY_FALLBACKS = [
         'gemini-3.6-flash',
         'gemini-3.5-flash',
@@ -116,30 +121,38 @@ export class GeminiProvider extends AIProvider {
         'gemini-1.0-pro',
       ];
 
-      const availableNames = discovery.availableModels.map((m) => m.cleanName);
-
-      if (availableNames.length === 0) {
-        const err = new Error('No Gemini model available for generateContent with this API credential. Check the API key/project/model access.');
+      if (availableNames.includes(requestedModel)) {
+        selectedModel = requestedModel;
+      } else {
+        const matchedFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
+        selectedModel = matchedFallback || availableNames[0];
+      }
+    } else {
+      // Auto Select Disabled: use user-provided model
+      if (discovery.totalModelsCount > 0 && availableModels.length > 0 && !discovery.isAvailable) {
+        const err = new Error(`Selected Gemini model "${requestedModel}" is unavailable or invalid for this credential.`);
         err.statusCode = 404;
         throw err;
       }
 
-      let chosenFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
-      if (!chosenFallback) {
-        chosenFallback = availableNames[0];
+      if (discovery.totalModelsCount > 0 && availableModels.length === 0) {
+        const err = new Error('No available Gemini model supports generateContent for this credential.');
+        err.statusCode = 404;
+        throw err;
       }
 
-      if (autoSelectModel || !discovery.isAvailable || !discovery.supportsGenContent) {
-        finalModel = chosenFallback;
-        fallbackUsed = finalModel !== requestedModel;
-      }
+      selectedModel = requestedModel;
     }
 
-    console.log(`[Gemini] Requested model: ${requestedModel}`);
-    console.log(`[Gemini] Selected model: ${finalModel}`);
-    console.log(`[Gemini] Fallback used: ${fallbackUsed ? 'true' : 'false'}`);
+    // Normalize final selected model name
+    selectedModel = GeminiProvider.normalizeModelName(selectedModel);
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(finalModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    // Safe required logging
+    console.log(`[Gemini] Requested model: ${requestedModel}`);
+    console.log(`[Gemini] Selected model: ${selectedModel}`);
+    console.log(`[Gemini] Auto select: ${autoSelect}`);
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const parsedTemp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
     const validTemp = isNaN(parsedTemp) ? 0.7 : Math.max(0, Math.min(2, parsedTemp));
@@ -163,7 +176,7 @@ export class GeminiProvider extends AIProvider {
       },
     };
 
-    console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${finalModel})...`);
+    console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${selectedModel})...`);
 
     const startTime = Date.now();
     const controller = new AbortController();

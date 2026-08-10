@@ -16,7 +16,8 @@ export class AiGenerateTextValidator {
       errors.push(`AI provider "${provider}" is currently not supported. Supported providers: "openai", "gemini".`);
     }
 
-    const model = String(config.model || 'gpt-4o-mini').trim();
+    const defaultModel = (provider === 'gemini' || provider === 'google') ? 'gemini-1.5-flash' : 'gpt-4o-mini';
+    const model = String(config.model || config.modelIdentifier || defaultModel).trim();
     if (!model) {
       errors.push('AI model selection is required.');
     }

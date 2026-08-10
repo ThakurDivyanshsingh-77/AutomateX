@@ -121,12 +121,16 @@ requestStarted: true`);
       throw err;
     }
 
-    console.log(`[AiGenerateTextService] 🚀 Generating text with Provider: ${providerName.toUpperCase()}, Model: ${validation.model}`);
+    const requestedModel = config.model || config.modelIdentifier || validation.model;
+    const autoSelectModel = config.autoSelectModel === true || config.autoSelectModel === 'true' || config.autoSelect === true;
+
+    console.log(`[AiGenerateTextService] 🚀 Generating text with Provider: ${providerName.toUpperCase()}, Model: ${requestedModel}`);
     console.log(`[AiGenerateTextService] 📝 Prompt Length: ${validation.prompt.length} chars, Temp: ${validation.temperature}, MaxTokens: ${validation.maxTokens}`);
 
     const result = await providerImpl.generateText({
       apiKey,
-      model: validation.model,
+      model: requestedModel,
+      autoSelectModel,
       prompt: validation.prompt,
       temperature: validation.temperature,
       maxTokens: validation.maxTokens,

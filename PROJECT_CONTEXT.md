@@ -542,7 +542,34 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 **Design Tokens Used**: Primary `#ff4f00` (orange), canvas `#F7F5F0` (cream), ink `#1A1012` (dark brown-black), Inter 400/500/600/700.
 
+### **Gemini Provider Model Selection Bug Fix — ReferenceError Resolution** — ✅ COMPLETED
+
+**Scope**: Resolved JavaScript `ReferenceError: selectedModel is not defined` bug in `GeminiProvider.js` during Gemini text generation execution.
+
+- **Variable Scoping & Declaration (`GeminiProvider.js`)**:
+  - Declared `const requestedModel = GeminiProvider.normalizeModelName(model);` and `let selectedModel = requestedModel;` at the start of `generateText()`.
+  - Guaranteed `selectedModel` is in scope across auto-select branch, manual selection branch, model normalization, URL endpoint construction (`/v1beta/models/${selectedModel}:generateContent`), error handling (HTTP 404/403/401/429), and success return payload (`{ success: true, text, provider: 'gemini', model: selectedModel, usage }`).
+
+- **Logging & Validation Requirements**:
+  - Added safe required logging:
+    - `[Gemini] Requested model: ${requestedModel}`
+    - `[Gemini] Selected model: ${selectedModel}`
+    - `[Gemini] Auto select: ${autoSelect}`
+  - Handled custom model inputs (e.g. `gemini-2.5-flash`) via `GeminiProvider.normalizeModelName()` stripping leading `models/` prefix and trimming whitespace.
+  - Returned clear 404 error when auto-select finds no compatible model: `"No available Gemini model supports generateContent for this credential."`
+  - Returned clear 404 error when user-specified model is unavailable: `"Selected Gemini model \"${requestedModel}\" is unavailable or invalid for this credential."`
+
+- **Service & Validator Integration (`AiGenerateTextService.js` & `AiGenerateTextValidator.js`)**:
+  - Updated `AiGenerateTextService.js` to extract `requestedModel` from `config.model || config.modelIdentifier || validation.model` and pass `autoSelectModel` explicitly to `providerImpl.generateText()`.
+  - Updated `AiGenerateTextValidator.js` to support `config.modelIdentifier` and fallback to provider-specific defaults (`gemini-1.5-flash` for Gemini vs `gpt-4o-mini` for OpenAI).
+
+- **Automated Verification**:
+  - Passed all 7 assertions in `test_gemini_generate_text.js`.
+  - Passed end-to-end prompt test in `test_gemini_hi_kya_haal_hai.js` (prompt: `"hi kya haal hai"`, model: `"gemini-2.5-flash"`).
+
 ---
+
+
 
 
 
