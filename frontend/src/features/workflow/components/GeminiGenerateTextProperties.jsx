@@ -23,10 +23,13 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
   const [testResult, setTestResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  const rawModel = config.model || 'gemini-1.5-flash';
+  const initialModel = rawModel === 'gemini-2.5-flash' ? 'gemini-1.5-flash' : rawModel;
+
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
-  const [model, setModel] = useState(config.model || 'gemini-1.5-flash');
+  const [model, setModel] = useState(initialModel);
   const [customModel, setCustomModel] = useState(
-    GEMINI_MODELS.some((m) => m.value === config.model) ? '' : config.model || ''
+    GEMINI_MODELS.some((m) => m.value === initialModel) ? '' : initialModel || ''
   );
   const [prompt, setPrompt] = useState(config.prompt || '');
   const [temperature, setTemperature] = useState(

@@ -17,7 +17,12 @@ export class GeminiProvider extends AIProvider {
       throw err;
     }
 
-    const selectedModel = model || 'gemini-1.5-flash';
+    let selectedModel = model || 'gemini-1.5-flash';
+    if (selectedModel === 'gemini-2.5-flash' || selectedModel.includes('2.5')) {
+      console.log(`[GeminiProvider] 🔄 Auto-migrating deprecated model "${selectedModel}" to "gemini-1.5-flash"`);
+      selectedModel = 'gemini-1.5-flash';
+    }
+
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const parsedTemp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
