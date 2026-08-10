@@ -34,15 +34,32 @@ export const NodeToolbar = () => {
   });
 
   // Group filtered nodes by category
-  const baseCategories = ['Triggers', 'Communication', 'Database', 'Logic', 'Action', 'Utility', 'Output', 'Google'];
-  const extraCategories = Array.from(new Set(filteredNodes.map((n) => n.category))).filter((c) => c && !baseCategories.includes(c));
+  const baseCategories = ['TRIGGER', 'COMMUNICATION', 'DATABASE', 'LOGIC', 'ACTION', 'UTILITY', 'OUTPUT', 'GOOGLE'];
+  const extraCategories = Array.from(
+    new Set(filteredNodes.map((n) => (n.category || '').toUpperCase()))
+  ).filter((c) => c && !baseCategories.includes(c));
+
   const categories = [...baseCategories, ...extraCategories];
 
   const groupedNodes = categories.reduce((acc, cat) => {
     acc[cat] = filteredNodes.filter((n) => {
-      if (n.category === cat) return true;
-      if (cat === 'Triggers' && (n.category === 'Trigger' || (n.type && n.type.toLowerCase().includes('trigger')))) return true;
-      if (cat === 'Communication' && (n.provider === 'Discord' || n.category === 'Discord')) return true;
+      const nCat = (n.category || '').toUpperCase();
+      if (nCat === cat) return true;
+      if (
+        cat === 'TRIGGER' &&
+        (nCat.includes('TRIGGER') ||
+          (n.type &&
+            (n.type.toLowerCase().includes('trigger') ||
+              n.type.toLowerCase().includes('messagereceived'))))
+      )
+        return true;
+      if (
+        cat === 'COMMUNICATION' &&
+        (n.provider === 'Discord' ||
+          nCat.includes('DISCORD') ||
+          (n.type && n.type.toLowerCase().includes('discord')))
+      )
+        return true;
       return false;
     });
     return acc;

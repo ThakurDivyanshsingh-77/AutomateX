@@ -405,7 +405,7 @@ export const discordMessageReceivedDefinition = {
   type: 'discordMessageReceived',
   name: 'discordMessageReceived',
   label: 'Discord → Message Received',
-  category: 'Triggers',
+  category: 'TRIGGER',
   provider: 'Discord',
   description: 'Start a workflow whenever the connected Discord bot receives a message.',
   searchKeywords: [
