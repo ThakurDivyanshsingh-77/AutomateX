@@ -7,8 +7,10 @@ import { Loader2, AlertCircle, CheckCircle2, Copy, Check, Sliders } from 'lucide
 
 const GEMINI_MODELS = [
   { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash (Recommended - Fast & Cost Effective)' },
-  { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro (Complex Reasoning Flagship)' },
+  { value: 'gemini-3.5-flash', label: 'gemini-3.5-flash (Gemini 3.5 Flash)' },
+  { value: 'gemini-3.6-flash', label: 'gemini-3.6-flash (Gemini 3.6 Flash)' },
   { value: 'gemini-2.0-flash', label: 'gemini-2.0-flash (High Performance Next-Gen)' },
+  { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro (Complex Reasoning Flagship)' },
   { value: 'gemini-1.0-pro', label: 'gemini-1.0-pro (Legacy Model)' },
   { value: 'custom', label: 'Custom Model Identifier...' },
 ];
@@ -29,7 +31,7 @@ export const GeminiGenerateTextProperties = ({ nodeData, onUpdateConfig }) => {
   const [credentialId, setCredentialId] = useState(config.credentialId || '');
   const [autoSelectModel, setAutoSelectModel] = useState(config.autoSelectModel || false);
   const [modelSelect, setModelSelect] = useState(isPredefined ? rawModel : (rawModel ? 'custom' : 'gemini-1.5-flash'));
-  const [customModelText, setCustomModelText] = useState(isPredefined ? '' : rawModel);
+  const [customModelText, setCustomModelText] = useState(isPredefined ? '' : (rawModel === 'gemini-2.5-flash' ? 'gemini-1.5-flash' : rawModel));
   const [apiModels, setApiModels] = useState([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [prompt, setPrompt] = useState(config.prompt || '');

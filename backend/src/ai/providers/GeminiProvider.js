@@ -99,17 +99,21 @@ export class GeminiProvider extends AIProvider {
     const discovery = await GeminiProvider.validateModelAvailability(apiKey, requestedModel);
     const availableModels = discovery.availableModels || [];
 
-    if (autoSelect) {
-      // Auto Select Mode: pick best available model that supports generateContent
-      const availableNames = availableModels.map((m) => m.cleanName);
-
-      if (availableNames.length === 0) {
-        const err = new Error('No available Gemini model supports generateContent for this credential.');
-        err.statusCode = 404;
-        throw err;
-      }
+    const findBestFallback = (availableList, excludeModel = '') => {
+      const availableNames = availableList.map((m) => m.cleanName || m);
+      const textModels = availableNames.filter((name) =>
+        !name.includes('image') &&
+        !name.includes('tts') &&
+        !name.includes('audio') &&
+        !name.includes('robotics') &&
+        !name.includes('banana') &&
+        name !== excludeModel
+      );
 
       const PRIORITY_FALLBACKS = [
+        'gemini-3.6-flash',
+        'gemini-3.5-flash',
+        'gemini-3.5-flash-lite',
         'gemini-2.0-flash',
         'gemini-1.5-flash',
         'gemini-1.5-pro',
@@ -117,27 +121,30 @@ export class GeminiProvider extends AIProvider {
         'gemini-1.0-pro',
       ];
 
+      const matched = PRIORITY_FALLBACKS.find((pref) => textModels.includes(pref) || availableNames.includes(pref));
+      if (matched) return matched;
+      if (textModels.length > 0) return textModels[0];
+      if (availableNames.length > 0) return availableNames[0];
+      return 'gemini-1.5-flash';
+    };
+
+    if (autoSelect) {
+      if (availableModels.length === 0) {
+        const err = new Error('No available Gemini model supports generateContent for this credential.');
+        err.statusCode = 404;
+        throw err;
+      }
+      const availableNames = availableModels.map((m) => m.cleanName);
       if (availableNames.includes(requestedModel)) {
         selectedModel = requestedModel;
       } else {
-        const matchedFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
-        selectedModel = matchedFallback || availableNames[0];
+        selectedModel = findBestFallback(availableModels);
       }
     } else {
-      // Auto Select Disabled: try requestedModel if available, else fallback to available model
       if (discovery.isAvailable && discovery.supportsGenContent) {
         selectedModel = requestedModel;
       } else if (availableModels.length > 0) {
-        const PRIORITY_FALLBACKS = [
-          'gemini-2.0-flash',
-          'gemini-1.5-flash',
-          'gemini-1.5-pro',
-          'gemini-2.0-flash-lite',
-          'gemini-1.0-pro',
-        ];
-        const availableNames = availableModels.map((m) => m.cleanName);
-        const matchedFallback = PRIORITY_FALLBACKS.find((pref) => availableNames.includes(pref));
-        selectedModel = matchedFallback || availableNames[0];
+        selectedModel = findBestFallback(availableModels, requestedModel);
         console.warn(`[Gemini] ⚠️ Requested model "${requestedModel}" is unavailable for this credential. Falling back to available model "${selectedModel}".`);
       } else {
         selectedModel = requestedModel;
@@ -151,8 +158,6 @@ export class GeminiProvider extends AIProvider {
     console.log(`[Gemini] Requested model: ${requestedModel}`);
     console.log(`[Gemini] Selected model: ${selectedModel}`);
     console.log(`[Gemini] Auto select: ${autoSelect}`);
-
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
     const parsedTemp = typeof temperature === 'number' ? temperature : parseFloat(temperature);
     const validTemp = isNaN(parsedTemp) ? 0.7 : Math.max(0, Math.min(2, parsedTemp));
@@ -176,36 +181,70 @@ export class GeminiProvider extends AIProvider {
       },
     };
 
-    console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${selectedModel})...`);
+    const executeApiCall = async (modelToUse) => {
+      const cleanM = GeminiProvider.normalizeModelName(modelToUse);
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(cleanM)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      console.log(`[GeminiProvider] 🌐 Requesting Google Gemini API (${cleanM})...`);
 
-    const startTime = Date.now();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const startTime = Date.now();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-    let response;
-    try {
-      response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } catch (fetchErr) {
-      clearTimeout(timeoutId);
-      if (fetchErr.name === 'AbortError') {
-        const err = new Error('Gemini request timed out.');
-        err.statusCode = 408;
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        return { response: res, modelUsed: cleanM, duration: Date.now() - startTime };
+      } catch (fetchErr) {
+        clearTimeout(timeoutId);
+        if (fetchErr.name === 'AbortError') {
+          const err = new Error('Gemini request timed out.');
+          err.statusCode = 408;
+          throw err;
+        }
+        const err = new Error(`Gemini provider network request failed: ${fetchErr.message}`);
+        err.statusCode = 503;
         throw err;
       }
-      const err = new Error(`Gemini provider network request failed: ${fetchErr.message}`);
-      err.statusCode = 503;
-      throw err;
-    }
-    clearTimeout(timeoutId);
+    };
 
-    const duration = Date.now() - startTime;
+    let { response, modelUsed, duration } = await executeApiCall(selectedModel);
+
+    // If HTTP 404 or 400 model error occurs on primary attempt and availableModels exist, attempt automatic fallback retry
+    if (!response.ok && (response.status === 404 || response.status === 400)) {
+      let errData = {};
+      try { errData = await response.clone().json(); } catch {}
+      const providerMsg = errData?.error?.message || '';
+
+      const isModelError =
+        response.status === 404 ||
+        providerMsg.includes('no longer available') ||
+        providerMsg.includes('not found') ||
+        providerMsg.includes('is invalid') ||
+        providerMsg.includes('not supported for generateContent');
+
+      if (isModelError && availableModels.length > 0) {
+        const fallbackTarget = findBestFallback(availableModels, selectedModel);
+        if (fallbackTarget && fallbackTarget !== selectedModel) {
+          console.warn(`[GeminiProvider] ⚠️ Primary request to "${selectedModel}" returned model error (${providerMsg}). Retrying with available fallback model "${fallbackTarget}"...`);
+          try {
+            const retryObj = await executeApiCall(fallbackTarget);
+            if (retryObj.response.ok) {
+              response = retryObj.response;
+              selectedModel = fallbackTarget;
+              duration = retryObj.duration;
+            }
+          } catch (retryErr) {
+            console.warn(`[GeminiProvider] Retry attempt with "${fallbackTarget}" failed: ${retryErr.message}`);
+          }
+        }
+      }
+    }
+
     console.log(`[GeminiDebug]
 geminiResponseStatus: ${response.status}
 requestDuration: ${duration}ms`);
