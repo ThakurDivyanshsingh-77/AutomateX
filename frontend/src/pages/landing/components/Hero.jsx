@@ -24,7 +24,7 @@ export function Hero() {
         {/* ── Copy block ──────────────────────────────────────── */}
         <div className="text-center max-w-4xl mx-auto" style={{ paddingBottom: 48 }}>
 
-          {/* Eyebrow */}
+          {/* Eyebrow — no animation, always visible */}
           <div
             className="inline-flex items-center gap-2 mb-6"
             style={{
@@ -32,15 +32,14 @@ export function Hero() {
               border: '1px solid rgba(255,79,0,0.2)',
               borderRadius: 999,
               padding: '6px 16px',
-              animation: 'fadeUp 0.5s ease both',
             }}
           >
             <span
               style={{
                 width: 6, height: 6, borderRadius: '50%',
                 background: '#ff4f00',
-                animation: 'nodePulse 2s ease-in-out infinite',
                 display: 'inline-block',
+                animation: 'nodePulse 2s ease-in-out infinite',
               }}
             />
             <span style={{ fontSize: 12, fontWeight: 600, color: '#ff4f00', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -48,7 +47,7 @@ export function Hero() {
             </span>
           </div>
 
-          {/* Headline */}
+          {/* Headline — uses animation 'both' fill-mode so keyframe controls opacity from 0→1 */}
           <h1
             style={{
               fontSize: 'clamp(48px, 7vw, 88px)',
@@ -57,9 +56,7 @@ export function Hero() {
               letterSpacing: '-0.03em',
               color: '#1A1012',
               margin: '0 0 24px',
-              animation: 'fadeUp 0.6s 0.1s ease both',
-              opacity: 0,
-              animationFillMode: 'forwards',
+              animation: 'fadeUp 0.6s 0.05s both',
             }}
           >
             Build smarter.<br />
@@ -74,9 +71,7 @@ export function Hero() {
               color: '#5C5050',
               maxWidth: 560,
               margin: '0 auto 40px',
-              animation: 'fadeUp 0.6s 0.2s ease both',
-              opacity: 0,
-              animationFillMode: 'forwards',
+              animation: 'fadeUp 0.6s 0.15s both',
             }}
           >
             Connect your apps, trigger AI workflows, and ship automations
@@ -86,7 +81,7 @@ export function Hero() {
           {/* CTA row */}
           <div
             className="flex flex-wrap items-center justify-center gap-3"
-            style={{ animation: 'fadeUp 0.6s 0.3s ease both', opacity: 0, animationFillMode: 'forwards' }}
+            style={{ animation: 'fadeUp 0.6s 0.25s both' }}
           >
             <Link
               to="/register"
@@ -119,7 +114,7 @@ export function Hero() {
           {/* Trust signals */}
           <div
             className="flex items-center justify-center gap-4 mt-8 flex-wrap"
-            style={{ animation: 'fadeUp 0.6s 0.4s ease both', opacity: 0, animationFillMode: 'forwards' }}
+            style={{ animation: 'fadeUp 0.6s 0.35s both' }}
           >
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
@@ -133,13 +128,7 @@ export function Hero() {
         </div>
 
         {/* ── Product preview ─────────────────────────────────── */}
-        <div
-          style={{
-            animation: 'fadeUp 0.8s 0.5s ease both',
-            opacity: 0,
-            animationFillMode: 'forwards',
-          }}
-        >
+        <div style={{ animation: 'fadeUp 0.8s 0.45s both' }}>
           <HeroProductPreview />
         </div>
       </div>
