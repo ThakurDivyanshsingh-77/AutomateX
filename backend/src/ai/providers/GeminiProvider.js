@@ -21,6 +21,48 @@ export class GeminiProvider extends AIProvider {
   }
 
   /**
+   * Safely discover and validate model availability via GET /v1beta/models?key={apiKey}.
+   * Logs required diagnostic tags without exposing API key.
+   */
+  static async validateModelAvailability(apiKey, requestedModel) {
+    const cleanModel = GeminiProvider.normalizeModelName(requestedModel);
+    const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
+
+    try {
+      const res = await fetch(modelsUrl);
+      if (!res.ok) {
+        console.warn(`[Gemini] ⚠️ Could not query models.list (HTTP ${res.status})`);
+        return { isAvailable: false, supportsGenContent: false };
+      }
+
+      const data = await res.json();
+      const models = data.models || [];
+
+      const foundObj = models.find((m) => {
+        const name = m.name || '';
+        const cleanName = name.replace(/^models\//, '');
+        return cleanName === cleanModel || name === `models/${cleanModel}`;
+      });
+
+      const isAvailable = Boolean(foundObj);
+      const supportsGenContent = Boolean(
+        foundObj &&
+        Array.isArray(foundObj.supportedGenerationMethods) &&
+        foundObj.supportedGenerationMethods.includes('generateContent')
+      );
+
+      console.log(`[Gemini] Model requested: ${cleanModel}`);
+      console.log(`[Gemini] Model available: ${isAvailable ? 'true' : 'false'}`);
+      console.log(`[Gemini] Supports generateContent: ${supportsGenContent ? 'true' : 'false'}`);
+
+      return { isAvailable, supportsGenContent, modelDetails: foundObj, totalModelsCount: models.length };
+    } catch (err) {
+      console.warn(`[Gemini] ⚠️ Error during models.list check: ${err.message}`);
+      return { isAvailable: false, supportsGenContent: false };
+    }
+  }
+
+  /**
    * Execute Google Gemini text generation via /v1beta/models/{model}:generateContent.
    */
   async generateText({ apiKey, model = 'gemini-1.5-flash', prompt, temperature = 0.7, maxTokens = 500 }) {
@@ -37,6 +79,9 @@ export class GeminiProvider extends AIProvider {
     }
 
     const selectedModel = GeminiProvider.normalizeModelName(model);
+
+    // Perform safe model discovery check via models.list
+    await GeminiProvider.validateModelAvailability(apiKey, selectedModel);
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(selectedModel)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
