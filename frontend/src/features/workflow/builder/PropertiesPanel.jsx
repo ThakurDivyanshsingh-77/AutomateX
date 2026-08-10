@@ -22,6 +22,7 @@ import { DiscordCreateRoleProperties } from '../components/DiscordCreateRoleProp
 import { DiscordDeleteRoleProperties } from '../components/DiscordDeleteRoleProperties';
 import { DiscordAddRoleToMemberProperties } from '../components/DiscordAddRoleToMemberProperties';
 import { DiscordRemoveRoleFromMemberProperties } from '../components/DiscordRemoveRoleFromMemberProperties';
+import { AiGenerateTextProperties } from '../components/AiGenerateTextProperties';
 
 
 
@@ -61,6 +62,7 @@ export const PropertiesPanel = ({
   const isPdfNode = selectedNode.type === 'pdfGenerator';
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
+  const isAiGenerateTextNode = selectedNode.type === 'aiGenerateText' || selectedNode.type === 'ai' || (selectedNode.type.toLowerCase().includes('ai') && selectedNode.type.toLowerCase().includes('generatetext'));
   const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
   const isDiscordDeleteChannelNode = selectedNode.type === 'discordDeleteChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deletechannel'));
   const isDiscordCreateRoleNode = selectedNode.type === 'discordCreateRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createrole'));
@@ -206,6 +208,11 @@ export const PropertiesPanel = ({
                 nodeType={selectedNode.type}
                 nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isAiGenerateTextNode ? (
+              <AiGenerateTextProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : isDiscordCreateChannelNode ? (
               <DiscordCreateChannelProperties

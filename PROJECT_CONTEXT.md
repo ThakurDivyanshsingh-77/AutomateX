@@ -418,6 +418,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Remove Role from Member` under **Communication → Discord** category with `UserMinus` icon and `rose` badge.
 - **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_discord_remove_role_from_member.js`.
 
+### Phase 26 Complete — AI → Generate Text Workflow Node — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/ai/`)**:
+  - `AIProvider.js` & `AIProvider.ts`: Base abstract AI Provider interface (`generateText(options)`).
+  - `OpenAIProvider.js` & `OpenAIProvider.ts`: OpenAI client implementation targeting `https://api.openai.com/v1/chat/completions` with 60s abort timeout, error code normalization (401 invalid API key, 404 invalid model, 429 rate limit, 400 bad prompt/payload), and choice/usage payload normalization.
+  - `AiGenerateTextTypes.js` & `AiGenerateTextTypes.ts`: TypeScript/JavaScript interfaces for input (`IAiGenerateTextInput`) and output (`IAiGenerateTextResult`).
+  - `AiGenerateTextValidator.js`: Input validator checking required credential, provider (`openai`), model, prompt (non-empty), temperature ($0 \le T \le 2$), and maxTokens ($1 \le \text{tokens} \le 128000$).
+  - `AiGenerateTextService.js` & `AiGenerateTextService.ts`: Core text generation service performing server-side credential decryption from vault, masked key audit logging, ExpressionEngine variable resolution in prompts, provider dispatching, error normalization, and returning output `{ success: true, text, provider, model, usage: { promptTokens, completionTokens, totalTokens } }`.
+  - `AiController.js` & `AiRoutes.js` / `.ts`: Mounted `POST /api/v1/ai/generate-text` and `POST /api/v1/ai/text/generate` endpoints protected by auth middleware.
+  - `AiNodeExecutor.js` & `ExecutorRegistry.js`: Wired `aiGenerateText` and `ai` node types to `AiGenerateTextService.generateText()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `AiGenerateTextProperties.jsx`: Production Node Properties panel featuring AI credential selector (display name & masked value only, missing credential alert), provider selector (`OpenAI`), model dropdown (`gpt-4o-mini`, `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo`, `o3-mini`, custom model text input), prompt textarea with character counter & dynamic variable insertion guidance, temperature slider & input, max tokens input, and a **Test Generate** execution button displaying live generated response and usage metrics badges.
+  - Node Registries (`AiNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`, `NodeSidebar.jsx`): Registered `AI → Generate Text` under **AI / Artificial Intelligence** category with `Sparkles` icon and `purple` badge.
+- **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_ai_generate_text.js`.
+
 ---
 
 

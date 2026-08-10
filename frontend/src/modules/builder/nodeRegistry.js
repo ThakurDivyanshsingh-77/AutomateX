@@ -15,6 +15,7 @@ import {
   ShieldX,
   UserPlus,
   UserMinus,
+  Sparkles,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -30,6 +31,9 @@ export const NODE_TYPES = {
   CONDITION: 'CONDITION',
   LOG_ACTION: 'LOG_ACTION',
   PDF_GENERATOR: 'pdfGenerator',
+  // AI
+  AI_GENERATE_TEXT: 'aiGenerateText',
+  AI: 'ai',
   // Discord
   DISCORD_SEND_MESSAGE: 'discordSendMessage',
   DISCORD_CREATE_CHANNEL: 'discordCreateChannel',
@@ -348,6 +352,23 @@ export const NODE_REGISTRY = {
       userId: '',
       roleId: '',
       reason: '',
+    },
+  },
+  [NODE_TYPES.AI_GENERATE_TEXT]: {
+    type: NODE_TYPES.AI_GENERATE_TEXT,
+    category: 'AI / Artificial Intelligence',
+    label: 'AI → Generate Text',
+    description: 'Generate text using an AI model from a user-provided prompt.',
+    icon: Sparkles,
+    color: 'purple',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    defaultConfig: {
+      credentialId: '',
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      prompt: '',
+      temperature: 0.7,
+      maxTokens: 500,
     },
   },
   [NODE_TYPES.DISCORD]: {

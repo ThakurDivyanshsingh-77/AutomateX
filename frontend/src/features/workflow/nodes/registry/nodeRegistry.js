@@ -20,6 +20,7 @@ import { googleSheetsValidator } from '../googleSheets/googleSheetsValidator';
 
 import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
 import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator, discordCreateChannelValidator, discordDeleteChannelValidator, discordCreateRoleValidator, discordDeleteRoleValidator, discordAddRoleToMemberValidator, discordRemoveRoleFromMemberValidator } from '../discord/DiscordNodeRegistry';
+import { AI_NODE_TYPES, aiNodeDefinitions, aiGenerateTextValidator } from '../ai/AiNodeRegistry';
 
 export const NODE_TYPES = {
   START: 'start',
@@ -46,6 +47,7 @@ export const NODE_TYPES = {
   PDF_GENERATOR: 'pdfGenerator',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
+  ...AI_NODE_TYPES,
 };
 
 const databaseValidator = (nodeData) => {
@@ -86,6 +88,9 @@ export const nodeDefinitions = {
   discordSendMessage: discordNodeDefinitions.discordSendMessage,
   discord: discordNodeDefinitions.discord,
   ...discordNodeDefinitions,
+  aiGenerateText: aiNodeDefinitions.aiGenerateText,
+  ai: aiNodeDefinitions.ai,
+  ...aiNodeDefinitions,
 };
 
 export const NODE_REGISTRY = nodeDefinitions;
@@ -150,6 +155,8 @@ export const nodeValidators = {
   discordAddRoleToMember: discordAddRoleToMemberValidator,
   discordRemoveRoleFromMember: discordRemoveRoleFromMemberValidator,
   discord: discordValidator,
+  aiGenerateText: aiGenerateTextValidator,
+  ai: aiGenerateTextValidator,
 };
 
 // Helper: Get definition by node type

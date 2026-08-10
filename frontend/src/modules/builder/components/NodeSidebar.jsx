@@ -13,10 +13,12 @@ export const NodeSidebar = () => {
       n.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const triggers = filteredNodes.filter((n) => n.category === 'TRIGGER');
-  const actions = filteredNodes.filter((n) => n.category === 'ACTION');
+  const triggers = filteredNodes.filter((n) => n.category === 'TRIGGER' || n.category === 'Trigger');
+  const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
+  const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
+  const communication = filteredNodes.filter((n) => n.category === 'Communication' || n.category === 'COMMUNICATION');
   const googleSheets = filteredNodes.filter((n) => n.category === 'Google Sheets');
-  const logic = filteredNodes.filter((n) => n.category === 'LOGIC');
+  const logic = filteredNodes.filter((n) => n.category === 'LOGIC' || n.category === 'Logic');
 
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
@@ -24,7 +26,7 @@ export const NodeSidebar = () => {
   };
 
   const renderCategoryGroup = (title, items) => {
-    if (items.length === 0) return null;
+    if (!items || items.length === 0) return null;
     return (
       <div className="space-y-2 mb-4">
         <h4 className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase px-1">
@@ -92,6 +94,8 @@ export const NodeSidebar = () => {
       {/* Node Items List */}
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
         {renderCategoryGroup('Triggers', triggers)}
+        {renderCategoryGroup('AI / Artificial Intelligence', aiNodes)}
+        {renderCategoryGroup('Communication', communication)}
         {renderCategoryGroup('Actions', actions)}
         {renderCategoryGroup('Google Sheets', googleSheets)}
         {renderCategoryGroup('Logic & Control', logic)}

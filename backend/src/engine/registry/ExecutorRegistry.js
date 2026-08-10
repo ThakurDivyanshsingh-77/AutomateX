@@ -15,6 +15,7 @@ import { GoogleSheetsCreateWorksheetExecutor } from '../googleSheets/GoogleSheet
 import { GoogleSheetsDeleteWorksheetExecutor } from '../googleSheets/GoogleSheetsDeleteWorksheetExecutor.js';
 import { GoogleSheetsGetSpreadsheetInfoExecutor } from '../googleSheets/GoogleSheetsGetSpreadsheetInfoExecutor.js';
 import { DiscordNodeExecutor } from '../../discord/executors/DiscordNodeExecutor.js';
+import { AiNodeExecutor } from '../../ai/executors/AiNodeExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -23,6 +24,7 @@ const googleSheetsCreateWorksheetExecutor = new GoogleSheetsCreateWorksheetExecu
 const googleSheetsDeleteWorksheetExecutor = new GoogleSheetsDeleteWorksheetExecutor();
 const googleSheetsGetSpreadsheetInfoExecutor = new GoogleSheetsGetSpreadsheetInfoExecutor();
 const discordNodeExecutor = new DiscordNodeExecutor();
+const aiNodeExecutor = new AiNodeExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -62,6 +64,10 @@ export class ExecutorRegistry {
     ['discordAddRoleToMember', discordNodeExecutor],
     ['discordRemoveRoleFromMember', discordNodeExecutor],
     ['discord', discordNodeExecutor],
+
+    // AI Node Executors
+    ['aiGenerateText', aiNodeExecutor],
+    ['ai', aiNodeExecutor],
 
 
 
