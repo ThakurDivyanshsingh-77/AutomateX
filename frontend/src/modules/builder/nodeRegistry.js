@@ -13,6 +13,7 @@ import {
   Trash2,
   ShieldPlus,
   ShieldX,
+  UserPlus,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -34,6 +35,7 @@ export const NODE_TYPES = {
   DISCORD_DELETE_CHANNEL: 'discordDeleteChannel',
   DISCORD_CREATE_ROLE: 'discordCreateRole',
   DISCORD_DELETE_ROLE: 'discordDeleteRole',
+  DISCORD_ADD_ROLE_TO_MEMBER: 'discordAddRoleToMember',
   DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
@@ -312,6 +314,22 @@ export const NODE_REGISTRY = {
       roleId: '',
       reason: '',
       confirmDelete: false,
+    },
+  },
+  [NODE_TYPES.DISCORD_ADD_ROLE_TO_MEMBER]: {
+    type: NODE_TYPES.DISCORD_ADD_ROLE_TO_MEMBER,
+    category: 'Communication',
+    label: 'Discord → Add Role to Member',
+    description: 'Add an existing Discord role to a selected member in a selected Discord server.',
+    icon: UserPlus,
+    color: 'indigo',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      userId: '',
+      roleId: '',
+      reason: '',
     },
   },
   [NODE_TYPES.DISCORD]: {

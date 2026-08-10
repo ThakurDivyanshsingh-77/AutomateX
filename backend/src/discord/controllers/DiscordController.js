@@ -7,6 +7,8 @@ import { DiscordDeleteChannelService } from '../services/DiscordDeleteChannelSer
 import { DiscordCreateRoleService } from '../services/DiscordCreateRoleService.js';
 import { DiscordRoleService } from '../services/DiscordRoleService.js';
 import { DiscordDeleteRoleService } from '../services/DiscordDeleteRoleService.js';
+import { DiscordMemberService } from '../services/DiscordMemberService.js';
+import { DiscordAddRoleToMemberService } from '../services/DiscordAddRoleToMemberService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 
@@ -519,6 +521,124 @@ export class DiscordController {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
       console.warn(`[DiscordController] ⚠️ Error deleting role on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+        error: normalized,
+      });
+    }
+  }
+
+  static async getMembers(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
+        res.status(401).json({
+          success: false,
+          isUserAuthTokenError: true,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const credentialId = req.query.credentialId || req.query.credential;
+      const guildId = req.query.guildId || req.query.guild;
+      const limit = req.query.limit ? parseInt(req.query.limit, 10) : 1000;
+
+      if (!credentialId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId query parameter is required' });
+        return;
+      }
+
+      if (!guildId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'guildId query parameter is required' });
+        return;
+      }
+
+      const refresh = req.query.refresh === 'true' || req.query.bypassCache === 'true';
+      const result = await DiscordMemberService.getMembers(String(ownerId), credentialId, guildId, limit, refresh);
+
+      res.status(200).json({
+        success: true,
+        members: result.members,
+      });
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error fetching members on ${req.originalUrl}: ${normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+        error: normalized,
+      });
+    }
+  }
+
+  static async refreshMembers(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      const { credentialId, guildId, limit } = req.body;
+
+      if (!credentialId || !guildId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+        res.status(400).json({ success: false, isThirdPartyError: true, message: 'credentialId and guildId body parameters are required' });
+        return;
+      }
+
+      const result = await DiscordMemberService.refreshMembers(String(ownerId), credentialId, guildId, limit || 1000);
+      res.status(200).json({
+        success: true,
+        members: result.members,
+      });
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      console.warn(`[DiscordController] ⚠️ Error refreshing members on ${req.originalUrl}: ${normalized.message}`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(normalized.statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+      });
+    }
+  }
+
+  static async addRoleToMember(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
+        res.status(401).json({
+          success: false,
+          isUserAuthTokenError: true,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const { credentialId } = req.body;
+      const targetCredId = credentialId || req.body.credential;
+
+      const result = await DiscordAddRoleToMemberService.addRoleToMember(
+        String(ownerId),
+        targetCredId,
+        req.body
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error adding role to member on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
       res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,

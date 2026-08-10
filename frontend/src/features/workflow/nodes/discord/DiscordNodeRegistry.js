@@ -1,4 +1,4 @@
-import { MessageSquare, Layout, FolderPlus, Trash2, ShieldPlus, ShieldX } from 'lucide-react';
+import { MessageSquare, Layout, FolderPlus, Trash2, ShieldPlus, ShieldX, UserPlus } from 'lucide-react';
 
 export const DISCORD_NODE_TYPES = {
   SEND_MESSAGE: 'discordSendMessage',
@@ -7,6 +7,7 @@ export const DISCORD_NODE_TYPES = {
   DELETE_CHANNEL: 'discordDeleteChannel',
   CREATE_ROLE: 'discordCreateRole',
   DELETE_ROLE: 'discordDeleteRole',
+  ADD_ROLE_TO_MEMBER: 'discordAddRoleToMember',
   DISCORD_EMBED: 'discordEmbed',
   DISCORD: 'discord',
 };
@@ -118,6 +119,31 @@ export const discordDeleteRoleValidator = (config) => {
   if (!isConfirmed) {
     errors.push('Confirmation is required to delete a Discord role permanently.');
   }
+  return { isValid: errors.length === 0, errors };
+};
+
+export const discordAddRoleToMemberValidator = (config) => {
+  const errors = [];
+  if (!config.credentialId) errors.push('Discord Credential is required.');
+  const targetUserId = (config.userId || config.memberId || config.member || config.user || '').trim();
+  if (!targetUserId) {
+    errors.push('Discord Member selection or dynamic User ID expression is required.');
+  }
+  const targetRoleId = (config.roleId || config.role || config.id || '').trim();
+  if (!targetRoleId) {
+    errors.push('Discord Role selection or dynamic Role ID expression is required.');
+  }
+  const targetGuildId = (config.guildId || config.guild || '').trim();
+  const targetRoleName = (config.roleName || config.name || '').trim();
+
+  if (
+    (targetGuildId && targetRoleId && targetRoleId === targetGuildId) ||
+    targetRoleId.toLowerCase() === '@everyone' ||
+    targetRoleName.toLowerCase() === '@everyone'
+  ) {
+    errors.push('The @everyone role cannot be assigned.');
+  }
+
   return { isValid: errors.length === 0, errors };
 };
 
@@ -291,6 +317,31 @@ export const discordDeleteRoleDefinition = {
   validate: discordDeleteRoleValidator,
 };
 
+export const discordAddRoleToMemberDefinition = {
+  id: DISCORD_NODE_TYPES.ADD_ROLE_TO_MEMBER,
+  type: DISCORD_NODE_TYPES.ADD_ROLE_TO_MEMBER,
+  name: 'discordAddRoleToMember',
+  label: 'Discord → Add Role to Member',
+  displayName: 'Discord → Add Role to Member',
+  category: 'Communication',
+  description: 'Add an existing Discord role to a selected member in a selected Discord server.',
+  icon: UserPlus,
+  color: 'indigo',
+  badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    guildId: '',
+    userId: '',
+    roleId: '',
+    reason: '',
+  },
+  validate: discordAddRoleToMemberValidator,
+};
+
 export const discordNodeDefinitions = {
   [DISCORD_NODE_TYPES.SEND_MESSAGE]: discordSendMessageDefinition,
   [DISCORD_NODE_TYPES.SEND_EMBED]: discordSendEmbedDefinition,
@@ -298,6 +349,7 @@ export const discordNodeDefinitions = {
   [DISCORD_NODE_TYPES.DELETE_CHANNEL]: discordDeleteChannelDefinition,
   [DISCORD_NODE_TYPES.CREATE_ROLE]: discordCreateRoleDefinition,
   [DISCORD_NODE_TYPES.DELETE_ROLE]: discordDeleteRoleDefinition,
+  [DISCORD_NODE_TYPES.ADD_ROLE_TO_MEMBER]: discordAddRoleToMemberDefinition,
   [DISCORD_NODE_TYPES.DISCORD_EMBED]: {
     ...discordSendEmbedDefinition,
     id: DISCORD_NODE_TYPES.DISCORD_EMBED,

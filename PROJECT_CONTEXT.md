@@ -388,7 +388,22 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `DiscordRoleDropdown.jsx`: Searchable role picker component fetching roles via `GET /discord/roles`, displaying role name, color badge, role ID, marking protected `@everyone` role, and providing manual refresh support.
   - `DiscordDeleteRoleProperties.jsx`: Production properties panel featuring credential selector, guild picker, role selector (supporting searchable role dropdown or dynamic variable expressions e.g. `{{steps["Discord → Create Role"].role.id}}`), optional audit log reason, red permanent deletion warning banner, mandatory confirmation checkbox, and a **Delete Role** manual test execution button.
   - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Delete Role` under **Communication → Discord** category.
-- **Automated Test Suite**: Passed **11/11** unit and integration tests in `test_discord_delete_role.js`.
+- **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_discord_delete_role.js`.
+
+### Phase 24 Complete — Discord → Add Role to Member Workflow Node — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/discord/`)**:
+  - `DiscordAddRoleToMemberTypes.js` & `DiscordAddRoleToMemberTypes.ts`: Interface structures for role assignment payloads.
+  - `DiscordAddRoleToMemberValidator.js`: Input validator checking required credential, member/user ID (optional if dynamic expression), role ID (optional if dynamic expression), and `@everyone` role protection (`roleId === guildId` or name `@everyone` -> blocked with `"The @everyone role cannot be assigned."`).
+  - `DiscordApiClient.js`: Added `getGuildMembers(guildId, limit)` targeting `GET /guilds/{guildId}/members?limit=1000` and `addRoleToMember(guildId, userId, roleId, reason)` targeting `PUT /guilds/{guildId}/members/{userId}/roles/{roleId}` with `X-Audit-Log-Reason` header and explicit HTTP 204 No Content success handling.
+  - `DiscordMemberService.js` & `DiscordMemberService.ts`: Full member fetching & caching service executing `GET /guilds/{guildId}/members?limit=1000` with TTL memory caching, normalized avatar/displayName/bot objects, forced refresh support, and cache invalidation.
+  - `DiscordAddRoleToMemberService.js` & `DiscordAddRoleToMemberService.ts`: Full role assignment service resolving decrypted bot token, checking `@everyone` restriction, executing `PUT /guilds/{guildId}/members/{userId}/roles/{roleId}`, invalidating member cache in `DiscordMemberService`, and returning normalized output `{ success: true, added: true, guildId, userId, roleId }`.
+  - `DiscordController.js` & `DiscordRoutes.js`: Mounted `GET /api/v1/discord/members`, `POST /api/v1/discord/members/refresh`, `POST /api/v1/discord/add-role-to-member`, and `POST /api/v1/discord/members/add-role`.
+  - `DiscordNodeExecutor.js` & `ExecutorRegistry.js`: Wired `discordAddRoleToMember` node type to `DiscordAddRoleToMemberService.addRoleToMember()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `DiscordMemberDropdown.jsx`: Searchable member picker component fetching members via `GET /discord/members`, displaying avatar, display name, username, ID, bot badge, and providing manual refresh support.
+  - `DiscordAddRoleToMemberProperties.jsx`: Production properties panel featuring credential selector, guild picker, member selector (supporting searchable member dropdown or dynamic variable expressions e.g. `{{steps["Previous Node"].user.id}}`), role selector (supporting searchable role dropdown or dynamic variable expressions e.g. `{{steps["Previous Node"].role.id}}`), optional audit log reason, and an **Add Role to Member** manual test execution button.
+  - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Add Role to Member` under **Communication → Discord** category with `UserPlus` icon and `indigo` badge.
+- **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_discord_add_role_to_member.js`.
 
 ---
 

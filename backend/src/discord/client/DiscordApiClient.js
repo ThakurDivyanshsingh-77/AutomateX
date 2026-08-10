@@ -196,6 +196,35 @@ export class DiscordApiClient {
       headers,
     });
   }
+
+  async getGuildMembers(guildId, limit = 1000) {
+    if (!guildId) {
+      throw new Error('getGuildMembers requires a valid guildId');
+    }
+    return await this.request(`/guilds/${guildId}/members?limit=${limit}`, {
+      method: 'GET',
+    });
+  }
+
+  async addRoleToMember(guildId, userId, roleId, reason) {
+    if (!guildId) {
+      throw new Error('addRoleToMember requires a valid guildId');
+    }
+    if (!userId) {
+      throw new Error('addRoleToMember requires a valid userId');
+    }
+    if (!roleId) {
+      throw new Error('addRoleToMember requires a valid roleId');
+    }
+    const headers = {};
+    if (reason && String(reason).trim()) {
+      headers['X-Audit-Log-Reason'] = encodeURIComponent(String(reason).trim());
+    }
+    return await this.request(`/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
+      method: 'PUT',
+      headers,
+    });
+  }
 }
 
 
