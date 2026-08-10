@@ -19,7 +19,7 @@ import { gmailValidator } from '../validators/gmailValidator';
 import { googleSheetsValidator } from '../googleSheets/googleSheetsValidator';
 
 import { GOOGLE_SHEETS_NODE_TYPES, googleSheetsNodeDefinitions } from '../googleSheets/GoogleSheetsNodeRegistry';
-import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator, discordCreateChannelValidator, discordDeleteChannelValidator, discordCreateRoleValidator, discordDeleteRoleValidator, discordAddRoleToMemberValidator } from '../discord/DiscordNodeRegistry';
+import { DISCORD_NODE_TYPES, discordNodeDefinitions, discordValidator, discordCreateChannelValidator, discordDeleteChannelValidator, discordCreateRoleValidator, discordDeleteRoleValidator, discordAddRoleToMemberValidator, discordRemoveRoleFromMemberValidator } from '../discord/DiscordNodeRegistry';
 
 export const NODE_TYPES = {
   START: 'start',
@@ -148,6 +148,7 @@ export const nodeValidators = {
   discordCreateRole: discordCreateRoleValidator,
   discordDeleteRole: discordDeleteRoleValidator,
   discordAddRoleToMember: discordAddRoleToMemberValidator,
+  discordRemoveRoleFromMember: discordRemoveRoleFromMemberValidator,
   discord: discordValidator,
 };
 

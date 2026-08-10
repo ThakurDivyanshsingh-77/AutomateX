@@ -225,6 +225,26 @@ export class DiscordApiClient {
       headers,
     });
   }
+
+  async removeRoleFromMember(guildId, userId, roleId, reason) {
+    if (!guildId) {
+      throw new Error('removeRoleFromMember requires a valid guildId');
+    }
+    if (!userId) {
+      throw new Error('removeRoleFromMember requires a valid userId');
+    }
+    if (!roleId) {
+      throw new Error('removeRoleFromMember requires a valid roleId');
+    }
+    const headers = {};
+    if (reason && String(reason).trim()) {
+      headers['X-Audit-Log-Reason'] = encodeURIComponent(String(reason).trim());
+    }
+    return await this.request(`/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
+      method: 'DELETE',
+      headers,
+    });
+  }
 }
 
 

@@ -60,6 +60,7 @@ export class ExecutorRegistry {
     ['discordCreateRole', discordNodeExecutor],
     ['discordDeleteRole', discordNodeExecutor],
     ['discordAddRoleToMember', discordNodeExecutor],
+    ['discordRemoveRoleFromMember', discordNodeExecutor],
     ['discord', discordNodeExecutor],
 
 

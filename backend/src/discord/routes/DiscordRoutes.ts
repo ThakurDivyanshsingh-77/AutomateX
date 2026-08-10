@@ -57,5 +57,7 @@ router.get('/members', DiscordController.getMembers);
 router.post('/members/refresh', DiscordController.refreshMembers);
 router.post('/add-role-to-member', DiscordController.addRoleToMember);
 router.post('/members/add-role', DiscordController.addRoleToMember);
+router.post('/remove-role-from-member', DiscordController.removeRoleFromMember);
+router.post('/members/remove-role', DiscordController.removeRoleFromMember);
 
 export default router;

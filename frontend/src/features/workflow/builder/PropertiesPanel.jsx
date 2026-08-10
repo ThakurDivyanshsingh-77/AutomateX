@@ -21,6 +21,7 @@ import { DiscordDeleteChannelProperties } from '../components/DiscordDeleteChann
 import { DiscordCreateRoleProperties } from '../components/DiscordCreateRoleProperties';
 import { DiscordDeleteRoleProperties } from '../components/DiscordDeleteRoleProperties';
 import { DiscordAddRoleToMemberProperties } from '../components/DiscordAddRoleToMemberProperties';
+import { DiscordRemoveRoleFromMemberProperties } from '../components/DiscordRemoveRoleFromMemberProperties';
 
 
 
@@ -65,8 +66,9 @@ export const PropertiesPanel = ({
   const isDiscordCreateRoleNode = selectedNode.type === 'discordCreateRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createrole'));
   const isDiscordDeleteRoleNode = selectedNode.type === 'discordDeleteRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deleterole'));
   const isDiscordAddRoleToMemberNode = selectedNode.type === 'discordAddRoleToMember' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('addroletomember'));
-  const isDiscordEmbedNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
-  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+  const isDiscordRemoveRoleFromMemberNode = selectedNode.type === 'discordRemoveRoleFromMember' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('removerolefrommember'));
+  const isDiscordEmbedNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
+  const isDiscordNode = !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
 
 
 
@@ -227,6 +229,11 @@ export const PropertiesPanel = ({
               />
             ) : isDiscordAddRoleToMemberNode ? (
               <DiscordAddRoleToMemberProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+              />
+            ) : isDiscordRemoveRoleFromMemberNode ? (
+              <DiscordRemoveRoleFromMemberProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />

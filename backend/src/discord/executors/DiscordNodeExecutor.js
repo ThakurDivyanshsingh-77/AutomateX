@@ -5,6 +5,7 @@ import { DiscordDeleteChannelService } from '../services/DiscordDeleteChannelSer
 import { DiscordCreateRoleService } from '../services/DiscordCreateRoleService.js';
 import { DiscordDeleteRoleService } from '../services/DiscordDeleteRoleService.js';
 import { DiscordAddRoleToMemberService } from '../services/DiscordAddRoleToMemberService.js';
+import { DiscordRemoveRoleFromMemberService } from '../services/DiscordRemoveRoleFromMemberService.js';
 
 export class DiscordNodeExecutor {
   async execute(nodeData, context) {
@@ -55,6 +56,10 @@ export class DiscordNodeExecutor {
 
     if (nodeType.includes('addroletomember') || nodeType === 'discordaddroletomember') {
       return await DiscordAddRoleToMemberService.addRoleToMember(ownerId, credentialId, { ...config, context });
+    }
+
+    if (nodeType.includes('removerolefrommember') || nodeType === 'discordremoverolefrommember') {
+      return await DiscordRemoveRoleFromMemberService.removeRoleFromMember(ownerId, credentialId, { ...config, context });
     }
 
 

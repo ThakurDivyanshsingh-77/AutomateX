@@ -405,6 +405,19 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Add Role to Member` under **Communication → Discord** category with `UserPlus` icon and `indigo` badge.
 - **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_discord_add_role_to_member.js`.
 
+### Phase 25 Complete — Discord → Remove Role from Member Workflow Node — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/discord/`)**:
+  - `DiscordRemoveRoleFromMemberTypes.js` & `DiscordRemoveRoleFromMemberTypes.ts`: Interface structures for role removal payloads.
+  - `DiscordRemoveRoleFromMemberValidator.js`: Input validator checking required credential, member/user ID (optional if dynamic expression), role ID (optional if dynamic expression), and `@everyone` role protection (`roleId === guildId` or name `@everyone` -> blocked with `"The @everyone role cannot be removed."`).
+  - `DiscordApiClient.js`: Added `removeRoleFromMember(guildId, userId, roleId, reason)` targeting `DELETE /guilds/{guildId}/members/{userId}/roles/{roleId}` with `X-Audit-Log-Reason` header and explicit HTTP 204 No Content success handling.
+  - `DiscordRemoveRoleFromMemberService.js` & `DiscordRemoveRoleFromMemberService.ts`: Full role removal service resolving decrypted bot token, checking `@everyone` restriction, executing `DELETE /guilds/{guildId}/members/{userId}/roles/{roleId}`, invalidating member cache in `DiscordMemberService`, and returning normalized output `{ success: true, removed: true, guildId, userId, roleId }`.
+  - `DiscordController.js` & `DiscordRoutes.js`: Mounted `POST /api/v1/discord/remove-role-from-member` and `POST /api/v1/discord/members/remove-role`.
+  - `DiscordNodeExecutor.js` & `ExecutorRegistry.js`: Wired `discordRemoveRoleFromMember` node type to `DiscordRemoveRoleFromMemberService.removeRoleFromMember()`.
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `DiscordRemoveRoleFromMemberProperties.jsx`: Production properties panel featuring credential selector, guild picker, member selector (supporting searchable member dropdown or dynamic variable expressions e.g. `{{steps["Discord → Add Role to Member"].userId}}`), role selector (supporting searchable role dropdown or dynamic variable expressions e.g. `{{steps["Discord → Add Role to Member"].roleId}}`), optional audit log reason, and a **Remove Role from Member** manual test execution button.
+  - Node Registries (`DiscordNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `Discord → Remove Role from Member` under **Communication → Discord** category with `UserMinus` icon and `rose` badge.
+- **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_discord_remove_role_from_member.js`.
+
 ---
 
 

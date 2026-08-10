@@ -9,6 +9,7 @@ import { DiscordRoleService } from '../services/DiscordRoleService.js';
 import { DiscordDeleteRoleService } from '../services/DiscordDeleteRoleService.js';
 import { DiscordMemberService } from '../services/DiscordMemberService.js';
 import { DiscordAddRoleToMemberService } from '../services/DiscordAddRoleToMemberService.js';
+import { DiscordRemoveRoleFromMemberService } from '../services/DiscordRemoveRoleFromMemberService.js';
 import { DiscordUtils } from '../utils/DiscordUtils.js';
 
 
@@ -639,6 +640,44 @@ export class DiscordController {
       const normalized = DiscordUtils.normalizeDiscordError(error);
       const statusCode = error?.statusCode || normalized.statusCode;
       console.warn(`[DiscordController] ⚠️ Error adding role to member on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
+      res.setHeader('X-AutomateX-User-Auth-Error', 'false');
+      res.status(statusCode).json({
+        success: false,
+        isThirdPartyError: true,
+        isUserAuthTokenError: false,
+        message: error.message || normalized.message,
+        error: normalized,
+      });
+    }
+  }
+
+  static async removeRoleFromMember(req, res, next) {
+    try {
+      const ownerId = req.user?._id || req.user?.id;
+      if (!ownerId) {
+        res.setHeader('X-AutomateX-User-Auth-Error', 'true');
+        res.status(401).json({
+          success: false,
+          isUserAuthTokenError: true,
+          message: 'Unauthorized: User context required',
+        });
+        return;
+      }
+
+      const { credentialId } = req.body;
+      const targetCredId = credentialId || req.body.credential;
+
+      const result = await DiscordRemoveRoleFromMemberService.removeRoleFromMember(
+        String(ownerId),
+        targetCredId,
+        req.body
+      );
+
+      res.status(200).json(result);
+    } catch (error) {
+      const normalized = DiscordUtils.normalizeDiscordError(error);
+      const statusCode = error?.statusCode || normalized.statusCode;
+      console.warn(`[DiscordController] ⚠️ Error removing role from member on ${req.originalUrl}: ${error.message || normalized.message} (Status: ${statusCode})`);
       res.setHeader('X-AutomateX-User-Auth-Error', 'false');
       res.status(statusCode).json({
         success: false,

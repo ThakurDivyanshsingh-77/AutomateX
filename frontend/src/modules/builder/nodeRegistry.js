@@ -14,6 +14,7 @@ import {
   ShieldPlus,
   ShieldX,
   UserPlus,
+  UserMinus,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -36,6 +37,7 @@ export const NODE_TYPES = {
   DISCORD_CREATE_ROLE: 'discordCreateRole',
   DISCORD_DELETE_ROLE: 'discordDeleteRole',
   DISCORD_ADD_ROLE_TO_MEMBER: 'discordAddRoleToMember',
+  DISCORD_REMOVE_ROLE_FROM_MEMBER: 'discordRemoveRoleFromMember',
   DISCORD: 'discord',
   // Google Sheets
   GOOGLE_SHEETS_TRIGGER: 'googleSheetsTrigger',
@@ -324,6 +326,22 @@ export const NODE_REGISTRY = {
     icon: UserPlus,
     color: 'indigo',
     badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: {
+      credentialId: '',
+      guildId: '',
+      userId: '',
+      roleId: '',
+      reason: '',
+    },
+  },
+  [NODE_TYPES.DISCORD_REMOVE_ROLE_FROM_MEMBER]: {
+    type: NODE_TYPES.DISCORD_REMOVE_ROLE_FROM_MEMBER,
+    category: 'Communication',
+    label: 'Discord → Remove Role from Member',
+    description: 'Remove an existing Discord role from a selected member in a selected Discord server.',
+    icon: UserMinus,
+    color: 'rose',
+    badgeColor: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
     defaultConfig: {
       credentialId: '',
       guildId: '',
