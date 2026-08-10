@@ -68,6 +68,8 @@ export class ExecutorRegistry {
     // AI Node Executors
     ['aiGenerateText', aiNodeExecutor],
     ['ai', aiNodeExecutor],
+    ['openaiGenerateText', aiNodeExecutor],
+    ['openAiGenerateText', aiNodeExecutor],
 
 
 

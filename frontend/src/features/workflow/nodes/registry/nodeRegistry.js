@@ -156,6 +156,8 @@ export const nodeValidators = {
   discordRemoveRoleFromMember: discordRemoveRoleFromMemberValidator,
   discord: discordValidator,
   aiGenerateText: aiGenerateTextValidator,
+  openaiGenerateText: aiGenerateTextValidator,
+  openAiGenerateText: aiGenerateTextValidator,
   ai: aiGenerateTextValidator,
 };
 

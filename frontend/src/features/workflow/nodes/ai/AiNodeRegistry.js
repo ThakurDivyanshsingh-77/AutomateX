@@ -1,16 +1,18 @@
 import { Sparkles } from 'lucide-react';
+import { OpenAiIcon } from '../../components/OpenAiIcon';
 
 export const AI_NODE_TYPES = {
   GENERATE_TEXT: 'aiGenerateText',
+  OPENAI_GENERATE_TEXT: 'openaiGenerateText',
   AI: 'ai',
 };
 
 export const aiGenerateTextValidator = (config) => {
   const errors = [];
-  if (!config.credentialId) errors.push('AI Credential is required.');
+  if (!config.credentialId) errors.push('OpenAI Credential is required.');
   const provider = String(config.provider || 'openai').toLowerCase().trim();
   if (provider !== 'openai') errors.push('Unsupported AI provider.');
-  if (!config.model) errors.push('AI Model selection is required.');
+  if (!config.model) errors.push('OpenAI Model selection is required.');
   if (!config.prompt || !String(config.prompt).trim()) errors.push('Prompt cannot be empty.');
 
   if (config.temperature !== undefined && config.temperature !== null && config.temperature !== '') {
@@ -30,13 +32,15 @@ export const aiGenerateTextValidator = (config) => {
   return { isValid: errors.length === 0, errors };
 };
 
+export const openaiGenerateTextValidator = aiGenerateTextValidator;
+
 export const aiGenerateTextDefinition = {
   id: AI_NODE_TYPES.GENERATE_TEXT,
   type: AI_NODE_TYPES.GENERATE_TEXT,
   name: 'aiGenerateText',
   label: 'AI → Generate Text',
   displayName: 'AI → Generate Text',
-  category: 'AI / Artificial Intelligence',
+  category: 'AI',
   description: 'Generate text using an AI model from a user-provided prompt.',
   icon: Sparkles,
   color: 'purple',
@@ -56,8 +60,35 @@ export const aiGenerateTextDefinition = {
   validate: aiGenerateTextValidator,
 };
 
+export const openaiGenerateTextDefinition = {
+  id: AI_NODE_TYPES.OPENAI_GENERATE_TEXT,
+  type: AI_NODE_TYPES.OPENAI_GENERATE_TEXT,
+  name: 'openaiGenerateText',
+  label: 'OpenAI → Generate Text',
+  displayName: 'OpenAI → Generate Text',
+  category: 'AI',
+  description: 'Generate text using an OpenAI model from a user-provided prompt.',
+  icon: OpenAiIcon,
+  color: 'emerald',
+  badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  hasInputHandle: true,
+  hasOutputHandle: true,
+  inputs: ['main'],
+  outputs: ['main'],
+  defaultConfig: {
+    credentialId: '',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
+    prompt: '',
+    temperature: 0.7,
+    maxTokens: 500,
+  },
+  validate: openaiGenerateTextValidator,
+};
+
 export const aiNodeDefinitions = {
   [AI_NODE_TYPES.GENERATE_TEXT]: aiGenerateTextDefinition,
+  [AI_NODE_TYPES.OPENAI_GENERATE_TEXT]: openaiGenerateTextDefinition,
   [AI_NODE_TYPES.AI]: {
     ...aiGenerateTextDefinition,
     id: AI_NODE_TYPES.AI,

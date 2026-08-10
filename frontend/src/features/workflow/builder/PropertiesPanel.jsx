@@ -23,6 +23,7 @@ import { DiscordDeleteRoleProperties } from '../components/DiscordDeleteRoleProp
 import { DiscordAddRoleToMemberProperties } from '../components/DiscordAddRoleToMemberProperties';
 import { DiscordRemoveRoleFromMemberProperties } from '../components/DiscordRemoveRoleFromMemberProperties';
 import { AiGenerateTextProperties } from '../components/AiGenerateTextProperties';
+import { OpenAiGenerateTextProperties } from '../components/OpenAiGenerateTextProperties';
 
 
 
@@ -62,7 +63,8 @@ export const PropertiesPanel = ({
   const isPdfNode = selectedNode.type === 'pdfGenerator';
   const isGoogleSheetsTriggerNode = selectedNode.type === 'googleSheetsTrigger' || selectedNode.type === 'googleSheetsTriggerWatchRows';
   const isGoogleSheetsNode = !isGoogleSheetsTriggerNode && (selectedNode.type.toLowerCase().includes('googlesheets') || selectedNode.type.startsWith('googleSheets'));
-  const isAiGenerateTextNode = selectedNode.type === 'aiGenerateText' || selectedNode.type === 'ai' || (selectedNode.type.toLowerCase().includes('ai') && selectedNode.type.toLowerCase().includes('generatetext'));
+  const isOpenAiGenerateTextNode = selectedNode.type === 'openaiGenerateText' || selectedNode.type === 'openAiGenerateText' || (selectedNode.type.toLowerCase().includes('openai') && selectedNode.type.toLowerCase().includes('generatetext'));
+  const isAiGenerateTextNode = !isOpenAiGenerateTextNode && (selectedNode.type === 'aiGenerateText' || selectedNode.type === 'ai' || (selectedNode.type.toLowerCase().includes('ai') && selectedNode.type.toLowerCase().includes('generatetext')));
   const isDiscordCreateChannelNode = selectedNode.type === 'discordCreateChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createchannel'));
   const isDiscordDeleteChannelNode = selectedNode.type === 'discordDeleteChannel' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('deletechannel'));
   const isDiscordCreateRoleNode = selectedNode.type === 'discordCreateRole' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('createrole'));
@@ -208,6 +210,11 @@ export const PropertiesPanel = ({
                 nodeType={selectedNode.type}
                 nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isOpenAiGenerateTextNode ? (
+              <OpenAiGenerateTextProperties
+                nodeData={selectedNode.data}
+                onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
               />
             ) : isAiGenerateTextNode ? (
               <AiGenerateTextProperties

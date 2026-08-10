@@ -33,6 +33,8 @@ export const NODE_TYPES = {
   PDF_GENERATOR: 'pdfGenerator',
   // AI
   AI_GENERATE_TEXT: 'aiGenerateText',
+  OPENAI_GENERATE_TEXT: 'openaiGenerateText',
+  OPEN_AI_GENERATE_TEXT: 'openAiGenerateText',
   AI: 'ai',
   // Discord
   DISCORD_SEND_MESSAGE: 'discordSendMessage',
@@ -356,12 +358,29 @@ export const NODE_REGISTRY = {
   },
   [NODE_TYPES.AI_GENERATE_TEXT]: {
     type: NODE_TYPES.AI_GENERATE_TEXT,
-    category: 'AI / Artificial Intelligence',
+    category: 'AI',
     label: 'AI → Generate Text',
     description: 'Generate text using an AI model from a user-provided prompt.',
     icon: Sparkles,
     color: 'purple',
     badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    defaultConfig: {
+      credentialId: '',
+      provider: 'openai',
+      model: 'gpt-4o-mini',
+      prompt: '',
+      temperature: 0.7,
+      maxTokens: 500,
+    },
+  },
+  [NODE_TYPES.OPENAI_GENERATE_TEXT]: {
+    type: NODE_TYPES.OPENAI_GENERATE_TEXT,
+    category: 'AI',
+    label: 'OpenAI → Generate Text',
+    description: 'Generate text using an OpenAI model from a user-provided prompt.',
+    icon: Sparkles,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     defaultConfig: {
       credentialId: '',
       provider: 'openai',

@@ -432,6 +432,16 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Node Registries (`AiNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`, `NodeSidebar.jsx`): Registered `AI → Generate Text` under **AI / Artificial Intelligence** category with `Sparkles` icon and `purple` badge.
 - **Automated Test Suite**: Passed **12/12** unit and integration tests in `test_ai_generate_text.js`.
 
+### Phase 27 Complete — OpenAI → Generate Text Workflow Node — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/ai/`)**:
+  - Wired `openaiGenerateText` and `openAiGenerateText` node types in `AiNodeExecutor.js` and `ExecutorRegistry.js` to `AiGenerateTextService.generateText()`.
+  - Reused vault credential decryption, secret masking, ExpressionEngine variable resolution, and `OpenAIProvider` chat completion integration (`/v1/chat/completions`).
+- **Frontend Subsystem (`frontend/src/features/workflow/`)**:
+  - `OpenAiIcon.jsx`: SVG component representing official OpenAI logo mark.
+  - `OpenAiGenerateTextProperties.jsx`: Provider-specific Node Properties panel featuring official OpenAI branding header badge, OpenAI credential selector (strictly filtered for `service === 'openai'` displaying `My OpenAI (••••••••)` and showing `"No OpenAI credentials found. Add an OpenAI credential first."` when missing), model selector (`gpt-4o-mini`, `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo`, `o3-mini`, custom model text input), prompt textarea with placeholder `"Write your prompt here..."` supporting AutomateX dynamic variables (`{{projectName}}` or `{{steps["Previous Node"].text}}`), temperature slider ($0 - 2$, default $0.7$), max tokens input (default $500$), and **Test Generate** button with loading state (`Generating...`) and live output display.
+  - Node Registries (`AiNodeRegistry.js`, `nodeRegistry.js`, `builder/nodeRegistry.js`, `PropertiesPanel.jsx`): Registered `OpenAI → Generate Text` under category `AI` with `OpenAiIcon` / `Sparkles` icon and `emerald` badge.
+- **Automated Test Suite**: Passed **10/10** unit and integration tests in `test_openai_generate_text.js`.
+
 ---
 
 
