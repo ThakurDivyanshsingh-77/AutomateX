@@ -8,12 +8,12 @@ export const DocumentExtractNode = memo(({ data, selected }) => {
   const validation = documentExtractManifest.validate(config);
   const isInvalid = !validation.isValid;
 
-  const displayFileRef = outputData.file?.name || config.fileId || config.file?.id || config.file || 'No file selected';
-  const mode = config.extractionMode || 'full';
-
   const status = data?.executionStatus; // 'RUNNING' | 'SUCCESS' | 'FAILED'
   const outputData = data?.output || {};
   const stats = outputData.stats || null;
+
+  const displayFileRef = outputData.file?.name || config.fileId || config.file?.id || config.file || 'No file selected';
+  const mode = config.extractionMode || 'full';
 
   return (
     <div
