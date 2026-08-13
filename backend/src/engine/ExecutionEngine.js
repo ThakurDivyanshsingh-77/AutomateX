@@ -1,6 +1,7 @@
 import { GraphParser } from './GraphParser.js';
 import { ExecutionContext } from './ExecutionContext.js';
 import { executorRegistry } from './ExecutorRegistry.js';
+import { ExpressionEngine } from './expression/ExpressionEngine.js';
 import { ExecutionLog } from '../models/ExecutionLog.js';
 import { EXECUTION_STATUS } from '../constants/status.js';
 import mongoose from 'mongoose';
@@ -51,7 +52,7 @@ export class ExecutionEngine {
       for (const node of sortedNodes) {
         const stepStartTime = Date.now();
         const nodeType = node.type;
-        const label = node.data?.label || node.id;
+        const label = node.data?.label || node.label || node.id;
 
         let outputData = null;
         let stepError = null;
@@ -59,9 +60,33 @@ export class ExecutionEngine {
 
         try {
           const executor = executorRegistry.getExecutor(nodeType);
-          outputData = await executor.execute(node, context);
+
+          // Resolve all string expressions ({{ ... }}) in node config prior to execution
+          const rawConfig = node.config || node.data?.config || {};
+          const resolvedConfig = ExpressionEngine.resolve(rawConfig, context);
+
+          const nodeToExecute = {
+            ...node,
+            config: resolvedConfig,
+            data: {
+              ...(node.data || {}),
+              config: resolvedConfig,
+            },
+            rawConfig,
+          };
+
+          outputData = await executor.execute(nodeToExecute, context);
           stepStatus = EXECUTION_STATUS.SUCCESS;
+
+          // Register output under node.id, node.type, node.data.label, and node.label
           context.setNodeOutput(node.id, outputData);
+          context.setNodeOutput(nodeType, outputData);
+          if (node.data?.label) {
+            context.setNodeOutput(node.data.label, outputData);
+          }
+          if (node.label) {
+            context.setNodeOutput(node.label, outputData);
+          }
         } catch (err) {
           stepStatus = EXECUTION_STATUS.FAILED;
           stepError = err.message || 'Execution error';

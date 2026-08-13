@@ -8,7 +8,7 @@ export const DocumentExtractNode = memo(({ data, selected }) => {
   const validation = documentExtractManifest.validate(config);
   const isInvalid = !validation.isValid;
 
-  const fileId = config.fileId || 'No file selected';
+  const displayFileRef = outputData.file?.name || config.fileId || config.file?.id || config.file || 'No file selected';
   const mode = config.extractionMode || 'full';
 
   const status = data?.executionStatus; // 'RUNNING' | 'SUCCESS' | 'FAILED'
@@ -70,8 +70,8 @@ export const DocumentExtractNode = memo(({ data, selected }) => {
           <span className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold capitalize">
             {mode} Mode
           </span>
-          <span className="truncate text-slate-400 max-w-[130px]" title={fileId}>
-            {fileId}
+          <span className="truncate text-slate-400 max-w-[130px]" title={String(displayFileRef)}>
+            {String(displayFileRef)}
           </span>
         </div>
 

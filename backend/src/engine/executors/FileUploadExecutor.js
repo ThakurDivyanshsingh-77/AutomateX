@@ -68,6 +68,10 @@ export class FileUploadExecutor extends BaseExecutor {
         extension: fileData.extension,
         status: fileData.status,
       },
+      fileId: fileData.id,
+      fileName: fileData.name,
+      mimeType: fileData.mimeType,
+      size: fileData.size,
     };
   }
 }

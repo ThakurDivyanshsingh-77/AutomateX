@@ -4,39 +4,61 @@ import { BaseExecutor } from './BaseExecutor.js';
 import { fileStorageService } from '../../services/FileStorageService.js';
 import { documentParserService } from '../parser/DocumentParserService.js';
 import { FileModel } from '../../models/File.js';
+import { ExpressionEngine } from '../expression/ExpressionEngine.js';
 
 export class DocumentExtractContentExecutor extends BaseExecutor {
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
     
-    // 1. Resolve file ID (interpolating Mustache variables if present)
-    let rawFileId = config.fileId || config.file?.id || config.file;
-    if (typeof rawFileId === 'string' && rawFileId.includes('{{')) {
-      rawFileId = this.interpolate(rawFileId, context);
-    }
-
-    if (!rawFileId) {
+    // 1. Resolve raw file ID expression
+    const rawConfigValue = config.fileId || config.file?.id || config.file;
+    
+    if (!rawConfigValue && rawConfigValue !== 0) {
       const error = new Error('Document file ID is missing in configuration.');
       error.code = 'FILE_NOT_FOUND';
       error.status = 404;
       throw error;
     }
 
-    // Clean resolved file ID string if nested object was stringified
-    let fileId = String(rawFileId).trim();
-    if (fileId.startsWith('{') && fileId.includes('"id"')) {
-      try {
-        const parsedObj = JSON.parse(fileId);
-        fileId = parsedObj.id || parsedObj.file?.id || fileId;
-      } catch (e) {
-        // Fallback
-      }
+    let resolvedValue = rawConfigValue;
+    if (typeof rawConfigValue === 'string' && rawConfigValue.includes('{{')) {
+      resolvedValue = ExpressionEngine.resolve(rawConfigValue, context);
     }
 
-    // 2. Resolve owner ID from context if present
+    // 2. Extract string ID if resolved value is an Object
+    let fileId = '';
+    if (typeof resolvedValue === 'object' && resolvedValue !== null) {
+      fileId = resolvedValue.id || resolvedValue.fileId || resolvedValue.file?.id || resolvedValue.file?.fileId || '';
+    } else if (typeof resolvedValue === 'string') {
+      fileId = resolvedValue.trim();
+      if (fileId.startsWith('{') && fileId.includes('"id"')) {
+        try {
+          const parsedObj = JSON.parse(fileId);
+          fileId = parsedObj.id || parsedObj.file?.id || parsedObj.fileId || fileId;
+        } catch (e) {
+          // Fallback
+        }
+      }
+    } else {
+      fileId = String(resolvedValue || '').trim();
+    }
+
+    console.log(`[DocumentExtractContentExecutor] Runtime File Resolution for node "${node.id}":`);
+    console.log(`  RAW VALUE: "${rawConfigValue}"`);
+    console.log(`  RESOLVED VALUE:`, resolvedValue);
+    console.log(`  FINAL FILE INPUT (ID): "${fileId}"`);
+
+    if (!fileId || fileId.includes('{{')) {
+      const error = new Error(`File variable path could not be resolved: '${rawConfigValue}'. Ensure previous step executed successfully.`);
+      error.code = 'FILE_NOT_FOUND';
+      error.status = 404;
+      throw error;
+    }
+
+    // 3. Resolve owner ID from context if present
     const ownerId = context?.user?._id || context?.user?.id || context?.ownerId;
 
-    // 3. Fetch File Record & Ownership Verification
+    // 4. Fetch File Record & Ownership Verification
     let fileDoc = null;
     try {
       fileDoc = await FileModel.findOne({ id: fileId });
@@ -45,7 +67,7 @@ export class DocumentExtractContentExecutor extends BaseExecutor {
     }
 
     if (!fileDoc) {
-      const error = new Error(`Document file with ID '${fileId}' could not be found.`);
+      const error = new Error(`Document file with ID '${fileId}' (resolved from '${rawConfigValue}') could not be found.`);
       error.code = 'FILE_NOT_FOUND';
       error.status = 404;
       throw error;
