@@ -17,6 +17,7 @@ import {
   UserMinus,
   Sparkles,
   UploadCloud,
+  FileSearch,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -25,6 +26,7 @@ export const NODE_TYPES = {
   WEBHOOK_TRIGGER: 'WEBHOOK_TRIGGER',
   SCHEDULE_TRIGGER: 'SCHEDULE_TRIGGER',
   FILE_UPLOAD: 'fileUpload',
+  DOCUMENT_EXTRACT: 'documentExtractContent',
 
   // Actions
   HTTP_REQUEST: 'HTTP_REQUEST',
@@ -72,6 +74,17 @@ export const NODE_REGISTRY = {
     color: 'blue',
     badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     defaultConfig: { fileId: null, file: null },
+  },
+  [NODE_TYPES.DOCUMENT_EXTRACT]: {
+    type: 'documentExtractContent',
+    category: 'DOCUMENT / DATA',
+    label: 'Document → Extract Content',
+    subtitle: 'Extract text, tables, and document structure',
+    description: 'Extract text, tables, and useful document structure from an uploaded document.',
+    icon: FileSearch,
+    color: 'indigo',
+    badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    defaultConfig: { fileId: '{{steps["File → Upload Document"].file.id}}', extractionMode: 'full' },
   },
   [NODE_TYPES.MANUAL_TRIGGER]: {
     type: NODE_TYPES.MANUAL_TRIGGER,

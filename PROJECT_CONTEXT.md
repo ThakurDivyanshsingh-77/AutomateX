@@ -616,6 +616,23 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Verification**:
   - Passed **24/24** assertions in `test_file_upload.js` (verified `.docx`, `.pdf`, `.xlsx` uploads, rejected `.exe`, rejected unauthenticated requests, verified user isolation HTTP 403, workflow save/reload persistence, execution engine metadata output, and file deletion).
 
+### **Phase 29 Complete — Product Import Automation (Phase 2: Document → Extract Content)** — ✅ COMPLETED
+- **Backend Parser Architecture & Subsystem (`backend/src/engine/parser/`)**:
+  - `DocumentParserService.js`: Central factory resolving format parsers based on extension and MIME type.
+  - `BaseParser.js`: Base parser interface defining text/cell normalization routines.
+  - `DOCXParser.js`: DOCX document parser powered by `mammoth` & `cheerio` extracting clean text, paragraphs (`index`, `text`), headings (`level`, `text`), structured tables (`headers`, `rows`), and top-to-bottom ordered blocks (`blocks`).
+  - `PDFParser.js`: PDF document parser using `pdf-parse` extracting plain text, paragraphs, and page bounds.
+  - `XLSXParser.js`: Excel spreadsheet parser using `xlsx` (SheetJS) extracting worksheets into structured tables and formatted text rows.
+  - `DOCParser.js`: Legacy `.doc` binary file parser safely extracting plain text streams without macro execution.
+  - `DocumentExtractContentExecutor.js` & `ExecutorRegistry.js`: Registered `documentExtractContent` and `documentExtract` node executor resolving Mustache variables (`{{steps["File → Upload Document"].file.id}}`), enforcing owner security isolation, and returning structured JSON payloads (`text`, `paragraphs`, `headings`, `tables`, `blocks`, `stats`).
+- **Frontend Subsystem (`frontend/src/`)**:
+  - `documentExtractManifest.js`: Node definition under `DOCUMENT / DATA` category, `FileSearch` icon, default config, client-side validator.
+  - `DocumentExtractNode.jsx`: Custom visual canvas component displaying `Document → Extract Content`, `DOCUMENT` badge, source file variable reference, and execution stats (`chars`, `paras`, `tables`).
+  - `DocumentExtractProperties.jsx`: Production properties panel featuring Document Source variable expression input with **Insert Variable** support, Extraction Mode selector (`Full Document`, `Text Only`, `Tables Only`), and output variables path reference guide.
+  - Node Registries (`nodeRegistry.js`, `modules/builder/nodeRegistry.js`, `PropertiesPanel.jsx`, `WorkflowCanvas.jsx`, `NodeSidebar.jsx`): Registered `Document → Extract Content` under `Document / Data` category, searchable by `Document`, `Extract`, `Text`, `DOCX`, `PDF`, `Excel`, `Parser`.
+- **Automated Verification**:
+  - Passed **30/30** assertions in `test_document_extract.js` (verified `.docx` product catalog parsing with Nike Air Max text, headings, and product table extraction, `.xlsx` spreadsheet table parsing, `ACCESS_DENIED` user isolation enforcement, `FILE_NOT_FOUND` error handling, and end-to-end workflow variable interpolation execution).
+
 ---
 
 

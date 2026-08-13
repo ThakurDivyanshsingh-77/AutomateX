@@ -26,6 +26,7 @@ import { TryCatchNode } from '../nodes/tryCatch/TryCatchNode';
 import { CronNode } from '../nodes/cron/CronNode';
 import { PdfGeneratorNode } from '../nodes/pdf/PdfGeneratorNode';
 import { FileUploadNode } from '../nodes/fileUpload/FileUploadNode';
+import { DocumentExtractNode } from '../nodes/documentExtract/DocumentExtractNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 
@@ -65,6 +66,8 @@ const nodeTypes = {
   [NODE_TYPES.PDF_GENERATOR]: PdfGeneratorNode,
   [NODE_TYPES.FILE_UPLOAD]: FileUploadNode,
   fileUploadDocument: FileUploadNode,
+  [NODE_TYPES.DOCUMENT_EXTRACT]: DocumentExtractNode,
+  documentExtract: DocumentExtractNode,
   googleSheetsTrigger: GoogleSheetsTriggerNode,
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,

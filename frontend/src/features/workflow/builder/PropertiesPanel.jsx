@@ -27,6 +27,7 @@ import { OpenAiGenerateTextProperties } from '../components/OpenAiGenerateTextPr
 import { GeminiGenerateTextProperties } from '../components/GeminiGenerateTextProperties';
 import { DiscordMessageReceivedProperties } from '../components/DiscordMessageReceivedProperties';
 import { FileUploadProperties } from '../nodes/fileUpload/FileUploadProperties';
+import { DocumentExtractProperties } from '../nodes/documentExtract/DocumentExtractProperties';
 
 
 
@@ -58,6 +59,7 @@ export const PropertiesPanel = ({
   };
 
   const isFileUploadNode = selectedNode.type === 'fileUpload' || selectedNode.type === 'fileUploadDocument';
+  const isDocumentExtractNode = selectedNode.type === 'documentExtractContent' || selectedNode.type === 'documentExtract';
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -167,6 +169,11 @@ export const PropertiesPanel = ({
 
             {isFileUploadNode ? (
               <FileUploadProperties
+                node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isDocumentExtractNode ? (
+              <DocumentExtractProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
               />

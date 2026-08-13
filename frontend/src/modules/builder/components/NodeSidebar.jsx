@@ -21,9 +21,9 @@ export const NodeSidebar = () => {
     const typeMatch = (n.type || '').toLowerCase().includes(term);
     const subtitleMatch = (n.subtitle || '').toLowerCase().includes(term);
     const categoryMatch = (n.category || '').toLowerCase().includes(term);
-    const formatMatch = term === 'file' || term === 'upload' || term === 'document' || term === 'docx' || term === 'doc' || term === 'pdf' || term === 'excel' || term === 'xlsx' || term === 'xls';
+    const formatMatch = term === 'file' || term === 'upload' || term === 'document' || term === 'docx' || term === 'doc' || term === 'pdf' || term === 'excel' || term === 'xlsx' || term === 'xls' || term === 'extract' || term === 'text' || term === 'parser';
     
-    return labelMatch || descMatch || typeMatch || subtitleMatch || categoryMatch || (formatMatch && (n.type === 'fileUpload' || n.category === 'INPUT'));
+    return labelMatch || descMatch || typeMatch || subtitleMatch || categoryMatch || (formatMatch && (n.type === 'fileUpload' || n.type === 'documentExtractContent' || n.category === 'INPUT' || n.category === 'DOCUMENT / DATA'));
   });
 
   const triggers = filteredNodes.filter(
@@ -35,6 +35,9 @@ export const NodeSidebar = () => {
   );
   const inputNodes = filteredNodes.filter(
     (n) => n.category === 'INPUT' || n.category === 'Input' || n.type === 'fileUpload'
+  );
+  const documentNodes = filteredNodes.filter(
+    (n) => n.category === 'DOCUMENT / DATA' || n.category === 'DOCUMENT' || n.type === 'documentExtractContent'
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
   const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
@@ -123,6 +126,7 @@ export const NodeSidebar = () => {
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
         {renderCategoryGroup('Triggers', triggers)}
         {renderCategoryGroup('Input / File', inputNodes)}
+        {renderCategoryGroup('Document / Data', documentNodes)}
         {renderCategoryGroup('AI / Artificial Intelligence', aiNodes)}
         {renderCategoryGroup('Communication', communication)}
         {renderCategoryGroup('Actions', actions)}
