@@ -29,8 +29,11 @@ class ExecutorRegistry {
     this.register('googleSheets', new GoogleSheetsExecutor());
     this.register('fileUpload', new FileUploadExecutor());
     this.register('fileUploadDocument', new FileUploadExecutor());
+    this.register('documentUpload', new FileUploadExecutor());
+    this.register('document_upload', new FileUploadExecutor());
     this.register('documentExtractContent', new DocumentExtractContentExecutor());
     this.register('documentExtract', new DocumentExtractContentExecutor());
+    this.register('document_extract', new DocumentExtractContentExecutor());
   }
 
   register(nodeType, executorInstance) {

@@ -657,6 +657,14 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Verification**:
   - Passed **9/9** assertions in `test_document_extract_pipeline.js` (verified end-to-end DAG execution: `Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `AI → Generate Text` → `End`, tested `{{steps["File → Upload Document"].file.id}}`, `{{steps["File → Upload Document"].fileId}}`, static file ID, and downstream AI node variable resolution `{{steps["Document → Extract Content"].content.text}}`).
 
+### **Phase 32 Complete — File Upload Backend Executor Registration** — ✅ COMPLETED
+- **Backend Registry Subsystem (`backend/src/engine/`)**:
+  - `registry/ExecutorRegistry.js`: Imported `FileUploadExecutor` and `DocumentExtractContentExecutor` and registered canonical string keys (`fileUpload`, `fileUploadDocument`, `documentUpload`, `document_upload`, `documentExtractContent`, `documentExtract`, `document_extract`) in `ExecutorRegistry.executors` Map used by `WorkflowEngine.js`.
+  - `ExecutorRegistry.js`: Added alias registrations for `documentUpload`, `document_upload`, `document_extract` to `executorRegistry` instance used by `ExecutionEngine.js`.
+- **Automated Verification**:
+  - Verified startup initialization log: `[ExecutorRegistry] Registered node executor: "fileUpload" -> FileUploadExecutor` across 65 total registered node executors.
+  - Executed `test_document_extract_pipeline.js` passing 9/9 assertions for full end-to-end execution.
+
 ---
 
 

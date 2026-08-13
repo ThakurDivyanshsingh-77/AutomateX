@@ -16,6 +16,8 @@ import { GoogleSheetsDeleteWorksheetExecutor } from '../googleSheets/GoogleSheet
 import { GoogleSheetsGetSpreadsheetInfoExecutor } from '../googleSheets/GoogleSheetsGetSpreadsheetInfoExecutor.js';
 import { DiscordNodeExecutor } from '../../discord/executors/DiscordNodeExecutor.js';
 import { AiNodeExecutor } from '../../ai/executors/AiNodeExecutor.js';
+import { FileUploadExecutor } from '../executors/FileUploadExecutor.js';
+import { DocumentExtractContentExecutor } from '../executors/DocumentExtractContentExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -26,6 +28,8 @@ const googleSheetsGetSpreadsheetInfoExecutor = new GoogleSheetsGetSpreadsheetInf
 const discordNodeExecutor = new DiscordNodeExecutor();
 const aiNodeExecutor = new AiNodeExecutor();
 const discordMessageReceivedExecutor = new DiscordMessageReceivedTriggerExecutor();
+const fileUploadExecutor = new FileUploadExecutor();
+const documentExtractContentExecutor = new DocumentExtractContentExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -77,10 +81,14 @@ export class ExecutorRegistry {
     ['geminiGenerateText', aiNodeExecutor],
     ['googleGeminiGenerateText', aiNodeExecutor],
 
-
-
-
-    // Google Sheets Node Executors (Exact matching string registration)
+    // File & Document Processing Executors
+    ['fileUpload', fileUploadExecutor],
+    ['fileUploadDocument', fileUploadExecutor],
+    ['documentUpload', fileUploadExecutor],
+    ['document_upload', fileUploadExecutor],
+    ['documentExtractContent', documentExtractContentExecutor],
+    ['documentExtract', documentExtractContentExecutor],
+    ['document_extract', documentExtractContentExecutor],    // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],
     ['googleSheetsTrigger', googleSheetsTriggerExecutor],
     ['googleSheetsTriggerWatchRows', googleSheetsTriggerExecutor],
