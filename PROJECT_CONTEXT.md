@@ -647,6 +647,16 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Verification**:
   - Passed **10/10** assertions in `test_variable_explorer_resolution.js` (verified resolution of `steps["File → Upload Document"].file.id`, `steps["File → Upload Document"].fileId`, `steps["Document → Extract Content"].content.text`, `steps["Document → Extract Content"].content.tables[0].rows[0][0]`, `$execution.id`, `upper()`, and `length()`).
 
+### **Phase 31 Complete — Runtime File Resolution System Fix** — ✅ COMPLETED
+- **Backend Subsystem (`backend/src/engine/`)**:
+  - `FileUploadExecutor.js`: Exposed top-level shortcut properties (`fileId`, `fileName`, `mimeType`, `size`) alongside structured `file` object in returned output payload.
+  - `DocumentExtractContentExecutor.js`: Replaced broken `this.interpolate` call with `ExpressionEngine.resolve(rawFileId, context)`. Extracted file ID string from parsed JSON, object `id`, or nested `file.id`. Added detailed diagnostic resolution logging and descriptive error messages for unresolvable variables or missing physical files.
+  - `ExecutionEngine.js` & `WorkflowEngine.js`: Configured pre-execution resolution using `ExpressionEngine.resolve(rawConfig, context)` before invoking node executors. Registered step output in `context.setNodeOutput` for `node.id`, `node.type`, `node.data.label`, and `node.label`.
+- **Frontend Canvas Subsystem (`frontend/src/features/workflow/nodes/`)**:
+  - `DocumentExtractNode.jsx`: Updated canvas node file indicator (`displayFileRef`) to dynamically show executed file name `outputData.file?.name`, configured variable reference, or `'No file selected'`.
+- **Automated Verification**:
+  - Passed **9/9** assertions in `test_document_extract_pipeline.js` (verified end-to-end DAG execution: `Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `AI → Generate Text` → `End`, tested `{{steps["File → Upload Document"].file.id}}`, `{{steps["File → Upload Document"].fileId}}`, static file ID, and downstream AI node variable resolution `{{steps["Document → Extract Content"].content.text}}`).
+
 ---
 
 
