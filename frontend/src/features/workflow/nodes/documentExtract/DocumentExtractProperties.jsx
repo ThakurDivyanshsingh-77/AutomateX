@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { ExpressionInput } from '../../../../components/expression/ExpressionInput';
 import { FileSearch, Layers, Sparkles, Code2, HelpCircle } from 'lucide-react';
 
-export const DocumentExtractProperties = ({ node, onUpdateNodeData }) => {
+export const DocumentExtractProperties = ({
+  node,
+  onUpdateNodeData,
+  workflowNodes = [],
+  executionSnapshot = null,
+}) => {
   const config = node.data?.config || {};
   const fileId = config.fileId || '{{steps["File → Upload Document"].file.id}}';
   const extractionMode = config.extractionMode || 'full';
@@ -48,6 +53,8 @@ export const DocumentExtractProperties = ({ node, onUpdateNodeData }) => {
           onChange={handleFileIdChange}
           placeholder='{{steps["File → Upload Document"].file.id}}'
           helperText="Map to the file ID returned by the File → Upload Document node."
+          workflowNodes={workflowNodes}
+          executionSnapshot={executionSnapshot}
         />
       </div>
 

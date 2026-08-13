@@ -1,7 +1,17 @@
 import React from 'react';
 import { ExpressionInput } from '../../../../../components/expression/ExpressionInput';
 
-export const TextareaField = ({ label, value, onChange, placeholder, rows = 3, error, description }) => {
+export const TextareaField = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  rows = 3,
+  error,
+  description,
+  workflowNodes,
+  executionSnapshot,
+}) => {
   return (
     <ExpressionInput
       label={label}
@@ -12,6 +22,8 @@ export const TextareaField = ({ label, value, onChange, placeholder, rows = 3, e
       error={error}
       description={description}
       isTextarea={true}
+      workflowNodes={workflowNodes}
+      executionSnapshot={executionSnapshot}
     />
   );
 };

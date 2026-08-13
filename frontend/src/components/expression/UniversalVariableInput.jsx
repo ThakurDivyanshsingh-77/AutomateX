@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sparkles, Terminal, AlertTriangle, CheckCircle2, Code } from 'lucide-react';
 import { VariableEngine } from '../../engine/variable/VariableEngine';
 import { VariablePickerDrawer } from './VariablePickerDrawer';
+import { useWorkflowBuilder } from '../../context/WorkflowBuilderContext';
 
 export const UniversalVariableInput = ({
   label,
@@ -22,10 +23,14 @@ export const UniversalVariableInput = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
 
+  const builderContext = useWorkflowBuilder();
+  const effectiveNodes = workflowNodes && workflowNodes.length > 0 ? workflowNodes : (builderContext?.workflowNodes || []);
+  const effectiveSnapshot = executionSnapshot || builderContext?.executionSnapshot || null;
+
   // Discover nodes for autocomplete
   const data = useMemo(() => {
-    return VariableEngine.list(workflowNodes, executionSnapshot);
-  }, [workflowNodes, executionSnapshot]);
+    return VariableEngine.list(effectiveNodes, effectiveSnapshot);
+  }, [effectiveNodes, effectiveSnapshot]);
 
   // Autocomplete suggestions
   const suggestions = useMemo(() => {
@@ -63,24 +68,34 @@ export const UniversalVariableInput = ({
   // Insert variable string at exact cursor position
   const handleInsertExpression = (exprText) => {
     const el = inputRef.current;
+    let nextVal = '';
+    let start = 0;
+    let end = 0;
+
     if (!el) {
-      onChange((value || '') + exprText);
-      return;
+      nextVal = (value || '') + exprText;
+    } else {
+      start = el.selectionStart || 0;
+      end = el.selectionEnd || 0;
+      const currentVal = value || '';
+      nextVal = currentVal.substring(0, start) + exprText + currentVal.substring(end);
     }
 
-    const start = el.selectionStart || 0;
-    const end = el.selectionEnd || 0;
-    const currentVal = value || '';
-
-    const nextVal = currentVal.substring(0, start) + exprText + currentVal.substring(end);
     onChange(nextVal);
     setAutocompleteVisible(false);
+    setIsDrawerOpen(false);
 
-    setTimeout(() => {
-      el.focus();
-      const newPos = start + exprText.length;
-      el.setSelectionRange(newPos, newPos);
-    }, 50);
+    if (el) {
+      setTimeout(() => {
+        el.focus();
+        const newPos = start + exprText.length;
+        try {
+          el.setSelectionRange(newPos, newPos);
+        } catch (err) {
+          // Ignore
+        }
+      }, 50);
+    }
   };
 
   // Keyboard navigation & trigger check
@@ -276,8 +291,8 @@ export const UniversalVariableInput = ({
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onInsert={handleInsertExpression}
-        workflowNodes={workflowNodes}
-        executionSnapshot={executionSnapshot}
+        workflowNodes={effectiveNodes}
+        executionSnapshot={effectiveSnapshot}
       />
     </div>
   );

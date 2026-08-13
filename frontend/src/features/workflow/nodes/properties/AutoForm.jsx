@@ -6,7 +6,14 @@ import { TextareaField } from './fields/TextareaField';
 import { KeyValueEditor } from './fields/KeyValueEditor';
 import { RetryConfigFields } from './fields/RetryConfigFields';
 
-export const AutoForm = ({ configSchema = [], config = {}, errors = {}, onChange }) => {
+export const AutoForm = ({
+  configSchema = [],
+  config = {},
+  errors = {},
+  onChange,
+  workflowNodes,
+  executionSnapshot,
+}) => {
   return (
     <div className="space-y-4">
       {configSchema && configSchema.length > 0 ? (
@@ -25,6 +32,8 @@ export const AutoForm = ({ configSchema = [], config = {}, errors = {}, onChange
                   description={field.description}
                   error={fieldError}
                   onChange={(val) => onChange(field.name, val)}
+                  workflowNodes={workflowNodes}
+                  executionSnapshot={executionSnapshot}
                 />
               );
 
@@ -66,6 +75,8 @@ export const AutoForm = ({ configSchema = [], config = {}, errors = {}, onChange
                   description={field.description}
                   error={fieldError}
                   onChange={(val) => onChange(field.name, val)}
+                  workflowNodes={workflowNodes}
+                  executionSnapshot={executionSnapshot}
                 />
               );
 

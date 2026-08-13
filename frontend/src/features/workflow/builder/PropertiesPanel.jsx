@@ -28,6 +28,7 @@ import { GeminiGenerateTextProperties } from '../components/GeminiGenerateTextPr
 import { DiscordMessageReceivedProperties } from '../components/DiscordMessageReceivedProperties';
 import { FileUploadProperties } from '../nodes/fileUpload/FileUploadProperties';
 import { DocumentExtractProperties } from '../nodes/documentExtract/DocumentExtractProperties';
+import { WorkflowBuilderProvider } from '../../../context/WorkflowBuilderContext';
 
 
 
@@ -86,7 +87,12 @@ export const PropertiesPanel = ({
 
 
   return (
-    <>
+    <WorkflowBuilderProvider
+      workflowNodes={workflowNodes}
+      executionSnapshot={executionSnapshot}
+      updateNodeData={onUpdateNodeData}
+      workflowId={workflowId}
+    >
       <aside className="w-80 bg-slate-900 border-l border-slate-800 flex flex-col h-full select-none shadow-2xl">
         {/* Panel Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -118,10 +124,15 @@ export const PropertiesPanel = ({
           <button
             type="button"
             onClick={() => setShowDataMapper(true)}
-            className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 font-semibold transition-all cursor-pointer group shadow-sm"
           >
-            <Zap className="w-4 h-4 text-purple-400" />
-            <span>Open Visual Data Mapper</span>
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+              <span>Variables & Data Explorer</span>
+            </div>
+            <span className="text-[10px] font-mono bg-indigo-500/20 px-2 py-0.5 rounded-md text-indigo-200">
+              EXPLORE
+            </span>
           </button>
 
           {/* Node Validation Status Banner */}
@@ -151,13 +162,14 @@ export const PropertiesPanel = ({
           {/* Node Custom Title */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-300">
-              Node Name / Title
+              Step Label
             </label>
             <input
               type="text"
               value={selectedNode.data?.label || ''}
               onChange={handleLabelChange}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-medium"
+              placeholder="Enter node label..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
 
@@ -171,37 +183,51 @@ export const PropertiesPanel = ({
               <FileUploadProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isDocumentExtractNode ? (
               <DocumentExtractProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isGmailNode ? (
               <GmailProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isConditionNode ? (
               <ConditionProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isWebhookNode ? (
               <WebhookProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
                 workflowId={workflowId}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isCronNode ? (
               <CronProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isMongoCrudNode ? (
               <MongoCrudProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isMongoConnNode ? (
               <MongoDBConnectionProperties
@@ -212,6 +238,8 @@ export const PropertiesPanel = ({
               <PdfGeneratorProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isGoogleSheetsTriggerNode ? (
               <GoogleSheetsTriggerProperties
@@ -228,21 +256,29 @@ export const PropertiesPanel = ({
                 nodeType={selectedNode.type}
                 nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isOpenAiGenerateTextNode ? (
               <OpenAiGenerateTextProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isGeminiGenerateTextNode ? (
               <GeminiGenerateTextProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isAiGenerateTextNode ? (
               <AiGenerateTextProperties
                 nodeData={selectedNode.data}
                 onUpdateConfig={(nextConfig) => onUpdateNodeData(selectedNode.id, { config: nextConfig })}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isDiscordMessageReceivedNode ? (
               <DiscordMessageReceivedProperties
@@ -293,6 +329,8 @@ export const PropertiesPanel = ({
               <AutoForm
                 schema={registryEntry.schema}
                 data={selectedNode.data?.config || {}}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
                 onChange={(newConfig) =>
                   onUpdateNodeData(selectedNode.id, { config: newConfig })
                 }
@@ -335,7 +373,7 @@ export const PropertiesPanel = ({
           }}
         />
       )}
-    </>
+    </WorkflowBuilderProvider>
   );
 };
 

@@ -14,6 +14,7 @@ import {
 import { VariableEngine } from '../../engine/variable/VariableEngine';
 import { JSONTreeExplorer } from './JSONTreeExplorer';
 import { VariablePreviewModal } from './VariablePreviewModal';
+import { useWorkflowBuilder } from '../../context/WorkflowBuilderContext';
 
 export const VariablePickerDrawer = ({
   isOpen,
@@ -27,10 +28,14 @@ export const VariablePickerDrawer = ({
   const [selectedPreviewItem, setSelectedPreviewItem] = useState(null);
   const [favorites, setFavorites] = useState(() => VariableEngine.getFavorites());
 
+  const builderContext = useWorkflowBuilder();
+  const effectiveNodes = workflowNodes && workflowNodes.length > 0 ? workflowNodes : (builderContext?.workflowNodes || []);
+  const effectiveSnapshot = executionSnapshot || builderContext?.executionSnapshot || null;
+
   // Discover and build structured variables
   const data = useMemo(() => {
-    return VariableEngine.list(workflowNodes, executionSnapshot);
-  }, [workflowNodes, executionSnapshot]);
+    return VariableEngine.list(effectiveNodes, effectiveSnapshot);
+  }, [effectiveNodes, effectiveSnapshot]);
 
   // Handle starring/unstarring favorites
   const handleToggleFavorite = (path) => {

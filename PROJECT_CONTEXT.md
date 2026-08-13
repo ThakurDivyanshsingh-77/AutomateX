@@ -633,6 +633,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Verification**:
   - Passed **30/30** assertions in `test_document_extract.js` (verified `.docx` product catalog parsing with Nike Air Max text, headings, and product table extraction, `.xlsx` spreadsheet table parsing, `ACCESS_DENIED` user isolation enforcement, `FILE_NOT_FOUND` error handling, and end-to-end workflow variable interpolation execution).
 
+### **Phase 30 Complete — Dynamic Variables & Data Explorer Infrastructure System** — ✅ COMPLETED
+- **Variable Engine & Schema Subsystem (`frontend/src/engine/variable/`)**:
+  - `VariableEngine.js`: Expanded `NODE_SCHEMA_REGISTRY` to register outputs for `fileUpload`, `fileUploadDocument`, `documentExtractContent`, `documentExtract`, `googleSheets`, `discordMessageReceived`, `aiGenerateText`, `geminiGenerateText`, `openaiGenerateText`, `start`, `manual_trigger`, etc.
+  - Dynamically builds output tree prefix as `steps["Node Label"]` (e.g. `steps["File → Upload Document"].file.id`, `steps["File → Upload Document"].fileId`), matching backend `ExpressionResolver.js`.
+  - Prioritizes live execution outputs from `executionSnapshot.steps` and `executionSnapshot.outputs`. Eliminated static fallback to HTTP request schema for non-HTTP nodes.
+  - Enhanced search to filter nodes and output properties across node labels, types, property names, variable paths, and sample values.
+- **Workflow State & Context Infrastructure (`frontend/src/`)**:
+  - `WorkflowBuilderContext.jsx`: Created React Context providing `{ workflowNodes, executionSnapshot, updateNodeData, workflowId }`.
+  - `PropertiesPanel.jsx`: Wrapped properties panel in `WorkflowBuilderContext.Provider` and forwarded `workflowNodes` & `executionSnapshot` props directly to child property panels (`DocumentExtractProperties`, `FileUploadProperties`, `AutoForm`, `ConditionProperties`, etc.).
+  - `UniversalVariableInput.jsx` & `VariablePickerDrawer.jsx`: Consumed `WorkflowBuilderContext` to automatically acquire current workflow nodes and execution outputs, preventing fallbacks to static demo nodes.
+  - `handleInsertExpression(exprText)`: Fixed insertion to place expressions at exact cursor position on input controls, trigger `onChange(nextVal)` for React controlled state updates, mark workflow dirty, and close the drawer.
+- **Automated Verification**:
+  - Passed **10/10** assertions in `test_variable_explorer_resolution.js` (verified resolution of `steps["File → Upload Document"].file.id`, `steps["File → Upload Document"].fileId`, `steps["Document → Extract Content"].content.text`, `steps["Document → Extract Content"].content.tables[0].rows[0][0]`, `$execution.id`, `upper()`, and `length()`).
+
 ---
 
 

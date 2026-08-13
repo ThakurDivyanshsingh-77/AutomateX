@@ -238,6 +238,138 @@ export const NODE_SCHEMA_REGISTRY = {
       timestamp: { type: 'String', example: '2026-08-04T08:00:00.000Z', description: 'Log timestamp' },
     },
   },
+  fileUpload: {
+    label: 'File → Upload Document',
+    icon: 'UploadCloud',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Upload status boolean' },
+      file: {
+        type: 'Object',
+        example: { id: 'file_cf1c4cd42ee4ed57dfbd47db', name: 'resume.docx', originalName: 'resume.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', size: 245678, extension: '.docx', status: 'uploaded' },
+        description: 'Uploaded document file metadata object',
+      },
+      fileId: { type: 'String', example: 'file_cf1c4cd42ee4ed57dfbd47db', description: 'Unique document file ID' },
+      fileName: { type: 'String', example: 'resume.docx', description: 'Document filename' },
+      mimeType: { type: 'String', example: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', description: 'Document MIME type' },
+      size: { type: 'Number', example: 245678, description: 'Document file size in bytes' },
+    },
+  },
+  fileUploadDocument: {
+    label: 'File → Upload Document',
+    icon: 'UploadCloud',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Upload status boolean' },
+      file: {
+        type: 'Object',
+        example: { id: 'file_cf1c4cd42ee4ed57dfbd47db', name: 'resume.docx', originalName: 'resume.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', size: 245678, extension: '.docx', status: 'uploaded' },
+        description: 'Uploaded document file metadata object',
+      },
+      fileId: { type: 'String', example: 'file_cf1c4cd42ee4ed57dfbd47db', description: 'Unique document file ID' },
+      fileName: { type: 'String', example: 'resume.docx', description: 'Document filename' },
+      mimeType: { type: 'String', example: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', description: 'Document MIME type' },
+      size: { type: 'Number', example: 245678, description: 'Document file size in bytes' },
+    },
+  },
+  documentExtractContent: {
+    label: 'Document → Extract Content',
+    icon: 'FileSearch',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Extraction status boolean' },
+      file: {
+        type: 'Object',
+        example: { id: 'file_cf1c4cd42ee4ed57dfbd47db', name: 'catalog.docx', mimeType: 'application/docx', size: 1024, extension: '.docx' },
+        description: 'Source document file metadata',
+      },
+      content: {
+        type: 'Object',
+        example: { text: 'Document text...', paragraphs: [{ index: 0, text: 'Text' }], headings: [{ level: 1, text: 'Heading' }], tables: [{ headers: ['Product', 'Price'], rows: [['Nike', '5999']] }], blocks: [] },
+        description: 'Extracted document content object',
+      },
+      'content.text': { type: 'String', example: 'Combined plain text string of document...', description: 'Full document text' },
+      'content.paragraphs': { type: 'Array', example: [{ index: 0, text: 'Product Name: Nike Air Max' }], description: 'Array of extracted paragraphs' },
+      'content.headings': { type: 'Array', example: [{ level: 1, text: 'Products Catalog' }], description: 'Array of extracted headings' },
+      'content.tables': { type: 'Array', example: [{ headers: ['Product Name', 'Price'], rows: [['Nike Air Max', '5999']] }], description: 'Array of extracted tables' },
+      'content.blocks': { type: 'Array', example: [{ type: 'paragraph', text: 'Text' }], description: 'Ordered array of document elements' },
+      stats: { type: 'Object', example: { characters: 181, paragraphs: 5, headings: 1, tables: 1, blocks: 6 }, description: 'Extraction statistics' },
+    },
+  },
+  documentExtract: {
+    label: 'Document → Extract Content',
+    icon: 'FileSearch',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Extraction status boolean' },
+      file: {
+        type: 'Object',
+        example: { id: 'file_cf1c4cd42ee4ed57dfbd47db', name: 'catalog.docx' },
+        description: 'Source document file metadata',
+      },
+      content: {
+        type: 'Object',
+        example: { text: 'Document text...', paragraphs: [], headings: [], tables: [], blocks: [] },
+        description: 'Extracted document content object',
+      },
+      stats: { type: 'Object', example: { characters: 181, paragraphs: 5, headings: 1, tables: 1, blocks: 6 }, description: 'Extraction statistics' },
+    },
+  },
+  start: {
+    label: 'Start Trigger',
+    icon: 'Zap',
+    outputs: {
+      triggeredAt: { type: 'String', example: '2026-08-13T10:00:00.000Z', description: 'Trigger execution timestamp' },
+      triggerType: { type: 'String', example: 'manual', description: 'Trigger initiation type' },
+      user: { type: 'Object', example: { name: 'Divyansh', email: 'divyansh@automatex.com' }, description: 'User who triggered workflow' },
+    },
+  },
+  manual_trigger: {
+    label: 'Manual Trigger',
+    icon: 'Zap',
+    outputs: {
+      triggeredAt: { type: 'String', example: '2026-08-13T10:00:00.000Z', description: 'Trigger execution timestamp' },
+      triggerType: { type: 'String', example: 'manual', description: 'Trigger initiation type' },
+    },
+  },
+  googleSheets: {
+    label: 'Google Sheets',
+    icon: 'Grid',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Sheet operation status' },
+      rows: { type: 'Array', example: [{ 'Product Name': 'Nike Air Max', Price: 5999 }], description: 'Read spreadsheet rows' },
+      rowCount: { type: 'Number', example: 1, description: 'Row count' },
+    },
+  },
+  discordMessageReceived: {
+    label: 'Discord → Message Received',
+    icon: 'MessageSquare',
+    outputs: {
+      content: { type: 'String', example: 'Hello bot', description: 'Received message text' },
+      authorName: { type: 'String', example: 'Alex', description: 'Message author username' },
+      authorId: { type: 'String', example: '123456789', description: 'Message author ID' },
+      channelId: { type: 'String', example: '987654321', description: 'Channel ID' },
+      messageId: { type: 'String', example: '1122334455', description: 'Unique message ID' },
+    },
+  },
+  aiGenerateText: {
+    label: 'AI → Generate Text',
+    icon: 'Sparkles',
+    outputs: {
+      text: { type: 'String', example: 'Extracted product: Nike Air Max (Price: $5999)', description: 'AI generated response text' },
+      usage: { type: 'Object', example: { totalTokens: 142 }, description: 'Token usage breakdown' },
+    },
+  },
+  geminiGenerateText: {
+    label: 'Gemini → Generate Text',
+    icon: 'Sparkles',
+    outputs: {
+      text: { type: 'String', example: 'Gemini generated text output', description: 'Gemini completion response' },
+    },
+  },
+  openaiGenerateText: {
+    label: 'OpenAI → Generate Text',
+    icon: 'Sparkles',
+    outputs: {
+      text: { type: 'String', example: 'OpenAI generated text output', description: 'OpenAI completion response' },
+    },
+  },
 };
 
 export const TRANSFORMATION_FUNCTIONS = [
@@ -371,42 +503,70 @@ export class VariableEngine {
     const recents = this.getRecents();
 
     // 1. Process active Canvas Nodes
-    workflowNodes.forEach((node) => {
-      const rawType = node.type || 'http';
-      const nodeType = rawType.toLowerCase();
-      const label = node.data?.label || NODE_SCHEMA_REGISTRY[nodeType]?.label || rawType;
-      const schema = NODE_SCHEMA_REGISTRY[nodeType] || NODE_SCHEMA_REGISTRY[rawType] || NODE_SCHEMA_REGISTRY.http;
+    if (Array.isArray(workflowNodes)) {
+      workflowNodes.forEach((node) => {
+        if (!node || !node.id) return;
+        const rawType = node.type || 'http';
+        const nodeTypeKey = rawType.toLowerCase();
+        const label = node.data?.label || NODE_SCHEMA_REGISTRY[nodeTypeKey]?.label || rawType;
+        const schema = NODE_SCHEMA_REGISTRY[nodeTypeKey] || NODE_SCHEMA_REGISTRY[rawType] || {
+          label: label,
+          icon: 'Box',
+          outputs: { status: { type: 'String', example: 'success', description: 'Execution status' } },
+        };
 
-      const runtimeOutputs = executionSnapshot?.outputs?.[node.id] || executionSnapshot?.outputs?.[nodeType] || executionSnapshot?.outputs?.[rawType];
+        const stepId = node.id;
+        const runtimeOutputs =
+          executionSnapshot?.steps?.[stepId]?.output ||
+          executionSnapshot?.outputs?.[stepId] ||
+          executionSnapshot?.steps?.[label]?.output ||
+          executionSnapshot?.outputs?.[label] ||
+          node.data?.output ||
+          node.output;
 
-      const outputsTree = this.buildOutputTree(
-        rawType,
-        runtimeOutputs || schema.outputs,
-        rawType,
-        label
-      );
+        const pathPrefix = `steps["${label}"]`;
 
-      nodesList.push({
-        id: node.id,
-        nodeType: rawType,
-        nodeName: label,
-        icon: schema.icon,
-        status: runtimeOutputs ? 'SUCCESS' : 'IDLE',
-        outputs: outputsTree,
-      });
-    });
+        const sourceData = (runtimeOutputs !== undefined && runtimeOutputs !== null)
+          ? runtimeOutputs
+          : schema.outputs;
 
-    // Fallback default nodes if canvas has no nodes yet
-    if (nodesList.length === 0) {
-      Object.entries(NODE_SCHEMA_REGISTRY).slice(0, 5).forEach(([nodeType, schema], idx) => {
+        const outputsTree = this.buildOutputTree(
+          pathPrefix,
+          sourceData,
+          pathPrefix,
+          label
+        );
+
         nodesList.push({
-          id: `${nodeType}_demo_${idx}`,
-          nodeType: nodeType,
-          nodeName: schema.label,
-          icon: schema.icon,
-          status: 'TEST_PAYLOAD',
-          outputs: this.buildOutputTree(nodeType, schema.outputs, nodeType, schema.label),
+          id: node.id,
+          nodeType: rawType,
+          nodeName: label,
+          icon: schema.icon || 'Box',
+          status: runtimeOutputs
+            ? 'SUCCESS'
+            : (executionSnapshot?.failedNodeId === node.id ? 'FAILED' : 'IDLE'),
+          hasRuntimeData: Boolean(runtimeOutputs),
+          outputs: outputsTree,
+          rawOutput: runtimeOutputs || null,
         });
+      });
+    }
+
+    // Fallback demo nodes ONLY if workflow has zero nodes configured
+    if (nodesList.length === 0) {
+      const demoKeys = ['fileUpload', 'documentExtractContent', 'webhook', 'http'];
+      demoKeys.forEach((nodeType, idx) => {
+        const schema = NODE_SCHEMA_REGISTRY[nodeType];
+        if (schema) {
+          nodesList.push({
+            id: `${nodeType}_demo_${idx}`,
+            nodeType: nodeType,
+            nodeName: schema.label,
+            icon: schema.icon,
+            status: 'IDLE',
+            outputs: this.buildOutputTree(`steps["${schema.label}"]`, schema.outputs, `steps["${schema.label}"]`, schema.label),
+          });
+        }
       });
     }
 
