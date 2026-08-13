@@ -16,6 +16,7 @@ import {
   UserPlus,
   UserMinus,
   Sparkles,
+  UploadCloud,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -23,6 +24,7 @@ export const NODE_TYPES = {
   MANUAL_TRIGGER: 'MANUAL_TRIGGER',
   WEBHOOK_TRIGGER: 'WEBHOOK_TRIGGER',
   SCHEDULE_TRIGGER: 'SCHEDULE_TRIGGER',
+  FILE_UPLOAD: 'fileUpload',
 
   // Actions
   HTTP_REQUEST: 'HTTP_REQUEST',
@@ -60,6 +62,17 @@ export const NODE_TYPES = {
 };
 
 export const NODE_REGISTRY = {
+  [NODE_TYPES.FILE_UPLOAD]: {
+    type: 'fileUpload',
+    category: 'INPUT',
+    label: 'File → Upload Document',
+    subtitle: 'Upload a document for workflow processing',
+    description: 'Upload a document that will be passed to the next workflow step.',
+    icon: UploadCloud,
+    color: 'blue',
+    badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    defaultConfig: { fileId: null, file: null },
+  },
   [NODE_TYPES.MANUAL_TRIGGER]: {
     type: NODE_TYPES.MANUAL_TRIGGER,
     category: 'TRIGGER',

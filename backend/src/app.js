@@ -15,6 +15,7 @@ import cronRoutes from './routes/cronRoutes.js';
 import databaseRoutes from './routes/v1/databaseRoutes.js';
 import googleSheetsRoutes from './routes/googleSheetsRoutes.js';
 import discordRoutes from './discord/routes/DiscordRoutes.js';
+import fileRoutes from './routes/fileRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -56,6 +57,7 @@ app.use('/api/v1/database', databaseRoutes);
 app.use('/api/v1/google', googleSheetsRoutes);
 app.use('/api/v1/google-sheets', googleSheetsRoutes);
 app.use('/api/v1/discord', discordRoutes);
+app.use('/api/v1/files', fileRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

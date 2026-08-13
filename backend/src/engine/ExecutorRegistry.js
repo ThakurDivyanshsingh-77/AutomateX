@@ -4,6 +4,7 @@ import { HttpRequestExecutor, DelayExecutor, CodeTransformExecutor, ConditionExe
 
 import { LoopExecutor } from './executors/LoopExecutor.js';
 import { GoogleSheetsExecutor } from './googleSheets/GoogleSheetsExecutor.js';
+import { FileUploadExecutor } from './executors/FileUploadExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -25,6 +26,8 @@ class ExecutorRegistry {
     this.register(NODE_TYPES.LOG_ACTION, new LogActionExecutor());
     this.register('loop', new LoopExecutor());
     this.register('googleSheets', new GoogleSheetsExecutor());
+    this.register('fileUpload', new FileUploadExecutor());
+    this.register('fileUploadDocument', new FileUploadExecutor());
   }
 
   register(nodeType, executorInstance) {

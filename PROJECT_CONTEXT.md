@@ -601,6 +601,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Added trigger lifecycle hooks in `workflowService.js` and `PublishManager.js` to automatically register/unregister Discord Gateway connections when workflows are published, updated, deleted, or archived.
   - End-to-end verified with `Discord → Message Received` → `Gemini → Generate Text` → `Discord → Send Message` (6/6 unit tests passed).
 
+### **Phase 28 Complete — Product Import Automation (Phase 1: Document Input / File Upload Foundation)** — ✅ COMPLETED
+- **Backend Subsystem & File Storage Architecture (`backend/src/`)**:
+  - `File.js`: Mongoose model tracking file metadata (`id`, `ownerId`, `originalName`, `storedName`, `storagePath`, `mimeType`, `extension`, `size`, `storageProvider`, `status`, timestamps).
+  - `FileStorageService.js`: Modular storage service abstraction supporting local storage, format & size security validations (`.docx`, `.doc`, `.pdf`, `.xlsx`, `.xls`, max size limit via `MAX_FILE_SIZE_MB` env var), antivirus malware scan hook interface (`scanFile`), owner isolation enforcement, and safe random storage key generation.
+  - `fileController.js` & `fileRoutes.js`: Mounted REST API endpoints under `/api/v1/files` (`POST /upload`, `GET /:id`, `DELETE /:id`) using `multer` for streaming multipart uploads.
+  - `FileUploadExecutor.js` & `ExecutorRegistry.js`: Registered `fileUpload` and `fileUploadDocument` node executor returning structured output metadata (`{ success: true, file: { id, name, mimeType, size, extension, status } }`).
+- **Frontend Subsystem (`frontend/src/`)**:
+  - `fileUploadManifest.js`: Node definition, `INPUT` category, `UploadCloud` icon, default config, client-side validator.
+  - `FileUploadNode.jsx`: Custom visual canvas component displaying `File → Upload Document`, `INPUT` badge, file name/type status, input & output handles, selection state, and execution state highlights.
+  - `FileUploadProperties.jsx`: Production properties panel featuring drag & drop dropzone with click-to-browse file picker, upload progress indicator bar, uploaded document card with `[Replace]` and `[Remove]` controls, format policy note, and validation error banners.
+  - `fileService.js`: API helper supporting progress callbacks for file uploads.
+  - Node Registries (`nodeRegistry.js`, `modules/builder/nodeRegistry.js`, `PropertiesPanel.jsx`, `WorkflowCanvas.jsx`, `NodeSidebar.jsx`): Registered `File → Upload Document` under `INPUT` category, searchable by `file`, `upload`, `document`, `docx`, `pdf`, `excel`.
+- **Automated Verification**:
+  - Passed **24/24** assertions in `test_file_upload.js` (verified `.docx`, `.pdf`, `.xlsx` uploads, rejected `.exe`, rejected unauthenticated requests, verified user isolation HTTP 403, workflow save/reload persistence, execution engine metadata output, and file deletion).
+
 ---
 
 

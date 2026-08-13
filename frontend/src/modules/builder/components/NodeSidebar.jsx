@@ -14,12 +14,17 @@ export const NodeSidebar = () => {
   });
   const nodesList = Array.from(uniqueNodesMap.values());
 
-  const filteredNodes = nodesList.filter(
-    (n) =>
-      n.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (n.type && n.type.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredNodes = nodesList.filter((n) => {
+    const term = searchTerm.toLowerCase();
+    const labelMatch = (n.label || '').toLowerCase().includes(term);
+    const descMatch = (n.description || '').toLowerCase().includes(term);
+    const typeMatch = (n.type || '').toLowerCase().includes(term);
+    const subtitleMatch = (n.subtitle || '').toLowerCase().includes(term);
+    const categoryMatch = (n.category || '').toLowerCase().includes(term);
+    const formatMatch = term === 'file' || term === 'upload' || term === 'document' || term === 'docx' || term === 'doc' || term === 'pdf' || term === 'excel' || term === 'xlsx' || term === 'xls';
+    
+    return labelMatch || descMatch || typeMatch || subtitleMatch || categoryMatch || (formatMatch && (n.type === 'fileUpload' || n.category === 'INPUT'));
+  });
 
   const triggers = filteredNodes.filter(
     (n) =>
@@ -27,6 +32,9 @@ export const NodeSidebar = () => {
       n.category === 'Trigger' ||
       n.category === 'Triggers' ||
       (n.type && (n.type.toLowerCase().includes('trigger') || n.type === 'discordMessageReceived'))
+  );
+  const inputNodes = filteredNodes.filter(
+    (n) => n.category === 'INPUT' || n.category === 'Input' || n.type === 'fileUpload'
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
   const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
@@ -114,6 +122,7 @@ export const NodeSidebar = () => {
       {/* Node Items List */}
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
         {renderCategoryGroup('Triggers', triggers)}
+        {renderCategoryGroup('Input / File', inputNodes)}
         {renderCategoryGroup('AI / Artificial Intelligence', aiNodes)}
         {renderCategoryGroup('Communication', communication)}
         {renderCategoryGroup('Actions', actions)}

@@ -26,6 +26,7 @@ import { AiGenerateTextProperties } from '../components/AiGenerateTextProperties
 import { OpenAiGenerateTextProperties } from '../components/OpenAiGenerateTextProperties';
 import { GeminiGenerateTextProperties } from '../components/GeminiGenerateTextProperties';
 import { DiscordMessageReceivedProperties } from '../components/DiscordMessageReceivedProperties';
+import { FileUploadProperties } from '../nodes/fileUpload/FileUploadProperties';
 
 
 
@@ -56,6 +57,7 @@ export const PropertiesPanel = ({
     onUpdateNodeData(selectedNode.id, { label: e.target.value });
   };
 
+  const isFileUploadNode = selectedNode.type === 'fileUpload' || selectedNode.type === 'fileUploadDocument';
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -163,7 +165,12 @@ export const PropertiesPanel = ({
               Configuration Parameters
             </h4>
 
-            {isGmailNode ? (
+            {isFileUploadNode ? (
+              <FileUploadProperties
+                node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
+              />
+            ) : isGmailNode ? (
               <GmailProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}

@@ -25,6 +25,7 @@ import { WebhookNode } from '../nodes/webhook/WebhookNode';
 import { TryCatchNode } from '../nodes/tryCatch/TryCatchNode';
 import { CronNode } from '../nodes/cron/CronNode';
 import { PdfGeneratorNode } from '../nodes/pdf/PdfGeneratorNode';
+import { FileUploadNode } from '../nodes/fileUpload/FileUploadNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 
@@ -62,6 +63,8 @@ const nodeTypes = {
   [NODE_TYPES.TRY_CATCH]: TryCatchNode,
   [NODE_TYPES.CRON]: CronNode,
   [NODE_TYPES.PDF_GENERATOR]: PdfGeneratorNode,
+  [NODE_TYPES.FILE_UPLOAD]: FileUploadNode,
+  fileUploadDocument: FileUploadNode,
   googleSheetsTrigger: GoogleSheetsTriggerNode,
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,
