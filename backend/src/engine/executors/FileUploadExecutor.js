@@ -1,37 +1,65 @@
 import { BaseExecutor } from './BaseExecutor.js';
-import { FileModel } from '../../models/File.js';
+import { storageService } from '../../services/StorageService.js';
 import { normalizeFileId } from '../../utils/fileUtils.js';
 
 export class FileUploadExecutor extends BaseExecutor {
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
-    const fileId = normalizeFileId(config.fileId || config.file?.id || config.file);
+    const rawFileId = config.fileId || config.file?.id || config.file;
+    const fileId = normalizeFileId(rawFileId);
+    const ownerId = context?.user?._id || context?.user?.id || context?.ownerId;
 
     if (!fileId && !config.file) {
       throw new Error('No document file attached to this File Upload node.');
     }
 
     let fileData = null;
+    let storagePath = 'unknown';
+    let storageExists = false;
 
-    if (fileId) {
+    // 1. If buffer or file content was provided directly in config (e.g. test or direct upload node)
+    if (config.file && (config.file.buffer || config.file.data)) {
       try {
-        const dbFile = await FileModel.findOne({ id: fileId });
-        if (dbFile) {
-          fileData = {
-            id: dbFile.id,
-            name: dbFile.originalName,
-            originalName: dbFile.originalName,
-            mimeType: dbFile.mimeType,
-            size: dbFile.size,
-            extension: dbFile.extension,
-            status: dbFile.status,
-          };
-        }
+        const saved = await storageService.save({
+          buffer: Buffer.isBuffer(config.file.buffer || config.file.data)
+            ? (config.file.buffer || config.file.data)
+            : Buffer.from(config.file.buffer || config.file.data),
+          originalName: config.file.name || config.file.originalName || 'document.pdf',
+          mimeType: config.file.mimeType || 'application/pdf',
+          ownerId,
+          fileId: fileId || undefined,
+        });
+        fileData = saved;
+        storagePath = saved.storagePath;
+        storageExists = true;
       } catch (err) {
-        console.warn(`[FileUploadExecutor] Error fetching file ${fileId} from DB:`, err.message);
+        console.warn('[FileUploadExecutor] Direct save error:', err.message);
       }
     }
 
+    // 2. Lookup via unified StorageService
+    if (!fileData && fileId) {
+      try {
+        const fileDoc = await storageService.get(fileId, ownerId);
+        if (fileDoc) {
+          fileData = {
+            id: fileDoc.id,
+            name: fileDoc.originalName || fileDoc.name,
+            originalName: fileDoc.originalName || fileDoc.name,
+            mimeType: fileDoc.mimeType,
+            size: fileDoc.size,
+            extension: fileDoc.extension,
+            status: fileDoc.status || 'uploaded',
+          };
+          storagePath = fileDoc.storagePath || 'managed://storage';
+          storageExists = await storageService.exists(fileId, ownerId);
+        }
+      } catch (err) {
+        console.warn(`[FileUploadExecutor] StorageService.get warning for ${fileId}:`, err.message);
+      }
+    }
+
+    // 3. Fallback to attached metadata in config
     if (!fileData && config.file) {
       fileData = {
         id: config.file.id || fileId,
@@ -39,14 +67,22 @@ export class FileUploadExecutor extends BaseExecutor {
         originalName: config.file.originalName || config.file.name || 'document',
         mimeType: config.file.mimeType || 'application/octet-stream',
         size: config.file.size || 0,
-        extension: config.file.extension || '.docx',
+        extension: config.file.extension || '.pdf',
         status: config.file.status || 'uploaded',
       };
+      storagePath = config.file.storagePath || 'client://metadata';
+      storageExists = Boolean(config.file.id);
     }
 
     if (!fileData) {
       throw new Error(`Uploaded document file with ID '${fileId}' was not found.`);
     }
+
+    // Output required debug logs
+    console.log(`[FILE_UPLOAD]`);
+    console.log(`fileId=${fileData.id}`);
+    console.log(`storageLocation=${storagePath}`);
+    console.log(`storageExists=${storageExists}`);
 
     const formattedSize = fileData.size
       ? `${(fileData.size / 1024).toFixed(1)} KB`

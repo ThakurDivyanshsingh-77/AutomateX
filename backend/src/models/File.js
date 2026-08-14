@@ -12,6 +12,7 @@ const fileSchema = new mongoose.Schema(
     size: { type: Number, required: true },
     storageProvider: { type: String, default: 'local' },
     status: { type: String, default: 'uploaded' },
+    data: { type: Buffer, default: null },
     metadata: { type: Map, of: String, default: {} },
   },
   { timestamps: true }

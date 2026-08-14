@@ -681,7 +681,17 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Added `interpolate(template, context)` method on `BaseExecutor` using `ExpressionEngine.resolve`.
   - Registered `start`, `manual`, and `end` node type aliases in `ExecutorRegistry.js`.
 - **Automated Verification**:
-  - Passed **12/12** assertions in `test_workflow_direct.js` and unit test suite verifying `normalizeFileId` rules, full workflow graph execution (`Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `End Completion`), runtime deduplication of duplicated file IDs, and downstream variable interpolation `{{steps["Document → Extract Content"].content.text}}`.
+### **Phase 34 Complete — Unified StorageService Abstraction & Render Durability** — ✅ COMPLETED
+- **Unified Storage Service Subsystem (`backend/src/services/StorageService.js` & `FileStorageService.js`)**:
+  - Implemented single canonical `StorageService` providing `save(file)`, `get(fileId)`, `getBuffer(fileId)`, `getPath(fileId)`, `exists(fileId)`, and `delete(fileId)`.
+  - Added binary `data: Buffer` persistence in `FileModel` schema, guaranteeing file durability across Render ephemeral disk wipes, multi-instance dynos, and container restarts.
+  - Built robust multi-path fallback resolver searching `storagePath`, relative `./uploads/`, user upload directories, and database/memory cache re-hydration.
+- **Node Executors Upgrades (`backend/src/engine/executors/`)**:
+  - `FileUploadExecutor.js`: Integrated `storageService` and added `[FILE_UPLOAD]` logging (`fileId`, `storageLocation`, `storageExists`).
+  - `DocumentExtractContentExecutor.js`: Switched from fragile filesystem path checks to `storageService.getBuffer()`, added `[DOCUMENT_EXTRACT]` logging (`fileId`, `resolvedStorageLocation`, `storageExists`, `fileSize`, `mimeType`), and preserved extraction mode filtering (`text`, `paragraphs`, `headings`, `tables`, `blocks`).
+  - `PDFParser.js`: Added support for both v1 and v2 `pdf-parse` library interfaces and stream fallbacks.
+- **Automated Verification**:
+  - Passed **23/23** assertions in `test_storage_lifecycle.js` verifying `StorageService.save/get/getBuffer/exists`, full workflow graph execution (`Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `End Completion`), Render ephemeral disk wipe recovery simulation, and downstream variable interpolation `{{steps["Document → Extract Content"].content.text}}`.
 
 ---
 

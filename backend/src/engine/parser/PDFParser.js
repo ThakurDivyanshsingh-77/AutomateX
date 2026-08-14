@@ -1,6 +1,6 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
+const pdfModule = require('pdf-parse');
 import { BaseParser } from './BaseParser.js';
 
 export class PDFParser extends BaseParser {
@@ -13,8 +13,54 @@ export class PDFParser extends BaseParser {
     }
 
     try {
-      const data = await pdfParse(buffer);
-      const rawText = this.cleanText(data.text || '');
+      let rawText = '';
+      let numPages = 1;
+      let tables = [];
+
+      // 1. Check for pdf-parse v2 API (new PDFParse({ data: buffer }))
+      if (pdfModule && pdfModule.PDFParse) {
+        const parser = new pdfModule.PDFParse({ data: buffer });
+        try {
+          const textRes = await parser.getText();
+          rawText = this.cleanText(textRes?.text || '');
+          numPages = textRes?.total || textRes?.pages?.length || 1;
+
+          if (typeof parser.getTable === 'function') {
+            try {
+              const tableRes = await parser.getTable();
+              if (tableRes?.tables && Array.isArray(tableRes.tables)) {
+                tables = tableRes.tables;
+              }
+            } catch (tErr) {
+              // Ignore table extraction error if unsupported
+            }
+          }
+        } catch (v2Err) {
+          console.warn('[PDFParser] pdf-parse v2 failed, attempting v1 fallback:', v2Err.message);
+        }
+      }
+
+      // 2. Fallback to pdf-parse v1 function API if v2 did not extract text
+      if (!rawText) {
+        const parseFn = typeof pdfModule === 'function' ? pdfModule : (pdfModule?.default || null);
+        if (typeof parseFn === 'function') {
+          const data = await parseFn(buffer);
+          rawText = this.cleanText(data?.text || '');
+          numPages = data?.numpages || 1;
+        }
+      }
+
+      // 3. Fallback to basic text stream extraction if parsing engine produced no output
+      if (!rawText) {
+        const bufferStr = buffer.toString('latin1');
+        const textMatches = bufferStr.match(/\(([^)]+)\)\s*Tj/g);
+        if (textMatches) {
+          rawText = textMatches
+            .map((m) => m.replace(/^\(/, '').replace(/\)\s*Tj$/, '').trim())
+            .filter(Boolean)
+            .join(' ');
+        }
+      }
 
       if (!rawText) {
         const error = new Error('The PDF document does not contain readable text content.');
@@ -42,9 +88,9 @@ export class PDFParser extends BaseParser {
         text: rawText,
         paragraphs,
         headings: [],
-        tables: [],
+        tables,
         blocks,
-        pages: data.numpages || 1,
+        pages: numPages,
       };
     } catch (err) {
       if (err.code === 'EMPTY_DOCUMENT') throw err;
