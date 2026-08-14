@@ -104,12 +104,14 @@ export const WebsiteConnectNode = memo(({ data, selected }) => {
             </p>
           </div>
         ) : (
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-1.5 text-amber-400 font-medium text-[11px]">
-              <AlertTriangle className="w-3.5 h-3.5" />
+          <div className="space-y-1">
+            <p className="text-[11px] text-slate-300 leading-snug">
+              Connect AutomateX to an external website using API or browser authentication.
+            </p>
+            <div className="flex items-center gap-1 text-[10px] text-amber-400 font-medium pt-0.5">
+              <AlertTriangle className="w-3 h-3" />
               <span>Not Connected</span>
             </div>
-            <p className="text-[10px] text-slate-500">Configure connection settings</p>
           </div>
         )}
       </div>
