@@ -293,6 +293,42 @@ export const NODE_SCHEMA_REGISTRY = {
       stats: { type: 'Object', example: { characters: 181, paragraphs: 5, headings: 1, tables: 1, blocks: 6 }, description: 'Extraction statistics' },
     },
   },
+  websiteConnect: {
+    label: 'Website → Connect',
+    icon: 'Globe',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Connection status boolean' },
+      connectionId: { type: 'String', example: 'conn_7f82a91c', description: 'Unique website connection ID' },
+      websiteUrl: { type: 'String', example: 'https://example.com', description: 'Connected website normalized URL' },
+      website: {
+        type: 'Object',
+        example: { url: 'https://example.com', apiBaseUrl: 'https://example.com/api', method: 'REST_API', status: 'connected' },
+        description: 'Connected website metadata object',
+      },
+      'website.url': { type: 'String', example: 'https://example.com', description: 'Target website URL' },
+      'website.apiBaseUrl': { type: 'String', example: 'https://example.com/api', description: 'Website API base URL' },
+      'website.method': { type: 'String', example: 'REST_API', description: 'Authentication / connection method' },
+      'website.status': { type: 'String', example: 'connected', description: 'Connection status' },
+    },
+  },
+  website_connect: {
+    label: 'Website → Connect',
+    icon: 'Globe',
+    outputs: {
+      success: { type: 'Boolean', example: true, description: 'Connection status boolean' },
+      connectionId: { type: 'String', example: 'conn_7f82a91c', description: 'Unique website connection ID' },
+      websiteUrl: { type: 'String', example: 'https://example.com', description: 'Connected website normalized URL' },
+      website: {
+        type: 'Object',
+        example: { url: 'https://example.com', apiBaseUrl: 'https://example.com/api', method: 'REST_API', status: 'connected' },
+        description: 'Connected website metadata object',
+      },
+      'website.url': { type: 'String', example: 'https://example.com', description: 'Target website URL' },
+      'website.apiBaseUrl': { type: 'String', example: 'https://example.com/api', description: 'Website API base URL' },
+      'website.method': { type: 'String', example: 'REST_API', description: 'Authentication / connection method' },
+      'website.status': { type: 'String', example: 'connected', description: 'Connection status' },
+    },
+  },
   documentExtract: {
     label: 'Document → Extract Content',
     icon: 'FileSearch',

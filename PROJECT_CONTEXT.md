@@ -681,17 +681,21 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Added `interpolate(template, context)` method on `BaseExecutor` using `ExpressionEngine.resolve`.
   - Registered `start`, `manual`, and `end` node type aliases in `ExecutorRegistry.js`.
 - **Automated Verification**:
-### **Phase 34 Complete — Unified StorageService Abstraction & Render Durability** — ✅ COMPLETED
-- **Unified Storage Service Subsystem (`backend/src/services/StorageService.js` & `FileStorageService.js`)**:
-  - Implemented single canonical `StorageService` providing `save(file)`, `get(fileId)`, `getBuffer(fileId)`, `getPath(fileId)`, `exists(fileId)`, and `delete(fileId)`.
-  - Added binary `data: Buffer` persistence in `FileModel` schema, guaranteeing file durability across Render ephemeral disk wipes, multi-instance dynos, and container restarts.
-  - Built robust multi-path fallback resolver searching `storagePath`, relative `./uploads/`, user upload directories, and database/memory cache re-hydration.
-- **Node Executors Upgrades (`backend/src/engine/executors/`)**:
-  - `FileUploadExecutor.js`: Integrated `storageService` and added `[FILE_UPLOAD]` logging (`fileId`, `storageLocation`, `storageExists`).
-  - `DocumentExtractContentExecutor.js`: Switched from fragile filesystem path checks to `storageService.getBuffer()`, added `[DOCUMENT_EXTRACT]` logging (`fileId`, `resolvedStorageLocation`, `storageExists`, `fileSize`, `mimeType`), and preserved extraction mode filtering (`text`, `paragraphs`, `headings`, `tables`, `blocks`).
-  - `PDFParser.js`: Added support for both v1 and v2 `pdf-parse` library interfaces and stream fallbacks.
-- **Automated Verification**:
   - Passed **23/23** assertions in `test_storage_lifecycle.js` verifying `StorageService.save/get/getBuffer/exists`, full workflow graph execution (`Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `End Completion`), Render ephemeral disk wipe recovery simulation, and downstream variable interpolation `{{steps["Document → Extract Content"].content.text}}`.
+
+### **Phase 3A Complete — Website Connection & Authentication Infrastructure** — ✅ COMPLETED
+- **Backend Architecture & Credential Vault**:
+  - `WebsiteConnection.js` Mongoose model storing `connectionId` (e.g. `conn_7f82a91c`), `ownerId`, `websiteUrl`, `apiBaseUrl`, `connectionMethod` (`restApi`, `apiKey`, `bearerToken`, `basicAuth`, `browserSession`), `authType`, `customHeaders`, `status`, `lastTestedAt`, `lastResponseTimeMs`, `lastError`, and encrypted credentials (`select: false`).
+  - `WebsiteConnectionService.js`: Implemented URL normalization (auto-protocol and trailing slash stripping), AES-256-CBC credential encryption at rest, masked credentials generator (`••••••••7F2A`), and safe connection testing with latency benchmarking and humanized error responses.
+  - `websiteConnectionController.js` and `websiteConnectionRoutes.js`: Exposes REST endpoints (`POST /api/v1/connections/websites`, `GET /api/v1/connections/websites`, `GET /api/v1/connections/websites/:id`, `POST /api/v1/connections/websites/:id/test`, `POST /api/v1/connections/websites/test-raw`, `DELETE /api/v1/connections/websites/:id`).
+  - `WebsiteConnectExecutor.js`: Workflow node executor resolving connection credentials safely, verifying user ownership, logging connection diagnostics without secrets, and outputting `{ success: true, connectionId, website: { url, method, status } }`.
+- **Frontend Visual Canvas & Properties Panel**:
+  - `websiteConnectManifest.js`: Registered in node registries with `cyan` theme, `Globe` icon, and `INTEGRATIONS / WEBSITE` category.
+  - `WebsiteConnectNode.jsx`: Custom React Flow canvas card displaying connection state badges (`Connected` with domain and method badge, `Not Connected`, or `Connection Error`).
+  - `WebsiteConnectProperties.jsx`: Comprehensive property panel supporting saved connection selection, 5 dynamic authentication method configurations, custom header key-value editor, inline live `[ Test Connection ]` tester, and output variable helper cards.
+  - `NodeSidebar.jsx` & `VariableEngine.js`: Added category group and auto-completion schema for `{{steps["Website → Connect"].connectionId}}`, `{{steps["Website → Connect"].website.url}}`, `{{steps["Website → Connect"].website.status}}`.
+- **Automated Verification**:
+  - Executed `test_website_connect_phase3a.js`: **15/15** tests passed verifying URL normalization, credential encryption at rest, zero-leak API responses, safe connection test pinging, full workflow execution (`Start Trigger` → `Website → Connect` → `End Completion`), and downstream variable resolution.
 
 ---
 

@@ -13,6 +13,7 @@ import { mongoCrudManifest } from '../database/mongoCrudManifest';
 import { pdfGeneratorManifest } from '../pdf/pdfGeneratorManifest';
 import { fileUploadManifest } from '../fileUpload/fileUploadManifest';
 import { documentExtractManifest } from '../documentExtract/documentExtractManifest';
+import { websiteConnectManifest } from '../websiteConnect/websiteConnectManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -49,6 +50,7 @@ export const NODE_TYPES = {
   PDF_GENERATOR: 'pdfGenerator',
   FILE_UPLOAD: 'fileUpload',
   DOCUMENT_EXTRACT: 'documentExtractContent',
+  WEBSITE_CONNECT: 'websiteConnect',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
   ...AI_NODE_TYPES,
@@ -91,6 +93,9 @@ export const nodeDefinitions = {
   fileUploadDocument: fileUploadManifest,
   [NODE_TYPES.DOCUMENT_EXTRACT]: documentExtractManifest,
   documentExtract: documentExtractManifest,
+  [NODE_TYPES.WEBSITE_CONNECT]: websiteConnectManifest,
+  websiteConnect: websiteConnectManifest,
+  website_connect: websiteConnectManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
   discordMessageReceived: discordNodeDefinitions.discordMessageReceived,
@@ -145,6 +150,9 @@ export const nodeValidators = {
   fileUploadDocument: fileUploadManifest.validate,
   [NODE_TYPES.DOCUMENT_EXTRACT]: documentExtractManifest.validate,
   documentExtract: documentExtractManifest.validate,
+  [NODE_TYPES.WEBSITE_CONNECT]: websiteConnectManifest.validate,
+  websiteConnect: websiteConnectManifest.validate,
+  website_connect: websiteConnectManifest.validate,
   [GOOGLE_SHEETS_NODE_TYPES.TRIGGER_WATCH_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.READ_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.FIND_ROW]: googleSheetsValidator,

@@ -6,6 +6,7 @@ import { LoopExecutor } from './executors/LoopExecutor.js';
 import { GoogleSheetsExecutor } from './googleSheets/GoogleSheetsExecutor.js';
 import { FileUploadExecutor } from './executors/FileUploadExecutor.js';
 import { DocumentExtractContentExecutor } from './executors/DocumentExtractContentExecutor.js';
+import { WebsiteConnectExecutor } from './executors/WebsiteConnectExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -37,6 +38,10 @@ class ExecutorRegistry {
     this.register('documentExtractContent', new DocumentExtractContentExecutor());
     this.register('documentExtract', new DocumentExtractContentExecutor());
     this.register('document_extract', new DocumentExtractContentExecutor());
+    this.register('websiteConnect', new WebsiteConnectExecutor());
+    this.register('website_connect', new WebsiteConnectExecutor());
+    this.register('website', new WebsiteConnectExecutor());
+    this.register('connectWebsite', new WebsiteConnectExecutor());
   }
 
   register(nodeType, executorInstance) {

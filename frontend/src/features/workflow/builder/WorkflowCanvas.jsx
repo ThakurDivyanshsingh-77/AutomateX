@@ -27,6 +27,7 @@ import { CronNode } from '../nodes/cron/CronNode';
 import { PdfGeneratorNode } from '../nodes/pdf/PdfGeneratorNode';
 import { FileUploadNode } from '../nodes/fileUpload/FileUploadNode';
 import { DocumentExtractNode } from '../nodes/documentExtract/DocumentExtractNode';
+import { WebsiteConnectNode } from '../nodes/websiteConnect/WebsiteConnectNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 
@@ -68,6 +69,9 @@ const nodeTypes = {
   fileUploadDocument: FileUploadNode,
   [NODE_TYPES.DOCUMENT_EXTRACT]: DocumentExtractNode,
   documentExtract: DocumentExtractNode,
+  [NODE_TYPES.WEBSITE_CONNECT]: WebsiteConnectNode,
+  websiteConnect: WebsiteConnectNode,
+  website_connect: WebsiteConnectNode,
   googleSheetsTrigger: GoogleSheetsTriggerNode,
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,

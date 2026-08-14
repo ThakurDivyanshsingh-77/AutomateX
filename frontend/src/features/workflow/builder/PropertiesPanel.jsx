@@ -28,6 +28,7 @@ import { GeminiGenerateTextProperties } from '../components/GeminiGenerateTextPr
 import { DiscordMessageReceivedProperties } from '../components/DiscordMessageReceivedProperties';
 import { FileUploadProperties } from '../nodes/fileUpload/FileUploadProperties';
 import { DocumentExtractProperties } from '../nodes/documentExtract/DocumentExtractProperties';
+import { WebsiteConnectProperties } from '../nodes/websiteConnect/WebsiteConnectProperties';
 import { WorkflowBuilderProvider } from '../../../context/WorkflowBuilderContext';
 
 
@@ -61,6 +62,7 @@ export const PropertiesPanel = ({
 
   const isFileUploadNode = selectedNode.type === 'fileUpload' || selectedNode.type === 'fileUploadDocument';
   const isDocumentExtractNode = selectedNode.type === 'documentExtractContent' || selectedNode.type === 'documentExtract';
+  const isWebsiteConnectNode = selectedNode.type === 'websiteConnect' || selectedNode.type === 'website_connect' || selectedNode.type === 'website';
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -188,6 +190,13 @@ export const PropertiesPanel = ({
               />
             ) : isDocumentExtractNode ? (
               <DocumentExtractProperties
+                node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
+              />
+            ) : isWebsiteConnectNode ? (
+              <WebsiteConnectProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}
                 workflowNodes={workflowNodes}

@@ -18,6 +18,7 @@ import { DiscordNodeExecutor } from '../../discord/executors/DiscordNodeExecutor
 import { AiNodeExecutor } from '../../ai/executors/AiNodeExecutor.js';
 import { FileUploadExecutor } from '../executors/FileUploadExecutor.js';
 import { DocumentExtractContentExecutor } from '../executors/DocumentExtractContentExecutor.js';
+import { WebsiteConnectExecutor } from '../executors/WebsiteConnectExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -30,6 +31,7 @@ const aiNodeExecutor = new AiNodeExecutor();
 const discordMessageReceivedExecutor = new DiscordMessageReceivedTriggerExecutor();
 const fileUploadExecutor = new FileUploadExecutor();
 const documentExtractContentExecutor = new DocumentExtractContentExecutor();
+const websiteConnectExecutor = new WebsiteConnectExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -88,7 +90,13 @@ export class ExecutorRegistry {
     ['document_upload', fileUploadExecutor],
     ['documentExtractContent', documentExtractContentExecutor],
     ['documentExtract', documentExtractContentExecutor],
-    ['document_extract', documentExtractContentExecutor],    // Google Sheets Node Executors (Exact matching string registration)
+    ['document_extract', documentExtractContentExecutor],
+
+    // Website & Integration Executors
+    ['websiteConnect', websiteConnectExecutor],
+    ['website_connect', websiteConnectExecutor],
+    ['website', websiteConnectExecutor],
+    ['connectWebsite', websiteConnectExecutor],    // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],
     ['googleSheetsTrigger', googleSheetsTriggerExecutor],
     ['googleSheetsTriggerWatchRows', googleSheetsTriggerExecutor],

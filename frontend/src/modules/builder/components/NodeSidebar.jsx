@@ -22,8 +22,9 @@ export const NodeSidebar = () => {
     const subtitleMatch = (n.subtitle || '').toLowerCase().includes(term);
     const categoryMatch = (n.category || '').toLowerCase().includes(term);
     const formatMatch = term === 'file' || term === 'upload' || term === 'document' || term === 'docx' || term === 'doc' || term === 'pdf' || term === 'excel' || term === 'xlsx' || term === 'xls' || term === 'extract' || term === 'text' || term === 'parser';
+    const websiteMatch = term === 'website' || term === 'site' || term === 'web' || term === 'api' || term === 'auth' || term === 'token' || term === 'bearer' || term === 'rest' || term === 'connect';
     
-    return labelMatch || descMatch || typeMatch || subtitleMatch || categoryMatch || (formatMatch && (n.type === 'fileUpload' || n.type === 'documentExtractContent' || n.category === 'INPUT' || n.category === 'DOCUMENT / DATA'));
+    return labelMatch || descMatch || typeMatch || subtitleMatch || categoryMatch || (formatMatch && (n.type === 'fileUpload' || n.type === 'documentExtractContent' || n.category === 'INPUT' || n.category === 'DOCUMENT / DATA')) || (websiteMatch && (n.type === 'websiteConnect' || (n.category || '').includes('WEBSITE')));
   });
 
   const triggers = filteredNodes.filter(
@@ -38,6 +39,14 @@ export const NodeSidebar = () => {
   );
   const documentNodes = filteredNodes.filter(
     (n) => n.category === 'DOCUMENT / DATA' || n.category === 'DOCUMENT' || n.type === 'documentExtractContent'
+  );
+  const websiteNodes = filteredNodes.filter(
+    (n) =>
+      n.category === 'INTEGRATIONS / WEBSITE' ||
+      n.category === 'INTEGRATION' ||
+      n.category === 'INTEGRATIONS' ||
+      n.category === 'WEBSITE' ||
+      n.type === 'websiteConnect'
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
   const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
@@ -125,6 +134,7 @@ export const NodeSidebar = () => {
       {/* Node Items List */}
       <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
         {renderCategoryGroup('Triggers', triggers)}
+        {renderCategoryGroup('Integrations / Website', websiteNodes)}
         {renderCategoryGroup('Input / File', inputNodes)}
         {renderCategoryGroup('Document / Data', documentNodes)}
         {renderCategoryGroup('AI / Artificial Intelligence', aiNodes)}

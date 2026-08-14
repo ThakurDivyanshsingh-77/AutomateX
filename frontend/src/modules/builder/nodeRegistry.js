@@ -27,6 +27,7 @@ export const NODE_TYPES = {
   SCHEDULE_TRIGGER: 'SCHEDULE_TRIGGER',
   FILE_UPLOAD: 'fileUpload',
   DOCUMENT_EXTRACT: 'documentExtractContent',
+  WEBSITE_CONNECT: 'websiteConnect',
 
   // Actions
   HTTP_REQUEST: 'HTTP_REQUEST',
@@ -85,6 +86,25 @@ export const NODE_REGISTRY = {
     color: 'indigo',
     badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     defaultConfig: { fileId: '{{steps["File → Upload Document"].file.id}}', extractionMode: 'full' },
+  },
+  [NODE_TYPES.WEBSITE_CONNECT]: {
+    type: 'websiteConnect',
+    category: 'INTEGRATIONS / WEBSITE',
+    label: 'Website → Connect',
+    subtitle: 'Connect AutomateX to a website using API or browser authentication',
+    description: 'Connect AutomateX to a website using API or browser authentication.',
+    icon: Globe,
+    color: 'cyan',
+    badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    defaultConfig: {
+      connectionId: '',
+      name: '',
+      websiteUrl: '',
+      apiBaseUrl: '',
+      connectionMethod: 'restApi',
+      authType: 'bearerToken',
+      status: 'untested',
+    },
   },
   [NODE_TYPES.MANUAL_TRIGGER]: {
     type: NODE_TYPES.MANUAL_TRIGGER,
