@@ -14,6 +14,9 @@ import { pdfGeneratorManifest } from '../pdf/pdfGeneratorManifest';
 import { fileUploadManifest } from '../fileUpload/fileUploadManifest';
 import { documentExtractManifest } from '../documentExtract/documentExtractManifest';
 import { websiteConnectManifest } from '../websiteConnect/websiteConnectManifest';
+import { geminiStructureProductsManifest } from '../geminiStructureProducts/geminiStructureProductsManifest';
+import { forEachProductManifest } from '../forEachProduct/forEachProductManifest';
+import { websiteCreateProductManifest } from '../websiteCreateProduct/websiteCreateProductManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -51,6 +54,9 @@ export const NODE_TYPES = {
   FILE_UPLOAD: 'fileUpload',
   DOCUMENT_EXTRACT: 'documentExtractContent',
   WEBSITE_CONNECT: 'websiteConnect',
+  GEMINI_STRUCTURE_PRODUCTS: 'geminiStructureProducts',
+  FOR_EACH_PRODUCT: 'forEachProduct',
+  WEBSITE_CREATE_PRODUCT: 'websiteCreateProduct',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
   ...AI_NODE_TYPES,
@@ -96,6 +102,16 @@ export const nodeDefinitions = {
   [NODE_TYPES.WEBSITE_CONNECT]: websiteConnectManifest,
   websiteConnect: websiteConnectManifest,
   website_connect: websiteConnectManifest,
+  [NODE_TYPES.GEMINI_STRUCTURE_PRODUCTS]: geminiStructureProductsManifest,
+  geminiStructureProducts: geminiStructureProductsManifest,
+  gemini_structure_products: geminiStructureProductsManifest,
+  structureProducts: geminiStructureProductsManifest,
+  [NODE_TYPES.FOR_EACH_PRODUCT]: forEachProductManifest,
+  forEachProduct: forEachProductManifest,
+  for_each_product: forEachProductManifest,
+  [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: websiteCreateProductManifest,
+  websiteCreateProduct: websiteCreateProductManifest,
+  website_create_product: websiteCreateProductManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
   discordMessageReceived: discordNodeDefinitions.discordMessageReceived,
@@ -153,6 +169,15 @@ export const nodeValidators = {
   [NODE_TYPES.WEBSITE_CONNECT]: websiteConnectManifest.validate,
   websiteConnect: websiteConnectManifest.validate,
   website_connect: websiteConnectManifest.validate,
+  [NODE_TYPES.GEMINI_STRUCTURE_PRODUCTS]: geminiStructureProductsManifest.validate,
+  geminiStructureProducts: geminiStructureProductsManifest.validate,
+  gemini_structure_products: geminiStructureProductsManifest.validate,
+  [NODE_TYPES.FOR_EACH_PRODUCT]: forEachProductManifest.validate,
+  forEachProduct: forEachProductManifest.validate,
+  for_each_product: forEachProductManifest.validate,
+  [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: websiteCreateProductManifest.validate,
+  websiteCreateProduct: websiteCreateProductManifest.validate,
+  website_create_product: websiteCreateProductManifest.validate,
   [GOOGLE_SHEETS_NODE_TYPES.TRIGGER_WATCH_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.READ_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.FIND_ROW]: googleSheetsValidator,

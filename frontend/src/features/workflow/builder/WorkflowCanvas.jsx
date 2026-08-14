@@ -28,6 +28,9 @@ import { PdfGeneratorNode } from '../nodes/pdf/PdfGeneratorNode';
 import { FileUploadNode } from '../nodes/fileUpload/FileUploadNode';
 import { DocumentExtractNode } from '../nodes/documentExtract/DocumentExtractNode';
 import { WebsiteConnectNode } from '../nodes/websiteConnect/WebsiteConnectNode';
+import { GeminiStructureProductsNode } from '../nodes/geminiStructureProducts/GeminiStructureProductsNode';
+import { ForEachProductNode } from '../nodes/forEachProduct/ForEachProductNode';
+import { WebsiteCreateProductNode } from '../nodes/websiteCreateProduct/WebsiteCreateProductNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 
@@ -72,6 +75,15 @@ const nodeTypes = {
   [NODE_TYPES.WEBSITE_CONNECT]: WebsiteConnectNode,
   websiteConnect: WebsiteConnectNode,
   website_connect: WebsiteConnectNode,
+  [NODE_TYPES.GEMINI_STRUCTURE_PRODUCTS]: GeminiStructureProductsNode,
+  geminiStructureProducts: GeminiStructureProductsNode,
+  gemini_structure_products: GeminiStructureProductsNode,
+  [NODE_TYPES.FOR_EACH_PRODUCT]: ForEachProductNode,
+  forEachProduct: ForEachProductNode,
+  for_each_product: ForEachProductNode,
+  [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: WebsiteCreateProductNode,
+  websiteCreateProduct: WebsiteCreateProductNode,
+  website_create_product: WebsiteCreateProductNode,
   googleSheetsTrigger: GoogleSheetsTriggerNode,
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,

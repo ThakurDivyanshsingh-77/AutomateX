@@ -38,7 +38,7 @@ export const NodeSidebar = () => {
     (n) => n.category === 'INPUT' || n.category === 'Input' || n.type === 'fileUpload'
   );
   const documentNodes = filteredNodes.filter(
-    (n) => n.category === 'DOCUMENT / DATA' || n.category === 'DOCUMENT' || n.type === 'documentExtractContent'
+    (n) => n.category === 'DOCUMENT / DATA' || n.category === 'DOCUMENT' || n.type === 'documentExtractContent' || n.type === 'geminiStructureProducts' || (n.category || '').includes('DOCUMENT')
   );
   const websiteNodes = filteredNodes.filter(
     (n) =>
@@ -46,10 +46,12 @@ export const NodeSidebar = () => {
       n.category === 'INTEGRATION' ||
       n.category === 'INTEGRATIONS' ||
       n.category === 'WEBSITE' ||
-      n.type === 'websiteConnect'
+      n.type === 'websiteConnect' ||
+      n.type === 'websiteCreateProduct' ||
+      (n.type && n.type.toLowerCase().includes('website'))
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
-  const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI');
+  const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI' || n.type === 'geminiStructureProducts' || (n.category || '').includes('AI'));
   const communication = filteredNodes.filter(
     (n) =>
       n.category === 'Communication' ||
@@ -58,7 +60,7 @@ export const NodeSidebar = () => {
       (n.type && n.type.toLowerCase().includes('discord'))
   );
   const googleSheets = filteredNodes.filter((n) => n.category === 'Google Sheets');
-  const logic = filteredNodes.filter((n) => n.category === 'LOGIC' || n.category === 'Logic');
+  const logic = filteredNodes.filter((n) => n.category === 'LOGIC' || n.category === 'Logic' || n.category === 'CONTROL / FLOW' || n.type === 'forEachProduct');
 
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType);

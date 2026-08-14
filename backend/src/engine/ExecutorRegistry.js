@@ -7,6 +7,9 @@ import { GoogleSheetsExecutor } from './googleSheets/GoogleSheetsExecutor.js';
 import { FileUploadExecutor } from './executors/FileUploadExecutor.js';
 import { DocumentExtractContentExecutor } from './executors/DocumentExtractContentExecutor.js';
 import { WebsiteConnectExecutor } from './executors/WebsiteConnectExecutor.js';
+import { GeminiStructureProductsExecutor } from './executors/GeminiStructureProductsExecutor.js';
+import { ForEachProductExecutor } from './executors/ForEachProductExecutor.js';
+import { WebsiteCreateProductExecutor } from './executors/WebsiteCreateProductExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -42,6 +45,16 @@ class ExecutorRegistry {
     this.register('website_connect', new WebsiteConnectExecutor());
     this.register('website', new WebsiteConnectExecutor());
     this.register('connectWebsite', new WebsiteConnectExecutor());
+    this.register('geminiStructureProducts', new GeminiStructureProductsExecutor());
+    this.register('gemini_structure_products', new GeminiStructureProductsExecutor());
+    this.register('structureProducts', new GeminiStructureProductsExecutor());
+    this.register('aiStructureProducts', new GeminiStructureProductsExecutor());
+    this.register('forEachProduct', new ForEachProductExecutor());
+    this.register('for_each_product', new ForEachProductExecutor());
+    this.register('forEach', new ForEachProductExecutor());
+    this.register('websiteCreateProduct', new WebsiteCreateProductExecutor());
+    this.register('website_create_product', new WebsiteCreateProductExecutor());
+    this.register('createProduct', new WebsiteCreateProductExecutor());
   }
 
   register(nodeType, executorInstance) {

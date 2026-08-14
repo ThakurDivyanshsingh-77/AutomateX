@@ -19,6 +19,9 @@ import { AiNodeExecutor } from '../../ai/executors/AiNodeExecutor.js';
 import { FileUploadExecutor } from '../executors/FileUploadExecutor.js';
 import { DocumentExtractContentExecutor } from '../executors/DocumentExtractContentExecutor.js';
 import { WebsiteConnectExecutor } from '../executors/WebsiteConnectExecutor.js';
+import { GeminiStructureProductsExecutor } from '../executors/GeminiStructureProductsExecutor.js';
+import { ForEachProductExecutor } from '../executors/ForEachProductExecutor.js';
+import { WebsiteCreateProductExecutor } from '../executors/WebsiteCreateProductExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -32,6 +35,9 @@ const discordMessageReceivedExecutor = new DiscordMessageReceivedTriggerExecutor
 const fileUploadExecutor = new FileUploadExecutor();
 const documentExtractContentExecutor = new DocumentExtractContentExecutor();
 const websiteConnectExecutor = new WebsiteConnectExecutor();
+const geminiStructureProductsExecutor = new GeminiStructureProductsExecutor();
+const forEachProductExecutor = new ForEachProductExecutor();
+const websiteCreateProductExecutor = new WebsiteCreateProductExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -96,7 +102,19 @@ export class ExecutorRegistry {
     ['websiteConnect', websiteConnectExecutor],
     ['website_connect', websiteConnectExecutor],
     ['website', websiteConnectExecutor],
-    ['connectWebsite', websiteConnectExecutor],    // Google Sheets Node Executors (Exact matching string registration)
+    ['connectWebsite', websiteConnectExecutor],
+
+    // Phase 3B Multi-Product & Loop Executors
+    ['geminiStructureProducts', geminiStructureProductsExecutor],
+    ['gemini_structure_products', geminiStructureProductsExecutor],
+    ['structureProducts', geminiStructureProductsExecutor],
+    ['aiStructureProducts', geminiStructureProductsExecutor],
+    ['forEachProduct', forEachProductExecutor],
+    ['for_each_product', forEachProductExecutor],
+    ['forEach', forEachProductExecutor],
+    ['websiteCreateProduct', websiteCreateProductExecutor],
+    ['website_create_product', websiteCreateProductExecutor],
+    ['createProduct', websiteCreateProductExecutor],    // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],
     ['googleSheetsTrigger', googleSheetsTriggerExecutor],
     ['googleSheetsTriggerWatchRows', googleSheetsTriggerExecutor],

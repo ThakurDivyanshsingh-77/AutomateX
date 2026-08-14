@@ -18,6 +18,8 @@ import {
   Sparkles,
   UploadCloud,
   FileSearch,
+  Repeat,
+  PackagePlus,
 } from 'lucide-react';
 
 export const NODE_TYPES = {
@@ -28,6 +30,9 @@ export const NODE_TYPES = {
   FILE_UPLOAD: 'fileUpload',
   DOCUMENT_EXTRACT: 'documentExtractContent',
   WEBSITE_CONNECT: 'websiteConnect',
+  GEMINI_STRUCTURE_PRODUCTS: 'geminiStructureProducts',
+  FOR_EACH_PRODUCT: 'forEachProduct',
+  WEBSITE_CREATE_PRODUCT: 'websiteCreateProduct',
 
   // Actions
   HTTP_REQUEST: 'HTTP_REQUEST',
@@ -104,6 +109,56 @@ export const NODE_REGISTRY = {
       connectionMethod: 'restApi',
       authType: 'bearerToken',
       status: 'untested',
+    },
+  },
+  [NODE_TYPES.GEMINI_STRUCTURE_PRODUCTS]: {
+    type: 'geminiStructureProducts',
+    category: 'AI / DOCUMENT PROCESSING',
+    label: 'Gemini → Structure Products',
+    subtitle: 'Convert extracted document text into structured product records',
+    description: 'Convert extracted document content into structured product records.',
+    icon: Sparkles,
+    color: 'purple',
+    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    defaultConfig: {
+      credentialId: '',
+      documentText: '{{steps["Document → Extract Content"].content.text}}',
+      model: 'gemini-1.5-flash',
+      temperature: 0.1,
+    },
+  },
+  [NODE_TYPES.FOR_EACH_PRODUCT]: {
+    type: 'forEachProduct',
+    category: 'CONTROL / FLOW',
+    label: 'For Each Product',
+    subtitle: 'Iterate products one by one sequentially',
+    description: 'Process an array of structured products one item at a time.',
+    icon: Repeat,
+    color: 'amber',
+    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    defaultConfig: {
+      products: '{{steps["Gemini → Structure Products"].products}}',
+      itemVariable: 'currentItem',
+      indexVariable: 'currentIndex',
+    },
+  },
+  [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: {
+    type: 'websiteCreateProduct',
+    category: 'INTEGRATIONS / WEBSITE',
+    label: 'Website → Create Product',
+    subtitle: 'Create a product on the connected website',
+    description: 'Create a product on the connected website using field mapping, duplicate protection, and connectionId.',
+    icon: PackagePlus,
+    color: 'emerald',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    defaultConfig: {
+      connectionId: '{{steps["Website → Connect"].connectionId}}',
+      product: '{{steps["For Each Product"].currentItem}}',
+      endpoint: '/api/products',
+      method: 'POST',
+      dryRun: false,
+      duplicateStrategy: 'skip',
+      rateLimitMs: 1000,
     },
   },
   [NODE_TYPES.MANUAL_TRIGGER]: {

@@ -694,8 +694,23 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `WebsiteConnectNode.jsx`: Custom React Flow canvas card displaying connection state badges (`Connected` with domain and method badge, `Not Connected`, or `Connection Error`).
   - `WebsiteConnectProperties.jsx`: Comprehensive property panel supporting saved connection selection, 5 dynamic authentication method configurations, custom header key-value editor, inline live `[ Test Connection ]` tester, and output variable helper cards.
   - `NodeSidebar.jsx` & `VariableEngine.js`: Added category group and auto-completion schema for `{{steps["Website → Connect"].connectionId}}`, `{{steps["Website → Connect"].website.url}}`, `{{steps["Website → Connect"].website.status}}`.
+### **Phase 3B Complete — Multi-Product Parsing & Product Creation Pipeline** — ✅ COMPLETED
+- **Backend Architecture & Multi-Product Engine**:
+  - `GeminiStructureProductsExecutor.js`: AI multi-product boundary detector and schema structurer. Extracts standardized product schema (`name`, `casNumber`, `urlSlug`, `primaryKeyword`, `titleTag`, `metaDescription`, `h1`, `description`, `sections`, `applications`, `benefits`, `safetyInformation`, `packagingInformation`, `faqs`, `schemaMarkup`). Enforces zero hallucination (`null` or `[]` for missing attributes) and includes automatic JSON repair retries.
+  - `ForEachProductExecutor.js`: Sequential item loop iterator exposing `currentItem`, `currentIndex`, and `totalItems` into execution context.
+  - `WebsiteCreateProductExecutor.js`: Generic REST API product creator consuming `connectionId` with server-side credential decryption. Supports configurable field mapping (`name` → `product_name`, `casNumber` → `cas_number`, `urlSlug` → `slug`, `titleTag` → `seo_title`, `metaDescription` → `seo_description`, `h1`, `description`, `faqs`, `schemaMarkup`).
+  - **Dry Run Mode**: Validates payload mapping without dispatching real HTTP requests.
+  - **Duplicate Protection**: Configurable duplicate handling strategies (`skip`, `update`, `create`, `stop`).
+  - **Rate Limiting & Retries**: Configurable request delay ($0-5000\text{ ms}$) and automatic $3\times$ exponential backoff retries for $408/429/5\text{xx}$ transient errors.
+  - **Fault Tolerance**: Isolates per-product failures, continuing execution across remaining items and generating comprehensive `{ total, created, failed, skipped }` execution summaries.
+- **Frontend Visual Builder & Properties Panels**:
+  - `geminiStructureProducts`: Manifest, custom node card, and property panel with model selection and temperature controls.
+  - `forEachProduct`: Manifest, custom node card, and loop configuration panel.
+  - `websiteCreateProduct`: Manifest, custom node card, and property panel with connection dropdown, field mapping table, Dry Run toggle, duplicate strategy selector, rate limiting dropdown, and `[ Test Product Creation ]` button.
+  - Registered across `nodeRegistry.js`, `NodeToolbar.jsx`, `NodeSidebar.jsx`, `WorkflowCanvas.jsx`, `PropertiesPanel.jsx`, `NodeInspector.jsx`, and `VariableEngine.js`.
 - **Automated Verification**:
-  - Executed `test_website_connect_phase3a.js`: **15/15** tests passed verifying URL normalization, credential encryption at rest, zero-leak API responses, safe connection test pinging, full workflow execution (`Start Trigger` → `Website → Connect` → `End Completion`), and downstream variable resolution.
+  - Executed `test_multi_product_phase3b.js`: **9/9** tests passed verifying multi-product parsing (Beta-citronellol, Geraniol, Nerol), zero-hallucination rules, loop context variables, Dry Run mode, Live REST API creation, partial failure isolation, duplicate skipping, and end-to-end workflow execution (`Start Trigger` → `Gemini → Structure Products` → `For Each Product` → `Website → Create Product` → `End Completion`).
+  - Ran Phase 3A regression test suite `test_website_connect_phase3a.js`: **15/15** passed.
 
 ---
 

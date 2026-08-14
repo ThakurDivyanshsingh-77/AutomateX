@@ -34,7 +34,19 @@ export const NodeToolbar = () => {
   });
 
   // Group filtered nodes by category
-  const baseCategories = ['TRIGGER', 'INTEGRATIONS', 'COMMUNICATION', 'DATABASE', 'LOGIC', 'ACTION', 'UTILITY', 'OUTPUT', 'GOOGLE'];
+  const baseCategories = [
+    'TRIGGER',
+    'INTEGRATIONS',
+    'AI / DOCUMENT PROCESSING',
+    'CONTROL / FLOW',
+    'COMMUNICATION',
+    'DATABASE',
+    'LOGIC',
+    'ACTION',
+    'UTILITY',
+    'OUTPUT',
+    'GOOGLE',
+  ];
   const extraCategories = Array.from(
     new Set(filteredNodes.map((n) => (n.category || '').toUpperCase()))
   ).filter((c) => c && !baseCategories.includes(c));
@@ -58,7 +70,24 @@ export const NodeToolbar = () => {
         (nCat.includes('INTEGRATION') ||
           nCat.includes('WEBSITE') ||
           n.type === 'websiteConnect' ||
+          n.type === 'websiteCreateProduct' ||
           (n.type && n.type.toLowerCase().includes('website')))
+      )
+        return true;
+      if (
+        cat === 'AI / DOCUMENT PROCESSING' &&
+        (nCat.includes('DOCUMENT') ||
+          nCat.includes('AI') ||
+          n.type === 'geminiStructureProducts' ||
+          n.type === 'documentExtractContent')
+      )
+        return true;
+      if (
+        cat === 'CONTROL / FLOW' &&
+        (nCat.includes('CONTROL') ||
+          nCat.includes('FLOW') ||
+          nCat.includes('LOOP') ||
+          n.type === 'forEachProduct')
       )
         return true;
       if (

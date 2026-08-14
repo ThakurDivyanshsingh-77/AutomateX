@@ -29,6 +29,9 @@ import { DiscordMessageReceivedProperties } from '../components/DiscordMessageRe
 import { FileUploadProperties } from '../nodes/fileUpload/FileUploadProperties';
 import { DocumentExtractProperties } from '../nodes/documentExtract/DocumentExtractProperties';
 import { WebsiteConnectProperties } from '../nodes/websiteConnect/WebsiteConnectProperties';
+import { GeminiStructureProductsProperties } from '../nodes/geminiStructureProducts/GeminiStructureProductsProperties';
+import { ForEachProductProperties } from '../nodes/forEachProduct/ForEachProductProperties';
+import { WebsiteCreateProductProperties } from '../nodes/websiteCreateProduct/WebsiteCreateProductProperties';
 import { WorkflowBuilderProvider } from '../../../context/WorkflowBuilderContext';
 
 
@@ -63,6 +66,9 @@ export const PropertiesPanel = ({
   const isFileUploadNode = selectedNode.type === 'fileUpload' || selectedNode.type === 'fileUploadDocument';
   const isDocumentExtractNode = selectedNode.type === 'documentExtractContent' || selectedNode.type === 'documentExtract';
   const isWebsiteConnectNode = selectedNode.type === 'websiteConnect' || selectedNode.type === 'website_connect' || selectedNode.type === 'website';
+  const isGeminiStructureProductsNode = selectedNode.type === 'geminiStructureProducts' || selectedNode.type === 'gemini_structure_products' || selectedNode.type === 'structureProducts';
+  const isForEachProductNode = selectedNode.type === 'forEachProduct' || selectedNode.type === 'for_each_product' || selectedNode.type === 'forEach';
+  const isWebsiteCreateProductNode = selectedNode.type === 'websiteCreateProduct' || selectedNode.type === 'website_create_product' || selectedNode.type === 'createProduct';
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -198,6 +204,30 @@ export const PropertiesPanel = ({
             ) : isWebsiteConnectNode ? (
               <WebsiteConnectProperties
                 node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
+              />
+            ) : isGeminiStructureProductsNode ? (
+              <GeminiStructureProductsProperties
+                node={selectedNode}
+                nodeData={selectedNode.data}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
+              />
+            ) : isForEachProductNode ? (
+              <ForEachProductProperties
+                node={selectedNode}
+                nodeData={selectedNode.data}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
+              />
+            ) : isWebsiteCreateProductNode ? (
+              <WebsiteCreateProductProperties
+                node={selectedNode}
+                nodeData={selectedNode.data}
                 onUpdateNodeData={onUpdateNodeData}
                 workflowNodes={workflowNodes}
                 executionSnapshot={executionSnapshot}

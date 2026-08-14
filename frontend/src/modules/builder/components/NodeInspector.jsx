@@ -3,6 +3,9 @@ import { NODE_REGISTRY } from '../nodeRegistry';
 import { X, Trash2, Sliders, CheckCircle2, Code2, Globe, Clock, GitBranch, Terminal } from 'lucide-react';
 import { DiscordMessageReceivedProperties } from '../../../features/workflow/components/DiscordMessageReceivedProperties';
 import { WebsiteConnectProperties } from '../../../features/workflow/nodes/websiteConnect/WebsiteConnectProperties';
+import { GeminiStructureProductsProperties } from '../../../features/workflow/nodes/geminiStructureProducts/GeminiStructureProductsProperties';
+import { ForEachProductProperties } from '../../../features/workflow/nodes/forEachProduct/ForEachProductProperties';
+import { WebsiteCreateProductProperties } from '../../../features/workflow/nodes/websiteCreateProduct/WebsiteCreateProductProperties';
 
 export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClose }) => {
   if (!selectedNode) return null;
@@ -250,6 +253,48 @@ export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClos
 
         {(nodeType === 'websiteConnect' || nodeType === 'WEBSITE_CONNECT' || nodeType === 'website_connect' || nodeType === 'website') && (
           <WebsiteConnectProperties
+            node={selectedNode}
+            nodeData={selectedNode.data}
+            onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
+            }}
+          />
+        )}
+
+        {(nodeType === 'geminiStructureProducts' || nodeType === 'GEMINI_STRUCTURE_PRODUCTS' || nodeType === 'gemini_structure_products' || nodeType === 'structureProducts') && (
+          <GeminiStructureProductsProperties
+            node={selectedNode}
+            nodeData={selectedNode.data}
+            onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
+            }}
+          />
+        )}
+
+        {(nodeType === 'forEachProduct' || nodeType === 'FOR_EACH_PRODUCT' || nodeType === 'for_each_product' || nodeType === 'forEach') && (
+          <ForEachProductProperties
+            node={selectedNode}
+            nodeData={selectedNode.data}
+            onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
+            }}
+          />
+        )}
+
+        {(nodeType === 'websiteCreateProduct' || nodeType === 'WEBSITE_CREATE_PRODUCT' || nodeType === 'website_create_product' || nodeType === 'createProduct') && (
+          <WebsiteCreateProductProperties
             node={selectedNode}
             nodeData={selectedNode.data}
             onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
