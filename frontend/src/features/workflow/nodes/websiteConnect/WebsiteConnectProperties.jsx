@@ -19,8 +19,21 @@ import {
 } from 'lucide-react';
 import { api } from '../../../../services/api';
 
-export const WebsiteConnectProperties = ({ node, onUpdateNodeData }) => {
-  const config = node?.data?.config || {};
+export const WebsiteConnectProperties = ({
+  node,
+  nodeData,
+  onUpdateNodeData,
+  onUpdateConfig,
+}) => {
+  const config = node?.data?.config || nodeData?.config || {};
+
+  const updateConfig = (newConfig) => {
+    if (onUpdateNodeData && node?.id) {
+      onUpdateNodeData(node.id, { config: newConfig });
+    } else if (onUpdateConfig) {
+      onUpdateConfig(newConfig);
+    }
+  };
 
   // Form State
   const [selectedConnectionId, setSelectedConnectionId] = useState(config.connectionId || '');
@@ -74,26 +87,24 @@ export const WebsiteConnectProperties = ({ node, onUpdateNodeData }) => {
 
     const found = savedConnections.find((c) => c.id === connId || c.connectionId === connId);
     if (found) {
-      setName(found.name || '');
-      setWebsiteUrl(found.websiteUrl || '');
+      setName(found.name);
+      setWebsiteUrl(found.websiteUrl);
       setApiBaseUrl(found.apiBaseUrl || '');
       setConnectionMethod(found.connectionMethod || 'restApi');
       setAuthType(found.authType || 'bearerToken');
       setCustomHeaders(found.customHeaders || []);
 
       // Update Node Data with connectionId (never store plaintext secrets in node config)
-      onUpdateNodeData(node.id, {
-        config: {
-          ...config,
-          connectionId: found.id || found.connectionId,
-          name: found.name,
-          websiteUrl: found.websiteUrl,
-          apiBaseUrl: found.apiBaseUrl,
-          connectionMethod: found.connectionMethod,
-          authType: found.authType,
-          status: found.status || 'connected',
-          maskedCredentials: found.maskedCredentials || {},
-        },
+      updateConfig({
+        ...config,
+        connectionId: found.id || found.connectionId,
+        name: found.name,
+        websiteUrl: found.websiteUrl,
+        apiBaseUrl: found.apiBaseUrl,
+        connectionMethod: found.connectionMethod,
+        authType: found.authType,
+        status: found.status || 'connected',
+        maskedCredentials: found.maskedCredentials || {},
       });
     }
   };
@@ -207,18 +218,16 @@ export const WebsiteConnectProperties = ({ node, onUpdateNodeData }) => {
         fetchConnections();
 
         // Update Node Config with unique connectionId (NEVER plaintext secrets)
-        onUpdateNodeData(node.id, {
-          config: {
-            ...config,
-            connectionId: conn.id || conn.connectionId,
-            name: conn.name,
-            websiteUrl: conn.websiteUrl,
-            apiBaseUrl: conn.apiBaseUrl,
-            connectionMethod: conn.connectionMethod,
-            authType: conn.authType,
-            status: 'connected',
-            maskedCredentials: conn.maskedCredentials || {},
-          },
+        updateConfig({
+          ...config,
+          connectionId: conn.id || conn.connectionId,
+          name: conn.name,
+          websiteUrl: conn.websiteUrl,
+          apiBaseUrl: conn.apiBaseUrl,
+          connectionMethod: conn.connectionMethod,
+          authType: conn.authType,
+          status: 'connected',
+          maskedCredentials: conn.maskedCredentials || {},
         });
       }
     } catch (err) {

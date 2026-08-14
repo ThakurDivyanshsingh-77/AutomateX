@@ -34,7 +34,7 @@ export const NodeToolbar = () => {
   });
 
   // Group filtered nodes by category
-  const baseCategories = ['TRIGGER', 'COMMUNICATION', 'DATABASE', 'LOGIC', 'ACTION', 'UTILITY', 'OUTPUT', 'GOOGLE'];
+  const baseCategories = ['TRIGGER', 'INTEGRATIONS', 'COMMUNICATION', 'DATABASE', 'LOGIC', 'ACTION', 'UTILITY', 'OUTPUT', 'GOOGLE'];
   const extraCategories = Array.from(
     new Set(filteredNodes.map((n) => (n.category || '').toUpperCase()))
   ).filter((c) => c && !baseCategories.includes(c));
@@ -51,6 +51,14 @@ export const NodeToolbar = () => {
           (n.type &&
             (n.type.toLowerCase().includes('trigger') ||
               n.type.toLowerCase().includes('messagereceived'))))
+      )
+        return true;
+      if (
+        cat === 'INTEGRATIONS' &&
+        (nCat.includes('INTEGRATION') ||
+          nCat.includes('WEBSITE') ||
+          n.type === 'websiteConnect' ||
+          (n.type && n.type.toLowerCase().includes('website')))
       )
         return true;
       if (

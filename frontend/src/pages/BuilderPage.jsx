@@ -84,8 +84,9 @@ export const BuilderPage = () => {
   // Define custom node types for React Flow
   const nodeTypes = useMemo(() => {
     const types = {};
-    Object.keys(NODE_TYPES).forEach((typeKey) => {
+    Object.entries(NODE_TYPES).forEach(([typeKey, typeVal]) => {
       types[typeKey] = CustomNode;
+      if (typeVal) types[typeVal] = CustomNode;
     });
     return types;
   }, []);

@@ -2,6 +2,7 @@ import React from 'react';
 import { NODE_REGISTRY } from '../nodeRegistry';
 import { X, Trash2, Sliders, CheckCircle2, Code2, Globe, Clock, GitBranch, Terminal } from 'lucide-react';
 import { DiscordMessageReceivedProperties } from '../../../features/workflow/components/DiscordMessageReceivedProperties';
+import { WebsiteConnectProperties } from '../../../features/workflow/nodes/websiteConnect/WebsiteConnectProperties';
 
 export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClose }) => {
   if (!selectedNode) return null;
@@ -245,6 +246,20 @@ export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClos
               POST /api/v1/webhooks/YOUR_TOKEN
             </div>
           </div>
+        )}
+
+        {(nodeType === 'websiteConnect' || nodeType === 'WEBSITE_CONNECT' || nodeType === 'website_connect' || nodeType === 'website') && (
+          <WebsiteConnectProperties
+            node={selectedNode}
+            nodeData={selectedNode.data}
+            onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
+            }}
+          />
         )}
 
         {(nodeType === 'discordMessageReceived' || nodeType === 'discordMessageReceivedTrigger' || nodeType === 'DISCORD_MESSAGE_RECEIVED') && (
