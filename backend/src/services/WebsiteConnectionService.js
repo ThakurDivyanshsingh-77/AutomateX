@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import axios from 'axios';
 import mongoose from 'mongoose';
 import { WebsiteConnection } from '../models/WebsiteConnection.js';
 import { credentialCrypto } from '../credentials/credentialCrypto.js';
@@ -274,7 +273,7 @@ export class WebsiteConnectionService {
   }
 
   /**
-   * Tests a website connection safely with HTTP ping and humanized errors
+   * Tests a website connection safely with HTTP ping and humanized errors using native fetch
    */
   async testConnection(connectionId, ownerId) {
     const connection = await this.getConnection(connectionId, ownerId, true);
@@ -308,12 +307,10 @@ export class WebsiteConnectionService {
     let responseTimeMs = 0;
 
     try {
-      const response = await axios({
+      const response = await fetch(testUrl, {
         method: 'GET',
-        url: testUrl,
         headers,
-        timeout: 8000,
-        validateStatus: () => true, // inspect all HTTP response codes
+        signal: AbortSignal.timeout(8000),
       });
 
       responseTimeMs = Date.now() - startTime;
@@ -341,9 +338,9 @@ export class WebsiteConnectionService {
       responseTimeMs = Date.now() - startTime;
       status = 'error';
 
-      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+      if (err.name === 'TimeoutError' || err.message?.includes('timeout') || err.message?.includes('aborted')) {
         errorMessage = 'Connection timed out. Target website did not respond in time.';
-      } else if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
+      } else if (err.cause?.code === 'ENOTFOUND' || err.cause?.code === 'ECONNREFUSED' || err.message?.includes('fetch failed')) {
         errorMessage = 'Server unavailable. Please verify your website hostname and network.';
       } else {
         errorMessage = 'Connection failed. Please check the website URL and network settings.';
@@ -393,7 +390,7 @@ export class WebsiteConnectionService {
   }
 
   /**
-   * Tests unsaved/draft connection credentials before saving
+   * Tests unsaved/draft connection credentials before saving using native fetch
    */
   async testRawConnection({ websiteUrl, apiBaseUrl, connectionMethod, authType, credentials, customHeaders }) {
     if (!websiteUrl) {
@@ -429,12 +426,10 @@ export class WebsiteConnectionService {
     }
 
     try {
-      const response = await axios({
+      const response = await fetch(testUrl, {
         method: 'GET',
-        url: testUrl,
         headers,
-        timeout: 8000,
-        validateStatus: () => true,
+        signal: AbortSignal.timeout(8000),
       });
 
       const responseTimeMs = Date.now() - startTime;
@@ -472,9 +467,9 @@ export class WebsiteConnectionService {
     } catch (err) {
       const responseTimeMs = Date.now() - startTime;
       let msg = 'Connection failed. Please check the website URL and network settings.';
-      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+      if (err.name === 'TimeoutError' || err.message?.includes('timeout') || err.message?.includes('aborted')) {
         msg = 'Connection timed out. Target website did not respond in time.';
-      } else if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
+      } else if (err.cause?.code === 'ENOTFOUND' || err.cause?.code === 'ECONNREFUSED' || err.message?.includes('fetch failed')) {
         msg = 'Server unavailable. Please verify your website hostname and network.';
       }
       return {
