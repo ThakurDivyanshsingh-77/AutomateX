@@ -1,10 +1,11 @@
 import { BaseExecutor } from './BaseExecutor.js';
 import { FileModel } from '../../models/File.js';
+import { normalizeFileId } from '../../utils/fileUtils.js';
 
 export class FileUploadExecutor extends BaseExecutor {
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
-    const fileId = config.fileId || config.file?.id;
+    const fileId = normalizeFileId(config.fileId || config.file?.id || config.file);
 
     if (!fileId && !config.file) {
       throw new Error('No document file attached to this File Upload node.');

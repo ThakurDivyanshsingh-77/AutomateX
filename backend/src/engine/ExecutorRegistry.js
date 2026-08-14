@@ -16,8 +16,11 @@ class ExecutorRegistry {
   registerDefaults() {
     // Triggers
     this.register(NODE_TYPES.MANUAL_TRIGGER, new ManualTriggerExecutor());
+    this.register('start', new ManualTriggerExecutor());
+    this.register('manual', new ManualTriggerExecutor());
     this.register(NODE_TYPES.WEBHOOK_TRIGGER, new WebhookTriggerExecutor());
     this.register(NODE_TYPES.SCHEDULE_TRIGGER, new ScheduleTriggerExecutor());
+    this.register('end', new LogActionExecutor());
 
     // Actions
     this.register(NODE_TYPES.HTTP_REQUEST, new HttpRequestExecutor());

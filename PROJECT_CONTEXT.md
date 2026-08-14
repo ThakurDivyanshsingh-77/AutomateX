@@ -665,6 +665,24 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Verified startup initialization log: `[ExecutorRegistry] Registered node executor: "fileUpload" -> FileUploadExecutor` across 65 total registered node executors.
   - Executed `test_document_extract_pipeline.js` passing 9/9 assertions for full end-to-end execution.
 
+### **Phase 33 Complete — Canonical File ID Normalization & Document Extract Duplication Fix** — ✅ COMPLETED
+- **Canonical File ID Normalization (`backend/src/utils/fileUtils.js`)**:
+  - Implemented single canonical `normalizeFileId(input)` utility function.
+  - Recursively extracts string file ID from primitive strings, JSON objects, nested `file.id` objects, and deduplicates repeated substrings or duplicated prefixes (e.g. `"file_ABC123file_ABC123"` -> `"file_ABC123"`, `{ id: "file_ABC123" }` -> `"file_ABC123"`).
+- **Backend Document Extract Executor Overhaul (`backend/src/engine/executors/DocumentExtractContentExecutor.js`)**:
+  - Integrated `normalizeFileId` into `DocumentExtractContentExecutor` and `FileUploadExecutor`.
+  - Added 5 mandatory execution debug traces:
+    1. Raw variable expression
+    2. Resolved variable value
+    3. Document Extract received value
+    4. Normalized file ID
+    5. Final file lookup ID
+- **Executor & Base Executor Enhancements (`backend/src/engine/executors/BaseExecutor.js` & `ExecutorRegistry.js`)**:
+  - Added `interpolate(template, context)` method on `BaseExecutor` using `ExpressionEngine.resolve`.
+  - Registered `start`, `manual`, and `end` node type aliases in `ExecutorRegistry.js`.
+- **Automated Verification**:
+  - Passed **12/12** assertions in `test_workflow_direct.js` and unit test suite verifying `normalizeFileId` rules, full workflow graph execution (`Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `End Completion`), runtime deduplication of duplicated file IDs, and downstream variable interpolation `{{steps["Document → Extract Content"].content.text}}`.
+
 ---
 
 

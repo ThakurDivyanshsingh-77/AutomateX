@@ -5,55 +5,60 @@ import { fileStorageService } from '../../services/FileStorageService.js';
 import { documentParserService } from '../parser/DocumentParserService.js';
 import { FileModel } from '../../models/File.js';
 import { ExpressionEngine } from '../expression/ExpressionEngine.js';
+import { normalizeFileId } from '../../utils/fileUtils.js';
 
 export class DocumentExtractContentExecutor extends BaseExecutor {
   async execute(node, context) {
     const config = node.config || node.data?.config || {};
     
-    // 1. Resolve raw file ID expression
-    const rawConfigValue = config.fileId || config.file?.id || config.file;
-    
-    if (!rawConfigValue && rawConfigValue !== 0) {
+    // 1. Raw variable expression
+    const rawVariableExpression =
+      node.rawConfig?.fileId ||
+      node.data?.rawConfig?.fileId ||
+      config.fileId ||
+      config.file?.id ||
+      config.file ||
+      '';
+
+    if (!rawVariableExpression && rawVariableExpression !== 0) {
       const error = new Error('Document file ID is missing in configuration.');
       error.code = 'FILE_NOT_FOUND';
       error.status = 404;
       throw error;
     }
 
-    let resolvedValue = rawConfigValue;
-    if (typeof rawConfigValue === 'string' && rawConfigValue.includes('{{')) {
-      resolvedValue = ExpressionEngine.resolve(rawConfigValue, context);
-    }
-
-    // 2. Extract string ID if resolved value is an Object
-    let fileId = '';
-    if (typeof resolvedValue === 'object' && resolvedValue !== null) {
-      fileId = resolvedValue.id || resolvedValue.fileId || resolvedValue.file?.id || resolvedValue.file?.fileId || '';
-    } else if (typeof resolvedValue === 'string') {
-      fileId = resolvedValue.trim();
-      if (fileId.startsWith('{') && fileId.includes('"id"')) {
-        try {
-          const parsedObj = JSON.parse(fileId);
-          fileId = parsedObj.id || parsedObj.file?.id || parsedObj.fileId || fileId;
-        } catch (e) {
-          // Fallback
-        }
-      }
+    // 2. Resolved variable value
+    let resolvedVariableValue = rawVariableExpression;
+    if (typeof rawVariableExpression === 'string' && rawVariableExpression.includes('{{')) {
+      resolvedVariableValue = ExpressionEngine.resolve(rawVariableExpression, context);
     } else {
-      fileId = String(resolvedValue || '').trim();
+      resolvedVariableValue = config.fileId || config.file?.id || config.file || rawVariableExpression;
     }
 
-    console.log(`[DocumentExtractContentExecutor] Runtime File Resolution for node "${node.id}":`);
-    console.log(`  RAW VALUE: "${rawConfigValue}"`);
-    console.log(`  RESOLVED VALUE:`, resolvedValue);
-    console.log(`  FINAL FILE INPUT (ID): "${fileId}"`);
+    // 3. Document Extract received value
+    const documentExtractReceivedValue = config.fileId || config.file?.id || config.file || resolvedVariableValue;
 
-    if (!fileId || fileId.includes('{{')) {
-      const error = new Error(`File variable path could not be resolved: '${rawConfigValue}'. Ensure previous step executed successfully.`);
+    // 4. Normalized file ID using single canonical normalization function
+    const normalizedFileId = normalizeFileId(documentExtractReceivedValue || resolvedVariableValue || rawVariableExpression);
+
+    // 5. Final file lookup ID
+    const finalFileLookupId = normalizedFileId;
+
+    console.log(`[DocumentExtractContentExecutor] Execution Debug Traces for node "${node.id}":`);
+    console.log(`  1. Raw variable expression: "${rawVariableExpression}"`);
+    console.log(`  2. Resolved variable value:`, resolvedVariableValue);
+    console.log(`  3. Document Extract received value:`, documentExtractReceivedValue);
+    console.log(`  4. Normalized file ID: "${normalizedFileId}"`);
+    console.log(`  5. Final file lookup ID: "${finalFileLookupId}"`);
+
+    if (!finalFileLookupId || finalFileLookupId.includes('{{')) {
+      const error = new Error(`File variable path could not be resolved: '${rawVariableExpression}'. Ensure previous step executed successfully.`);
       error.code = 'FILE_NOT_FOUND';
       error.status = 404;
       throw error;
     }
+
+    const fileId = finalFileLookupId;
 
     // 3. Resolve owner ID from context if present
     const ownerId = context?.user?._id || context?.user?.id || context?.ownerId;
