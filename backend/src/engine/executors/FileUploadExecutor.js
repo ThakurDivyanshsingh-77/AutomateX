@@ -1,5 +1,5 @@
 import { BaseExecutor } from './BaseExecutor.js';
-import { storageService } from '../../services/StorageService.js';
+import { fileStorageService, storageService } from '../../services/FileStorageService.js';
 import { normalizeFileId } from '../../utils/fileUtils.js';
 
 export class FileUploadExecutor extends BaseExecutor {
@@ -69,9 +69,17 @@ export class FileUploadExecutor extends BaseExecutor {
         size: config.file.size || 0,
         extension: config.file.extension || '.pdf',
         status: config.file.status || 'uploaded',
+        storagePath: config.file.storagePath,
       };
       storagePath = config.file.storagePath || 'client://metadata';
       storageExists = Boolean(config.file.id);
+
+      if (fileData.id) {
+        fileStorageService.memoryCache.set(fileData.id, {
+          buffer: config.file.buffer || null,
+          metadata: fileData,
+        });
+      }
     }
 
     if (!fileData) {
@@ -83,6 +91,12 @@ export class FileUploadExecutor extends BaseExecutor {
     console.log(`fileId=${fileData.id}`);
     console.log(`storageLocation=${storagePath}`);
     console.log(`storageExists=${storageExists}`);
+
+    console.log(`[FILE_UPLOAD_DEBUG]`);
+    console.log(`fileId=${fileData.id}`);
+    console.log(`storagePath=${storagePath}`);
+    console.log(`exists=${storageExists}`);
+    console.log(`size=${fileData.size || 0}`);
 
     const formattedSize = fileData.size
       ? `${(fileData.size / 1024).toFixed(1)} KB`
