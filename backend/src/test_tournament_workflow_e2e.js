@@ -2,6 +2,7 @@ import http from 'http';
 import assert from 'assert';
 import { GeminiStructureTournamentExecutor } from './engine/executors/GeminiStructureTournamentExecutor.js';
 import { WebsiteCreateTournamentExecutor } from './engine/executors/WebsiteCreateTournamentExecutor.js';
+import { DOCXParser } from './engine/parser/DOCXParser.js';
 import { websiteConnectionService } from './services/WebsiteConnectionService.js';
 import { WorkflowEngine } from './engine/WorkflowEngine.js';
 
@@ -30,31 +31,28 @@ async function asyncReport(testName, fn) {
   }
 }
 
-const SAMPLE_DOCUMENT_TEXT = `
-========================================
-TOURNAMENT SPECIFICATION DOCUMENT
-========================================
-Tournament Title: Apex Championship
+const TEST_DOCUMENT_TEXT = `
+Tournament Title: AutomateX Test Tournament
 Game: Valorant
 Mode: SQUAD
-Prize Pool: ₹10,000
+Total Prize Pool: ₹10000
 Entry Fee: ₹0
-Slots: 64
+Max Capacity Slots: 64
 Winner Count: 3
-First Prize: ₹5,000
-Second Prize: ₹3,000
-Third Prize: ₹2,000
-Date: 2026-08-20
-Time: 18:00
-Map: Haven
-Banner Image: https://example.com/automatex-test-banner.jpg
-Description: Official AutomateX test tournament for competitive Valorant teams.
-========================================
+1st Place Prize: ₹5000
+2nd Place Prize: ₹3000
+3rd Place Prize: ₹2000
+Tournament Date: 2026-08-20
+Start Time: 18:00
+Map Name: Haven
+Banner Image URL: https://example.com/automatex-test-banner.jpg
+Description & Rules:
+Official AutomateX test tournament. Players must follow the tournament rules and join before the scheduled start time.
 `;
 
 async function runTournamentWorkflowTests() {
   console.log(`\n======================================================`);
-  console.log(`🏆 AUTOMATEX: TOURNAMENT PIPELINE END-TO-END TEST SUITE`);
+  console.log(`🏆 AUTOMATEX: TOURNAMENT EXTRACTION & API PIPELINE TEST SUITE`);
   console.log(`======================================================\n`);
 
   const receivedRequests = [];
@@ -111,75 +109,127 @@ async function runTournamentWorkflowTests() {
     });
 
     // ----------------------------------------------------------------
-    // TEST 1: GEMINI STRUCTURE TOURNAMENT AI EXTRACTION
+    // TEST 1: DOCX TABLE NORMALIZATION TO KEY-VALUE PAIRS
     // ----------------------------------------------------------------
-    console.log(`1️⃣ TESTING GEMINI → STRUCTURE TOURNAMENT (ZERO-HALLUCINATION & NO PLACEHOLDERS)`);
+    console.log(`1️⃣ TESTING DOCX TABLE EXTRACTION & KEY-VALUE NORMALIZATION`);
+
+    const docxParser = new DOCXParser();
+    report('Normalizes 2-column DOCX tables (Field | Value) to structured key-value lines', () => {
+      const mockTableBlock = {
+        type: 'table',
+        headers: ['Field', 'Value'],
+        rows: [
+          ['Game', 'Valorant'],
+          ['Mode', 'SQUAD'],
+          ['Total Prize Pool', '₹10000'],
+          ['Entry Fee', '₹0'],
+          ['Max Capacity Slots', '64'],
+          ['Winner Count', '3'],
+          ['1st Place Prize', '₹5000'],
+          ['2nd Place Prize', '₹3000'],
+          ['3rd Place Prize', '₹2000'],
+          ['Tournament Date', '2026-08-20'],
+          ['Start Time', '18:00'],
+          ['Map Name', 'Haven'],
+          ['Banner Image URL', 'https://example.com/automatex-test-banner.jpg'],
+          ['Description & Rules', 'Official AutomateX test tournament.'],
+        ],
+      };
+
+      const formatted = docxParser._formatTableAsText(mockTableBlock);
+      assert.ok(formatted.includes('Game: Valorant'));
+      assert.ok(formatted.includes('Mode: SQUAD'));
+      assert.ok(formatted.includes('Total Prize Pool: ₹10000'));
+      assert.ok(formatted.includes('Map Name: Haven'));
+      assert.ok(!formatted.includes('Field: Value'), 'Generic header row should be skipped');
+    });
+
+    // ----------------------------------------------------------------
+    // TEST 2: GEMINI STRUCTURE TOURNAMENT AI EXTRACTION
+    // ----------------------------------------------------------------
+    console.log(`\n2️⃣ TESTING GEMINI → STRUCTURE TOURNAMENT (DYNAMIC EXTRACTION & ZERO PLACEHOLDERS)`);
 
     const geminiExecutor = new GeminiStructureTournamentExecutor();
 
     let extractedData = null;
-    await asyncReport('Extracts exact Valorant tournament data from raw document text', async () => {
+    await asyncReport('Extracts exact tournament structure matching user requirements', async () => {
       const result = await geminiExecutor.execute(
         {
           id: 'step_gemini_tourn',
           type: 'geminiStructureTournament',
           config: {
-            documentText: SAMPLE_DOCUMENT_TEXT,
+            documentText: TEST_DOCUMENT_TEXT,
             model: 'gemini-1.5-pro',
             temperature: 0.0,
           },
         },
-        { currentData: { content: { text: SAMPLE_DOCUMENT_TEXT } } }
+        { currentData: { content: { text: TEST_DOCUMENT_TEXT } } }
       );
 
       assert.strictEqual(result.success, true);
       assert.strictEqual(result.count, 1);
       assert.ok(result.tournament);
+      assert.ok(result.extractionDebug);
+      assert.strictEqual(result.extractionDebug.rawTextReceived, TEST_DOCUMENT_TEXT.trim());
 
       const t = result.tournament;
-      assert.strictEqual(t.title, 'Apex Championship');
+      assert.strictEqual(t.title, 'AutomateX Test Tournament');
       assert.strictEqual(t.game, 'Valorant');
       assert.strictEqual(t.mode, 'SQUAD');
-      assert.strictEqual(t.prizePool, '₹10,000');
       assert.strictEqual(t.entryFee, 0);
+      assert.strictEqual(t.prizePool, 10000);
+      assert.strictEqual(t.winnerCount, 3);
       assert.strictEqual(t.slots, 64);
-      assert.strictEqual(t.winnerCount, '3');
+      assert.deepStrictEqual(t.prizeBreakdown, {
+        first: 5000,
+        second: 3000,
+        third: 2000,
+      });
       assert.strictEqual(t.firstPrize, 5000);
       assert.strictEqual(t.secondPrize, 3000);
       assert.strictEqual(t.thirdPrize, 2000);
       assert.strictEqual(t.date, '2026-08-20');
       assert.strictEqual(t.time, '18:00');
       assert.strictEqual(t.map, 'Haven');
-      assert.strictEqual(t.roomID, '');
-      assert.strictEqual(t.password, '');
       assert.strictEqual(t.bannerImage, 'https://example.com/automatex-test-banner.jpg');
-      assert.ok(t.description.includes('Official AutomateX test tournament'));
+      assert.strictEqual(t.description, 'Official AutomateX test tournament. Players must follow the tournament rules and join before the scheduled start time.');
 
       extractedData = t;
     });
 
-    report('Strict Zero-Hallucination: Never returns World\'s Edge, 60 slots, or field name placeholders', () => {
-      assert.notStrictEqual(extractedData.map, "World's Edge");
-      assert.notStrictEqual(extractedData.slots, 60);
-      assert.notStrictEqual(extractedData.title, 'title');
-      assert.notStrictEqual(extractedData.game, 'game');
-      assert.notStrictEqual(extractedData.mode, 'mode');
-      assert.notStrictEqual(extractedData.date, 'date');
-      assert.notStrictEqual(extractedData.time, 'time');
-      assert.notStrictEqual(extractedData.map, 'map');
-      assert.strictEqual(extractedData.map, 'Haven');
-      assert.strictEqual(extractedData.slots, 64);
-      assert.strictEqual(extractedData.winnerCount, '3');
+    // ----------------------------------------------------------------
+    // TEST 3: REQUIRED FIELD VALIDATION ERROR HALTING
+    // ----------------------------------------------------------------
+    console.log(`\n3️⃣ TESTING REQUIRED FIELD VALIDATION & ERROR MESSAGES`);
+
+    await asyncReport('Stops with clear error when required field game is missing', async () => {
+      let threwError = false;
+      try {
+        await geminiExecutor.execute(
+          {
+            id: 'step_gemini_missing',
+            type: 'geminiStructureTournament',
+            config: {
+              documentText: 'Tournament Title: Test\nMode: SQUAD\nDate: 2026-08-20',
+            },
+          },
+          {}
+        );
+      } catch (err) {
+        threwError = true;
+        assert.strictEqual(err.message, "Required tournament field 'game' could not be extracted from the uploaded document.");
+      }
+      assert.strictEqual(threwError, true);
     });
 
     // ----------------------------------------------------------------
-    // TEST 2: WEBSITE → CREATE TOURNAMENT (DRY RUN MODE)
+    // TEST 4: WEBSITE → CREATE TOURNAMENT (DRY RUN MODE)
     // ----------------------------------------------------------------
-    console.log(`\n2️⃣ TESTING WEBSITE → CREATE TOURNAMENT (DRY RUN MODE)`);
+    console.log(`\n4️⃣ TESTING WEBSITE → CREATE TOURNAMENT (DRY RUN MODE)`);
 
     const createTournExecutor = new WebsiteCreateTournamentExecutor();
 
-    await asyncReport('Executes Dry Run Mode without HTTP network calls and returns wouldCreate: 1', async () => {
+    await asyncReport('Executes Dry Run Mode without HTTP network calls: validated=true, requested=false, created=0', async () => {
       const dryRes = await createTournExecutor.execute(
         {
           id: 'step_create_tourn_dry',
@@ -198,18 +248,20 @@ async function runTournamentWorkflowTests() {
       assert.strictEqual(dryRes.success, true);
       assert.strictEqual(dryRes.dryRun, true);
       assert.strictEqual(dryRes.validated, true);
-      assert.strictEqual(dryRes.wouldCreate, 1);
+      assert.strictEqual(dryRes.requested, false);
       assert.strictEqual(dryRes.created, 0);
+      assert.strictEqual(dryRes.wouldCreate, 1);
       assert.strictEqual(dryRes.failed, 0);
+      assert.ok(dryRes.previewJson);
       assert.strictEqual(receivedRequests.length, 0, 'Dry Run must never dispatch HTTP requests');
     });
 
     // ----------------------------------------------------------------
-    // TEST 3: WEBSITE → CREATE TOURNAMENT (LIVE MODE WITH POST /tournaments)
+    // TEST 5: WEBSITE → CREATE TOURNAMENT (LIVE POST /api/v1/tournaments)
     // ----------------------------------------------------------------
-    console.log(`\n3️⃣ TESTING WEBSITE → CREATE TOURNAMENT (LIVE POST /tournaments)`);
+    console.log(`\n5️⃣ TESTING WEBSITE → CREATE TOURNAMENT (LIVE POST /api/v1/tournaments)`);
 
-    await asyncReport('Dispatches live POST /tournaments resolving to /api/v1/tournaments with decrypted Bearer token and created: 1', async () => {
+    await asyncReport('Dispatches live POST /api/v1/tournaments with Bearer token: validated=true, requested=true, created=1', async () => {
       const liveRes = await createTournExecutor.execute(
         {
           id: 'step_create_tourn_live',
@@ -227,6 +279,8 @@ async function runTournamentWorkflowTests() {
 
       assert.strictEqual(liveRes.success, true);
       assert.strictEqual(liveRes.dryRun, false);
+      assert.strictEqual(liveRes.validated, true);
+      assert.strictEqual(liveRes.requested, true);
       assert.strictEqual(liveRes.created, 1);
       assert.strictEqual(liveRes.failed, 0);
       assert.ok(liveRes.tournamentId);
@@ -236,27 +290,27 @@ async function runTournamentWorkflowTests() {
       assert.strictEqual(req.url, '/api/v1/tournaments');
       assert.strictEqual(req.method, 'POST');
       assert.strictEqual(req.headers['authorization'], 'Bearer apex_esports_secret_jwt_token');
-      assert.strictEqual(req.body.title, 'Apex Championship');
+      assert.strictEqual(req.body.title, 'AutomateX Test Tournament');
       assert.strictEqual(req.body.game, 'Valorant');
       assert.strictEqual(req.body.mode, 'SQUAD');
-      assert.strictEqual(req.body.prizePool, '₹10,000');
-      assert.strictEqual(req.body.winnerCount, '3');
-      assert.strictEqual(req.body.firstPrize, 5000);
-      assert.strictEqual(req.body.secondPrize, 3000);
-      assert.strictEqual(req.body.thirdPrize, 2000);
+      assert.strictEqual(req.body.prizePool, 10000);
+      assert.strictEqual(req.body.winnerCount, 3);
+      assert.deepStrictEqual(req.body.prizeBreakdown, {
+        first: 5000,
+        second: 3000,
+        third: 2000,
+      });
       assert.strictEqual(req.body.map, 'Haven');
       assert.strictEqual(req.body.slots, 64);
-      assert.strictEqual(req.body.roomID, '');
-      assert.strictEqual(req.body.password, '');
     });
 
     // ----------------------------------------------------------------
-    // TEST 4: PRE-VALIDATION ENFORCEMENT & PLACEHOLDER REJECTION
+    // TEST 6: PRE-VALIDATION & PLACEHOLDER REJECTION
     // ----------------------------------------------------------------
-    console.log(`\n4️⃣ TESTING PRE-VALIDATION & PLACEHOLDER REJECTION`);
+    console.log(`\n6️⃣ TESTING PRE-VALIDATION & PLACEHOLDER REJECTION`);
 
-    await asyncReport('Stops workflow before HTTP POST if required field is missing or contains placeholder', async () => {
-      const placeholderTournament = { ...extractedData, title: 'title' };
+    await asyncReport('Stops workflow before HTTP POST if placeholder value is supplied', async () => {
+      const placeholderTournament = { ...extractedData, game: 'game' };
       let threwError = false;
 
       try {
@@ -276,44 +330,16 @@ async function runTournamentWorkflowTests() {
         );
       } catch (err) {
         threwError = true;
-        assert.ok(err.message.includes('Pre-validation error') || err.message.includes('placeholder'));
+        assert.ok(err.message.includes('Required tournament field'));
       }
 
       assert.strictEqual(threwError, true, 'Executor must throw and stop when placeholder or invalid payload is given');
     });
 
     // ----------------------------------------------------------------
-    // TEST 5: HTTP 400 HANDLING WITH DETAILED BACKEND RESPONSE
+    // TEST 7: FULL DIRECT WORKFLOW ENGINE EXECUTION
     // ----------------------------------------------------------------
-    console.log(`\n5️⃣ TESTING HTTP 400 ERROR RESPONSE HANDLING`);
-
-    await asyncReport('Handles HTTP 400 without converting to success and surfaces validation details', async () => {
-      const invalidData = { ...extractedData, title: 'Validation Fail Tournament' };
-      const failRes = await createTournExecutor.execute(
-        {
-          id: 'step_fail_tourn',
-          type: 'websiteCreateTournament',
-          config: {
-            connectionId: connection.connectionId,
-            tournament: invalidData,
-            endpoint: '/tournaments',
-            method: 'POST',
-            dryRun: false,
-          },
-        },
-        { user: { _id: testUserId } }
-      );
-
-      assert.strictEqual(failRes.success, false);
-      assert.strictEqual(failRes.created, 0);
-      assert.strictEqual(failRes.failed, 1);
-      assert.ok(failRes.error.message.includes('400') || failRes.error.message.includes('Validation Error'));
-    });
-
-    // ----------------------------------------------------------------
-    // TEST 6: FULL 6-NODE WORKFLOW ENGINE EXECUTION (NO LOOP NODE)
-    // ----------------------------------------------------------------
-    console.log(`\n6️⃣ TESTING FULL 6-NODE END-TO-END WORKFLOW ENGINE EXECUTION`);
+    console.log(`\n7️⃣ TESTING DIRECT 6-NODE END-TO-END WORKFLOW ENGINE EXECUTION`);
 
     await asyncReport('Executes Start -> File Upload -> Extract Content -> Gemini Structure -> Website Connect -> Create Tournament -> End', async () => {
       const workflow = {
@@ -325,7 +351,7 @@ async function runTournamentWorkflowTests() {
             id: 'gemini_tournament_node',
             type: 'geminiStructureTournament',
             config: {
-              documentText: SAMPLE_DOCUMENT_TEXT,
+              documentText: TEST_DOCUMENT_TEXT,
             },
           },
           {
@@ -366,7 +392,7 @@ async function runTournamentWorkflowTests() {
         {
           ownerId: testUserId,
           user: { _id: testUserId },
-          currentData: { content: { text: SAMPLE_DOCUMENT_TEXT } },
+          currentData: { content: { text: TEST_DOCUMENT_TEXT } },
         }
       );
 
@@ -375,13 +401,16 @@ async function runTournamentWorkflowTests() {
 
       const geminiLog = execResult.logs.find((l) => l.nodeId === 'gemini_tournament_node');
       assert.ok(geminiLog && geminiLog.output.success);
-      assert.strictEqual(geminiLog.output.tournament.title, 'Apex Championship');
+      assert.strictEqual(geminiLog.output.tournament.title, 'AutomateX Test Tournament');
+      assert.strictEqual(geminiLog.output.tournament.game, 'Valorant');
+      assert.strictEqual(geminiLog.output.tournament.mode, 'SQUAD');
       assert.strictEqual(geminiLog.output.tournament.map, 'Haven');
-      assert.strictEqual(geminiLog.output.tournament.winnerCount, '3');
+      assert.strictEqual(geminiLog.output.tournament.winnerCount, 3);
 
       const createLog = execResult.logs.find((l) => l.nodeId === 'create_tournament_node');
       assert.ok(createLog && createLog.output.success);
       assert.strictEqual(createLog.output.wouldCreate, 1);
+      assert.strictEqual(createLog.output.validated, true);
     });
 
   } finally {

@@ -4,12 +4,10 @@ import { credentialService } from '../../credentials/credentialService.js';
 import { ExpressionEngine } from '../expression/ExpressionEngine.js';
 
 export class GeminiStructureTournamentExecutor extends BaseExecutor {
-  /**
-   * System Prompt strictly enforcing zero-hallucination document-to-tournament JSON extraction.
-   */
-  /**
-   * System Prompt strictly enforcing zero-hallucination document-to-tournament JSON extraction.
-   */
+  constructor() {
+    super('geminiStructureTournament');
+  }
+
   static getSystemPrompt() {
     return `You are a strict tournament document extraction engine.
 
@@ -25,46 +23,50 @@ Never substitute values from previous runs.
 Never use values from another document.
 Never output field names like "title", "game", "mode", "date", "time", "map", "bannerImage", "description" as placeholder values.
 
-If a field is missing from the document:
-- Return an empty string "" for missing string fields.
-- Return 0 for missing numeric fields.
-- For winnerCount, return "3" if winner count is 3 or unspecified.
+If a field does not exist in the document, return null.
 
 Return exactly ONE JSON object adhering strictly to this schema:
 {
-  "title": "",
-  "game": "",
-  "mode": "",
-  "entryFee": 0,
-  "prizePool": "",
-  "winnerCount": "3",
-  "firstPrize": 0,
-  "secondPrize": 0,
-  "thirdPrize": 0,
-  "slots": 0,
-  "date": "",
-  "time": "",
-  "map": "",
-  "roomID": "",
-  "password": "",
-  "bannerImage": "",
-  "description": ""
+  "title": string | null,
+  "game": string | null,
+  "mode": string | null,
+  "entryFee": number | null,
+  "prizePool": number | null,
+  "winnerCount": number | null,
+  "prizeBreakdown": {
+    "first": number | null,
+    "second": number | null,
+    "third": number | null
+  },
+  "slots": number | null,
+  "date": string | null,
+  "time": string | null,
+  "map": string | null,
+  "bannerImage": string | null,
+  "description": string | null
 }
 
 Data type rules:
-- entryFee, firstPrize, secondPrize, thirdPrize, slots must be numbers (without currency symbols or commas).
-- winnerCount must be a string: "1", "2", or "3".
-- prizePool must be a string preserving the formatted value (e.g. "₹10,000" or "$10,000").
+- entryFee, first, second, third, slots must be numbers (e.g. 0, 5000, 64) without currency symbols or commas.
+- prizePool must be a number (e.g. 10000) or null.
+- winnerCount must be an integer (e.g. 3, 2, 1).
 - date must be formatted as YYYY-MM-DD if available.
 - time must be formatted as HH:mm if available.
-- Return valid JSON only.`;
+- Return valid JSON only without markdown formatting.`;
   }
 
-  /**
-   * Cleans currency/number strings (e.g. "₹10,000" -> 10000)
-   */
-  static parseNumber(val, defaultVal = 0) {
-    if (val === null || val === undefined || val === '') return defaultVal;
+  static cleanString(val, keyName = '') {
+    if (val === null || val === undefined) return null;
+    const s = String(val).trim();
+    if (!s) return null;
+    if (keyName && s.toLowerCase() === keyName.toLowerCase()) {
+      return null;
+    }
+    return s;
+  }
+
+  static parseNumber(val, defaultVal = null) {
+    if (val === null || val === undefined) return defaultVal;
     if (typeof val === 'number') return Number.isNaN(val) ? defaultVal : val;
     if (typeof val === 'string') {
       const cleaned = val.replace(/[^0-9.-]+/g, '');
@@ -75,82 +77,68 @@ Data type rules:
     return defaultVal;
   }
 
-  /**
-   * Sanitizes string values preventing placeholder leakage
-   */
-  static cleanString(val, keyName = '') {
-    if (val === null || val === undefined) return '';
-    const s = String(val).trim();
-    if (keyName && s.toLowerCase() === keyName.toLowerCase()) {
-      return '';
-    }
-    return s;
-  }
-
-  /**
-   * Sanitizes and parses LLM text into JSON
-   */
-  static parseAndValidateJson(rawResponseText) {
-    if (!rawResponseText || typeof rawResponseText !== 'string') {
-      throw new Error('Received empty response from AI model.');
+  static parseAndValidateJson(rawResponse) {
+    if (!rawResponse || typeof rawResponse !== 'string') {
+      return [];
     }
 
-    let cleaned = rawResponseText.trim();
-    if (cleaned.startsWith('```')) {
-      cleaned = cleaned.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
+    let cleaned = rawResponse.trim();
+    // Strip markdown code fences if present
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.substring(7);
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.substring(3);
     }
-
-    const firstBrace = cleaned.indexOf('{');
-    const lastBrace = cleaned.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.substring(0, cleaned.length - 3);
     }
+    cleaned = cleaned.trim();
 
     let parsed;
     try {
       parsed = JSON.parse(cleaned);
-    } catch (e) {
-      throw new Error(`JSON parsing failed: ${e.message}`);
-    }
-
-    // Support single tournament object, array of tournaments, or { tournament: {...} } / { tournaments: [...] }
-    let rawList = [];
-    if (Array.isArray(parsed)) {
-      rawList = parsed;
-    } else if (parsed && Array.isArray(parsed.tournaments)) {
-      rawList = parsed.tournaments;
-    } else if (parsed && parsed.tournament && typeof parsed.tournament === 'object') {
-      rawList = [parsed.tournament];
-    } else if (parsed && typeof parsed === 'object') {
-      rawList = [parsed];
-    }
-
-    if (rawList.length === 0) {
-      throw new Error('Invalid schema: No tournament object detected in response.');
-    }
-
-    const normalizedTournaments = rawList.map((t) => {
-      const firstPrize = this.parseNumber(t.firstPrize || t.first || t.prizeBreakdown?.first, 0);
-      const secondPrize = this.parseNumber(t.secondPrize || t.second || t.prizeBreakdown?.second, 0);
-      const thirdPrize = this.parseNumber(t.thirdPrize || t.third || t.prizeBreakdown?.third, 0);
-      
-      let prizePool = '';
-      if (t.prizePool !== undefined && t.prizePool !== null && t.prizePool !== '') {
-        if (typeof t.prizePool === 'number') {
-          prizePool = `₹${t.prizePool.toLocaleString()}`;
-        } else {
-          prizePool = String(t.prizePool).trim();
+    } catch {
+      const jsonMatch = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[1]);
+        } catch {
+          return [];
         }
-      } else if (t.totalPrize || t.prize) {
-        prizePool = String(t.totalPrize || t.prize).trim();
+      } else {
+        return [];
+      }
+    }
+
+    const rawTournaments = Array.isArray(parsed)
+      ? parsed
+      : parsed?.tournaments && Array.isArray(parsed.tournaments)
+      ? parsed.tournaments
+      : parsed?.tournament && typeof parsed.tournament === 'object'
+      ? [parsed.tournament]
+      : parsed && typeof parsed === 'object'
+      ? [parsed]
+      : [];
+
+    return this.normalizeTournamentList(rawTournaments);
+  }
+
+  static normalizeTournamentList(rawList) {
+    const normalizedTournaments = rawList.map((t) => {
+      const firstPrize = this.parseNumber(t.firstPrize || t.prizeBreakdown?.first, null);
+      const secondPrize = this.parseNumber(t.secondPrize || t.prizeBreakdown?.second, null);
+      const thirdPrize = this.parseNumber(t.thirdPrize || t.prizeBreakdown?.third, null);
+
+      let prizePool = this.parseNumber(t.prizePool, null);
+      if (prizePool === null && (firstPrize || secondPrize || thirdPrize)) {
+        prizePool = (firstPrize || 0) + (secondPrize || 0) + (thirdPrize || 0);
       }
 
-      let winnerCount = '3';
-      if (t.winnerCount !== undefined && t.winnerCount !== null) {
-        const wcStr = String(t.winnerCount).replace(/[^123]/g, '');
-        if (wcStr === '1' || wcStr === '2' || wcStr === '3') {
-          winnerCount = wcStr;
-        }
+      let winnerCount = this.parseNumber(t.winnerCount, null);
+      if (winnerCount === null) {
+        if (thirdPrize) winnerCount = 3;
+        else if (secondPrize) winnerCount = 2;
+        else if (firstPrize) winnerCount = 1;
       }
 
       const prizeBreakdown = {
@@ -162,22 +150,20 @@ Data type rules:
       return {
         title: this.cleanString(t.title || t.name || t.tournamentName, 'title'),
         game: this.cleanString(t.game || t.gameName, 'game'),
-        mode: this.cleanString(t.mode || t.gameMode, 'mode'),
+        mode: this.cleanString(t.mode || t.gameMode || t.tournamentMode, 'mode'),
         entryFee: this.parseNumber(t.entryFee, 0),
         prizePool,
         winnerCount,
         firstPrize,
         secondPrize,
         thirdPrize,
-        slots: this.parseNumber(t.slots || t.maxTeams || t.maxSlots, 0),
-        date: this.cleanString(t.date, 'date'),
-        time: this.cleanString(t.time, 'time'),
-        map: this.cleanString(t.map, 'map'),
-        roomID: this.cleanString(t.roomID || t.roomId, 'roomID'),
-        password: this.cleanString(t.password, 'password'),
-        bannerImage: this.cleanString(t.bannerImage || t.bannerUrl || t.image, 'bannerImage'),
-        description: this.cleanString(t.description || t.rules, 'description'),
         prizeBreakdown,
+        slots: this.parseNumber(t.slots || t.maxCapacity || t.maxTeams || t.maxSlots || t.capacity, null),
+        date: this.cleanString(t.date || t.tournamentDate || t.eventDate, 'date'),
+        time: this.cleanString(t.time || t.startTime || t.eventTime, 'time'),
+        map: this.cleanString(t.map || t.mapName || t.playingMap, 'map'),
+        bannerImage: this.cleanString(t.bannerImage || t.bannerImageUrl || t.bannerUrl || t.imageUrl, 'bannerImage'),
+        description: this.cleanString(t.description || t.rules || t.details, 'description'),
       };
     });
 
@@ -202,6 +188,19 @@ Data type rules:
         rawText = context.currentData.text;
       } else if (typeof context.currentData === 'string') {
         rawText = context.currentData;
+      }
+    }
+
+    if (!rawText && context.steps) {
+      for (const step of Object.values(context.steps)) {
+        if (step?.content?.text) {
+          rawText = step.content.text;
+          break;
+        }
+        if (step?.text) {
+          rawText = step.text;
+          break;
+        }
       }
     }
 
@@ -266,9 +265,27 @@ Data type rules:
     const primaryTournament = tournaments[0] || null;
     const durationMs = Date.now() - startTime;
 
+    // 4. Strict Validation of Required Fields from Extracted Document
+    if (!primaryTournament) {
+      throw new Error("No tournament structure could be extracted from the uploaded document.");
+    }
+
+    const requiredFields = [
+      { key: 'game', name: 'game' },
+      { key: 'mode', name: 'mode' },
+      { key: 'title', name: 'title' },
+    ];
+
+    for (const req of requiredFields) {
+      const val = primaryTournament[req.key];
+      if (val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) {
+        throw new Error(`Required tournament field '${req.name}' could not be extracted from the uploaded document.`);
+      }
+    }
+
     console.log(`[GeminiStructureTournamentExecutor] ✓ Successfully structured ${tournaments.length} tournament(s) in ${durationMs}ms:`);
     tournaments.forEach((t, i) => {
-      console.log(`   ${i + 1}. ${t.title || 'Untitled'} (Game: ${t.game || 'N/A'}, Map: ${t.map || 'N/A'}, Slots: ${t.slots || 'N/A'})`);
+      console.log(`   ${i + 1}. ${t.title || 'Untitled'} (Game: ${t.game || 'N/A'}, Mode: ${t.mode || 'N/A'}, Map: ${t.map || 'N/A'}, Slots: ${t.slots || 'N/A'})`);
     });
 
     return {
@@ -278,14 +295,22 @@ Data type rules:
       tournaments,
       currentTournament: primaryTournament,
       rawResponse: rawAiResponse,
+      extractionDebug: {
+        rawTextReceived: documentText,
+        textLength: documentText.length,
+        linesCount: documentText.split('\n').length,
+      },
       durationMs,
     };
   }
 
   /**
-   * Deterministic zero-hallucination regex parser used as fallback/offline extractor
+   * Deterministic zero-hallucination regex parser used as fallback/offline extractor.
+   * Dynamically handles tab, colon, pipe, equal separators and variations in field labels.
    */
   deterministicExtract(text) {
+    if (!text || typeof text !== 'string') return [];
+
     const getValue = (patterns) => {
       for (const p of patterns) {
         const m = text.match(p);
@@ -295,69 +320,69 @@ Data type rules:
     };
 
     const title = getValue([
-      /(?:Tournament\s*(?:Title|Name)?|Title)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:Tournament\s*(?:Title|Name)?|Title)\s*[:=\t|-]\s*([^\n\r]+)/i,
       /(?:^|\n)\s*([A-Za-z0-9\s]+Tournament[^\n\r]*)/i,
     ]);
 
     const game = getValue([
-      /(?:Game\s*(?:Name)?)\s*[:=-]\s*([^\n\r,]+)/i,
+      /(?:Game\s*(?:Name)?)\s*[:=\t|-]\s*([^\n\r,]+)/i,
     ]);
 
     const mode = getValue([
-      /(?:Mode|Game\s*Mode)\s*[:=-]\s*([^\n\r,]+)/i,
+      /(?:Mode|Game\s*Mode|Tournament\s*Mode)\s*[:=\t|-]\s*([^\n\r,]+)/i,
     ]);
 
     const prizePoolStr = getValue([
-      /(?:Prize\s*Pool|Total\s*Prize)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:Total\s*Prize\s*Pool|Total\s*Prize|Prize\s*Pool)\s*[:=\t|-]\s*([^\n\r]+)/i,
     ]);
 
     const entryFeeStr = getValue([
-      /(?:Entry\s*Fee|Fee)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:Entry\s*Fee|Fee)\s*[:=\t|-]\s*([^\n\r]+)/i,
     ]);
 
     const slotsStr = getValue([
-      /(?:Slots|Max\s*Teams|Teams|Total\s*Slots)\s*[:=-]\s*(\d+)/i,
+      /(?:Max\s*Capacity\s*Slots|Max\s*Capacity|Capacity|Total\s*Slots|Slots|Max\s*Teams|Teams)\s*[:=\t|-]\s*(\d+)/i,
     ]);
 
     const winnerCountStr = getValue([
-      /(?:Winner\s*Count|Winners)\s*[:=-]\s*(\d+)/i,
+      /(?:Winner\s*Count|Winners|Total\s*Winners)\s*[:=\t|-]\s*(\d+)/i,
     ]);
 
     const firstPrizeStr = getValue([
-      /(?:First\s*Prize|1st\s*Prize|1st)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:1st\s*Place\s*Prize|1st\s*Prize|First\s*Place\s*Prize|First\s*Prize|1st)\s*[:=\t|-]\s*([^\n\r]+)/i,
     ]);
 
     const secondPrizeStr = getValue([
-      /(?:Second\s*Prize|2nd\s*Prize|2nd)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:2nd\s*Place\s*Prize|2nd\s*Prize|Second\s*Place\s*Prize|Second\s*Prize|2nd)\s*[:=\t|-]\s*([^\n\r]+)/i,
     ]);
 
     const thirdPrizeStr = getValue([
-      /(?:Third\s*Prize|3rd\s*Prize|3rd)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:3rd\s*Place\s*Prize|3rd\s*Prize|Third\s*Place\s*Prize|Third\s*Prize|3rd)\s*[:=\t|-]\s*([^\n\r]+)/i,
     ]);
 
     const date = getValue([
-      /(?:Date|Event\s*Date)\s*[:=-]\s*(\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4})/i,
+      /(?:Tournament\s*Date|Event\s*Date|Date)\s*[:=\t|-]\s*(\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}\/\d{4})/i,
     ]);
 
     const time = getValue([
-      /(?:Time|Start\s*Time)\s*[:=-]\s*(\d{1,2}:\d{2}(?:\s*[AP]M)?)/i,
+      /(?:Start\s*Time|Event\s*Time|Time)\s*[:=\t|-]\s*(\d{1,2}:\d{2}(?:\s*[AP]M)?)/i,
     ]);
 
     const map = getValue([
-      /(?:Map|Playing\s*Map)\s*[:=-]\s*([^\n\r,]+)/i,
+      /(?:Map\s*Name|Playing\s*Map|Map)\s*[:=\t|-]\s*([^\n\r,]+)/i,
     ]);
 
     const bannerImage = getValue([
-      /(?:Banner\s*(?:Image|URL)?|Image\s*URL)\s*[:=-]\s*(https?:\/\/[^\s\n\r]+)/i,
+      /(?:Banner\s*Image\s*URL|Banner\s*(?:Image|URL)?|Image\s*URL)\s*[:=\t|-]\s*(https?:\/\/[^\s\n\r]+)/i,
     ]);
 
     const description = getValue([
-      /(?:Description|Details|Overview)\s*[:=-]\s*([^\n\r]+)/i,
+      /(?:Description\s*(?:&|\+)?\s*Rules|Description|Rules|Details|Overview)\s*[:=\t|-]\s*([^\n\r]+(?:\n[^\n\r]+)*)/i,
     ]);
 
-    const firstPrize = GeminiStructureTournamentExecutor.parseNumber(firstPrizeStr, 0);
-    const secondPrize = GeminiStructureTournamentExecutor.parseNumber(secondPrizeStr, 0);
-    const thirdPrize = GeminiStructureTournamentExecutor.parseNumber(thirdPrizeStr, 0);
+    const firstPrize = GeminiStructureTournamentExecutor.parseNumber(firstPrizeStr, null);
+    const secondPrize = GeminiStructureTournamentExecutor.parseNumber(secondPrizeStr, null);
+    const thirdPrize = GeminiStructureTournamentExecutor.parseNumber(thirdPrizeStr, null);
 
     const prizeBreakdown = {
       first: firstPrize,
@@ -365,10 +390,16 @@ Data type rules:
       third: thirdPrize,
     };
 
-    let winnerCount = '3';
-    if (winnerCountStr) {
-      const s = String(winnerCountStr).replace(/[^123]/g, '');
-      if (s === '1' || s === '2' || s === '3') winnerCount = s;
+    let prizePool = GeminiStructureTournamentExecutor.parseNumber(prizePoolStr, null);
+    if (prizePool === null && (firstPrize || secondPrize || thirdPrize)) {
+      prizePool = (firstPrize || 0) + (secondPrize || 0) + (thirdPrize || 0);
+    }
+
+    let winnerCount = GeminiStructureTournamentExecutor.parseNumber(winnerCountStr, null);
+    if (winnerCount === null) {
+      if (thirdPrize) winnerCount = 3;
+      else if (secondPrize) winnerCount = 2;
+      else if (firstPrize) winnerCount = 1;
     }
 
     return [
@@ -377,20 +408,18 @@ Data type rules:
         game: GeminiStructureTournamentExecutor.cleanString(game, 'game'),
         mode: GeminiStructureTournamentExecutor.cleanString(mode, 'mode'),
         entryFee: GeminiStructureTournamentExecutor.parseNumber(entryFeeStr, 0),
-        prizePool: prizePoolStr ? String(prizePoolStr).trim() : '',
+        prizePool,
         winnerCount,
         firstPrize,
         secondPrize,
         thirdPrize,
-        slots: GeminiStructureTournamentExecutor.parseNumber(slotsStr, 0),
+        prizeBreakdown,
+        slots: GeminiStructureTournamentExecutor.parseNumber(slotsStr, null),
         date: GeminiStructureTournamentExecutor.cleanString(date, 'date'),
         time: GeminiStructureTournamentExecutor.cleanString(time, 'time'),
         map: GeminiStructureTournamentExecutor.cleanString(map, 'map'),
-        roomID: '',
-        password: '',
         bannerImage: GeminiStructureTournamentExecutor.cleanString(bannerImage, 'bannerImage'),
         description: GeminiStructureTournamentExecutor.cleanString(description, 'description'),
-        prizeBreakdown,
       },
     ];
   }

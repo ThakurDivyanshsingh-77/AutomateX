@@ -56,7 +56,34 @@ export class DOCXParser extends BaseParser {
             });
             tableIndexCounter++;
           }
-        } else if (tagName === 'p' || tagName === 'ul' || tagName === 'ol' || tagName === 'blockquote' || tagName === 'div') {
+        } else if (tagName === 'ul' || tagName === 'ol') {
+          const listItems = [];
+          $(el).find('li').each((_, li) => {
+            const liText = $(li).text().trim();
+            if (liText) listItems.push(liText);
+          });
+          if (listItems.length > 0) {
+            const combinedList = listItems.map((item) => `• ${item}`).join('\n');
+            paragraphs.push({
+              index: paragraphIndex++,
+              text: combinedList,
+            });
+            blocks.push({
+              type: 'list',
+              items: listItems,
+              text: combinedList,
+            });
+          } else if (textContent) {
+            paragraphs.push({
+              index: paragraphIndex++,
+              text: textContent,
+            });
+            blocks.push({
+              type: 'paragraph',
+              text: textContent,
+            });
+          }
+        } else if (tagName === 'p' || tagName === 'blockquote' || tagName === 'div') {
           if (textContent) {
             paragraphs.push({
               index: paragraphIndex++,
@@ -84,7 +111,7 @@ export class DOCXParser extends BaseParser {
       } else if (html) {
         // Fallback if mammoth HTML has no top-level body wrapper
         $('*').each((_, el) => {
-          if (['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table'].includes(el.tagName?.toLowerCase())) {
+          if (['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'ul', 'ol'].includes(el.tagName?.toLowerCase())) {
             processElement(el);
           }
         });
@@ -99,7 +126,27 @@ export class DOCXParser extends BaseParser {
         });
       }
 
-      const combinedText = rawText || paragraphs.map((p) => p.text).join('\n\n');
+      // 4. Construct complete, normalized document text from blocks in reading order
+      const structuredLines = [];
+      for (const block of blocks) {
+        if (block.type === 'heading') {
+          structuredLines.push(block.text);
+        } else if (block.type === 'paragraph' || block.type === 'list') {
+          structuredLines.push(block.text);
+        } else if (block.type === 'table') {
+          const formattedTable = this._formatTableAsText(block);
+          if (formattedTable) {
+            structuredLines.push(formattedTable);
+          }
+        }
+      }
+
+      let combinedText = structuredLines.join('\n\n').trim();
+
+      // If structured text is empty or missing content, fall back to raw text
+      if (!combinedText) {
+        combinedText = rawText || paragraphs.map((p) => p.text).join('\n\n');
+      }
 
       if (!combinedText && paragraphs.length === 0 && tables.length === 0) {
         const error = new Error('The document does not contain readable content.');
@@ -123,6 +170,64 @@ export class DOCXParser extends BaseParser {
       error.status = 400;
       throw error;
     }
+  }
+
+  /**
+   * Helper: Normalize table content into readable key-value text preserving all columns.
+   */
+  _formatTableAsText(table) {
+    if (!table) return '';
+    const lines = [];
+    const headers = table.headers || [];
+    const rows = table.rows || [];
+
+    // Check if 2-column key-value table
+    const isTwoCol = (headers.length === 2 && rows.every((r) => r.length <= 2)) ||
+                     (headers.length === 0 && rows.length > 0 && rows.every((r) => r.length === 2));
+
+    if (isTwoCol) {
+      const isGenericHeader = headers.length === 2 &&
+        /^(field|attribute|property|key|name|item|column)\b/i.test(headers[0]) &&
+        /^(value|data|content|val|details)\b/i.test(headers[1]);
+
+      if (!isGenericHeader && headers.length === 2 && headers[0] && headers[1]) {
+        lines.push(`${headers[0]}: ${headers[1]}`);
+      }
+
+      for (const row of rows) {
+        const k = (row[0] || '').trim();
+        const v = (row[1] || '').trim();
+        if (k && v) {
+          lines.push(`${k}: ${v}`);
+        } else if (k) {
+          lines.push(k);
+        } else if (v) {
+          lines.push(v);
+        }
+      }
+    } else {
+      // Multi-column table: include headers and key-value mapping per row
+      if (headers.length > 0 && headers.some((h) => Boolean(h))) {
+        lines.push(headers.join(' | '));
+      }
+      for (const row of rows) {
+        if (headers.length > 0 && headers.length === row.length) {
+          const pairs = row
+            .map((val, idx) => {
+              const h = (headers[idx] || '').trim();
+              const v = (val || '').trim();
+              if (h && v) return `${h}: ${v}`;
+              return v;
+            })
+            .filter(Boolean);
+          lines.push(pairs.join(', '));
+        } else {
+          lines.push(row.filter(Boolean).join(' | '));
+        }
+      }
+    }
+
+    return lines.join('\n');
   }
 
   /**
