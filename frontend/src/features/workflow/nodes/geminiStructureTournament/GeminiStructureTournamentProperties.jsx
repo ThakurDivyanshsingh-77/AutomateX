@@ -43,20 +43,41 @@ Never use default values.
 Never infer missing values.
 Never substitute values from previous runs.
 Never use values from another document.
+Never output field names like "title", "game", "mode", "date", "time", "map", "bannerImage", "description" as placeholder values.
 
-If a field does not exist in the document, return null.
+If a field is missing from the document:
+- Return an empty string "" for missing string fields.
+- Return 0 for missing numeric fields.
+- For winnerCount, return "3" if winner count is 3 or unspecified.
 
-Return exactly one tournament object unless the document explicitly contains multiple tournaments.
+Return exactly ONE JSON object adhering strictly to this schema:
+{
+  "title": "",
+  "game": "",
+  "mode": "",
+  "entryFee": 0,
+  "prizePool": "",
+  "winnerCount": "3",
+  "firstPrize": 0,
+  "secondPrize": 0,
+  "thirdPrize": 0,
+  "slots": 0,
+  "date": "",
+  "time": "",
+  "map": "",
+  "roomID": "",
+  "password": "",
+  "bannerImage": "",
+  "description": ""
+}
 
-Preserve the original meaning and values from the source document.
-
-Numeric currency fields must be returned as numbers without currency symbols or commas.
-
-Date must be returned as YYYY-MM-DD when the source provides a valid date.
-
-Time must be returned as HH:mm when possible.
-
-Return valid JSON only.`;
+Data type rules:
+- entryFee, firstPrize, secondPrize, thirdPrize, slots must be numbers (without currency symbols or commas).
+- winnerCount must be a string: "1", "2", or "3".
+- prizePool must be a string preserving the formatted value (e.g. "₹10,000" or "$10,000").
+- date must be formatted as YYYY-MM-DD if available.
+- time must be formatted as HH:mm if available.
+- Return valid JSON only.`;
 
   const handleChange = (key, value) => {
     const nextConfig = { ...config, [key]: value };
@@ -109,19 +130,21 @@ Description: Official AutomateX test tournament for competitive Valorant teams.`
       if (!res.ok) {
         // Fallback local deterministic parser for client-side testing
         const sampleResult = {
-          title: 'AutomateX Test Tournament',
+          title: 'Apex Championship',
           game: 'Valorant',
           mode: 'SQUAD',
-          prizePool: 10000,
           entryFee: 0,
-          slots: 64,
-          winnerCount: 3,
+          prizePool: '₹10,000',
+          winnerCount: '3',
           firstPrize: 5000,
           secondPrize: 3000,
           thirdPrize: 2000,
+          slots: 64,
           date: '2026-08-20',
           time: '18:00',
           map: 'Haven',
+          roomID: '',
+          password: '',
           bannerImage: 'https://example.com/automatex-test-banner.jpg',
           description: 'Official AutomateX test tournament for competitive Valorant teams.',
         };

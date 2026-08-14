@@ -20,33 +20,62 @@ function setDeepValue(obj, path, value) {
 }
 
 /**
- * Normalize and cast field values according to tournament attributes
+ * Normalize and cast field values according to tournament attributes.
+ * Prevents literal placeholder leakage (e.g. "title", "game", "mode").
  */
 function normalizeTournamentFieldValue(key, val) {
-  if (val === undefined || val === null) return val;
-  const lower = key.toLowerCase();
+  const targetKey = String(key || '').trim();
+  const lower = targetKey.toLowerCase();
+
+  // If val is literal placeholder matching key name, treat as missing
+  if (typeof val === 'string' && val.toLowerCase().trim() === lower) {
+    val = undefined;
+  }
+
+  // Handle missing values according to data type rules
+  if (val === undefined || val === null) {
+    if (['entryFee', 'firstPrize', 'secondPrize', 'thirdPrize', 'slots'].includes(targetKey) || lower.endsWith('.first') || lower.endsWith('.second') || lower.endsWith('.third')) {
+      return 0;
+    }
+    if (targetKey === 'winnerCount') {
+      return '3';
+    }
+    return '';
+  }
+
+  if (targetKey === 'winnerCount') {
+    const s = String(val).replace(/[^123]/g, '');
+    if (s === '1' || s === '2' || s === '3') return s;
+    return '3';
+  }
+
+  if (targetKey === 'prizePool') {
+    if (typeof val === 'number') {
+      return `₹${val.toLocaleString()}`;
+    }
+    return String(val).trim();
+  }
 
   if (
-    lower.includes('prizepool') ||
-    lower.includes('entryfee') ||
-    lower.includes('slots') ||
-    lower.includes('winnercount') ||
-    lower.includes('firstprize') ||
-    lower.includes('secondprize') ||
-    lower.includes('thirdprize') ||
+    targetKey === 'entryFee' ||
+    targetKey === 'firstPrize' ||
+    targetKey === 'secondPrize' ||
+    targetKey === 'thirdPrize' ||
+    targetKey === 'slots' ||
     lower.endsWith('.first') ||
     lower.endsWith('.second') ||
     lower.endsWith('.third')
   ) {
-    if (typeof val === 'number') return val;
+    if (typeof val === 'number') return Number.isNaN(val) ? 0 : val;
     if (typeof val === 'string') {
       const cleaned = val.replace(/[^0-9.-]+/g, '');
       const num = Number(cleaned);
       return Number.isNaN(num) ? 0 : num;
     }
+    return 0;
   }
 
-  return val;
+  return String(val).trim();
 }
 
 export class WebsiteCreateTournamentExecutor extends BaseExecutor {
@@ -83,41 +112,77 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     }
 
     // 3. Resolve Endpoint & Method
-    const rawEndpoint = config.endpoint || config.endpointPath || '/api/v1/tournaments';
+    const rawEndpoint = config.endpoint || config.endpointPath || '/tournaments';
     const resolvedEndpoint = this.interpolate(rawEndpoint, context);
     const method = (config.method || 'POST').toUpperCase();
 
     // 4. Resolve Tournaments Source
-    let rawTournaments = config.tournaments || config.tournament || config.items || config.currentTournament || config.tournamentSource || [];
-    if (typeof rawTournaments === 'string') {
-      try {
-        const resolved = this.interpolate(rawTournaments, context);
-        rawTournaments = typeof resolved === 'string' ? JSON.parse(resolved) : resolved;
-      } catch {
-        rawTournaments = this.interpolate(rawTournaments, context);
+    let rawTournaments = config.tournaments || config.tournament || config.items || config.currentTournament || config.tournamentSource || '';
+    
+    let resolvedData = null;
+    if (typeof rawTournaments === 'string' && rawTournaments.trim()) {
+      if (rawTournaments.includes('{{')) {
+        try {
+          const resolved = ExpressionEngine.resolve(rawTournaments, context);
+          resolvedData = typeof resolved === 'string' ? JSON.parse(resolved) : resolved;
+        } catch {
+          resolvedData = ExpressionEngine.resolve(rawTournaments, context);
+        }
+      } else {
+        try {
+          resolvedData = JSON.parse(rawTournaments);
+        } catch {
+          resolvedData = rawTournaments;
+        }
+      }
+    } else if (rawTournaments && typeof rawTournaments === 'object') {
+      resolvedData = rawTournaments;
+    }
+
+    // Auto-discover tournament data from previous Gemini Structure Tournament step if not explicitly provided or if unresolved
+    if (!resolvedData || (typeof resolvedData === 'object' && Object.keys(resolvedData).length === 0)) {
+      if (context.steps) {
+        for (const [stepKey, stepVal] of Object.entries(context.steps)) {
+          if (!stepVal) continue;
+          if (stepVal.tournament && typeof stepVal.tournament === 'object' && Object.keys(stepVal.tournament).length > 0) {
+            resolvedData = stepVal.tournament;
+            break;
+          }
+          if (stepVal.currentTournament && typeof stepVal.currentTournament === 'object') {
+            resolvedData = stepVal.currentTournament;
+            break;
+          }
+          if (Array.isArray(stepVal.tournaments) && stepVal.tournaments.length > 0) {
+            resolvedData = stepVal.tournaments;
+            break;
+          }
+          if (stepVal.title && stepVal.game) {
+            resolvedData = stepVal;
+            break;
+          }
+        }
+      }
+
+      if (!resolvedData && context.currentData) {
+        if (context.currentData.tournament) resolvedData = context.currentData.tournament;
+        else if (context.currentData.currentTournament) resolvedData = context.currentData.currentTournament;
+        else if (Array.isArray(context.currentData.tournaments)) resolvedData = context.currentData.tournaments;
+        else if (context.currentData.title && context.currentData.game) resolvedData = context.currentData;
+      }
+
+      if (!resolvedData && context.variables) {
+        if (context.variables.currentTournament) resolvedData = context.variables.currentTournament;
+        else if (context.variables.tournament) resolvedData = context.variables.tournament;
+        else if (context.variables.currentItem) resolvedData = context.variables.currentItem;
       }
     }
 
     // Normalize single item or object to array
-    let tournamentList = Array.isArray(rawTournaments)
-      ? rawTournaments
-      : rawTournaments && typeof rawTournaments === 'object'
-      ? [rawTournaments]
+    let tournamentList = Array.isArray(resolvedData)
+      ? resolvedData
+      : resolvedData && typeof resolvedData === 'object'
+      ? [resolvedData]
       : [];
-
-    // Fallback check: look in context variables
-    if (tournamentList.length === 0 && context.variables?.currentTournament) {
-      tournamentList = [context.variables.currentTournament];
-    } else if (tournamentList.length === 0 && context.variables?.currentItem) {
-      tournamentList = [context.variables.currentItem];
-    } else if (tournamentList.length === 0 && context.currentData?.currentTournament) {
-      tournamentList = [context.currentData.currentTournament];
-    } else if (tournamentList.length === 0 && context.currentData?.tournament) {
-      tournamentList = [context.currentData.tournament];
-    } else if (tournamentList.length === 0 && context.currentData?.tournaments) {
-      const td = context.currentData.tournaments;
-      tournamentList = Array.isArray(td) ? td : [td];
-    }
 
     if (tournamentList.length === 0) {
       tournamentList = [{}];
@@ -128,16 +193,18 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       { sourceKey: 'title', targetKey: 'title' },
       { sourceKey: 'game', targetKey: 'game' },
       { sourceKey: 'mode', targetKey: 'mode' },
-      { sourceKey: 'prizePool', targetKey: 'prizePool' },
       { sourceKey: 'entryFee', targetKey: 'entryFee' },
-      { sourceKey: 'slots', targetKey: 'slots' },
+      { sourceKey: 'prizePool', targetKey: 'prizePool' },
       { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
       { sourceKey: 'firstPrize', targetKey: 'firstPrize' },
       { sourceKey: 'secondPrize', targetKey: 'secondPrize' },
       { sourceKey: 'thirdPrize', targetKey: 'thirdPrize' },
+      { sourceKey: 'slots', targetKey: 'slots' },
       { sourceKey: 'date', targetKey: 'date' },
       { sourceKey: 'time', targetKey: 'time' },
       { sourceKey: 'map', targetKey: 'map' },
+      { sourceKey: 'roomID', targetKey: 'roomID' },
+      { sourceKey: 'password', targetKey: 'password' },
       { sourceKey: 'bannerImage', targetKey: 'bannerImage' },
       { sourceKey: 'description', targetKey: 'description' },
     ];
@@ -158,36 +225,36 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
     const results = [];
     const createdTournaments = [];
+    const executionDedupeCache = new Set();
+
     let createdCount = 0;
+    let wouldCreateCount = 0;
     let failedCount = 0;
     let skippedCount = 0;
-    let wouldCreateCount = 0;
     let lastErrorDetails = null;
-    const executionDedupeCache = new Set();
 
     for (let i = 0; i < tournamentList.length; i++) {
       const rawItem = tournamentList[i];
       const itemStartTime = Date.now();
 
-      // Rate limit delay between dispatches
+      // Apply rate limiting delay if configured
       if (i > 0 && rateLimitMs > 0) {
-        await new Promise((r) => setTimeout(r, rateLimitMs));
+        await new Promise((resolve) => setTimeout(resolve, rateLimitMs));
       }
 
       // Build payload from field mapping
       const payload = this.buildTournamentPayload(rawItem, fieldMapping, context, i);
-
-      // Strict Pre-validation of required fields
-      const validationError = this.validateTournamentPayload(payload);
-      const tournamentTitle = payload.title || payload.name || `Tournament #${i + 1}`;
+      const tournamentTitle = payload.title || `Tournament #${i + 1}`;
 
       console.log(`${i + 1}. ${tournamentTitle}`);
 
+      // Pre-Validation: Stop if any required field is missing or invalid
+      const validationError = this.validateTournamentPayload(payload);
       if (validationError) {
         console.error(`   ✕ Validation Failed: ${validationError}`);
         const errObj = {
           status: 400,
-          message: `Tournament creation stopped because ${validationError}.`,
+          message: `Pre-validation error: ${validationError}`,
         };
         lastErrorDetails = errObj;
         results.push({
@@ -195,6 +262,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
           title: tournamentTitle,
           status: 'failed',
           error: errObj,
+          payload,
           durationMs: Date.now() - itemStartTime,
         });
         failedCount++;
@@ -262,7 +330,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
           index: i,
           title: tournamentTitle,
           status: 'created',
-          tournamentId: responseData?.tournamentId || responseData?._id || responseData?.id || `tourn_${Date.now()}`,
+          tournamentId: responseData?.tournamentId || responseData?._id || responseData?.id || responseData?.data?.id || `tourn_${Date.now()}`,
           response: responseData,
           payload,
           durationMs: itemDuration,
@@ -336,6 +404,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       dryRun: false,
       created: createdCount,
       failed: failedCount,
+      httpStatus: 201,
       response: results[0]?.response || null,
       tournamentId: results[0]?.tournamentId || null,
       tournament: createdTournaments[0] || null,
@@ -346,8 +415,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
   }
 
   /**
-   * Constructs the final JSON request body dynamically from field mappings.
-   * Supports dot-notation keys (e.g. "prizeBreakdown.first", "bannerImage")
+   * Evaluates mapping configuration against raw source item.
    */
   buildTournamentPayload(sourceItem, fieldMapping, context, index) {
     const payload = {};
@@ -372,13 +440,12 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
         if (rawSource.startsWith('{{') && rawSource.endsWith('}}')) {
           val = ExpressionEngine.resolve(rawSource, evalContext);
-        } else if (rawSource in sourceItem) {
+        } else if (sourceItem && rawSource in sourceItem) {
           val = sourceItem[rawSource];
+        } else if (sourceItem && targetKey in sourceItem) {
+          val = sourceItem[targetKey];
         } else if (rawSource) {
           val = this.getDeepValue(sourceItem, rawSource);
-          if (val === undefined) {
-            val = ExpressionEngine.resolve(rawSource, evalContext);
-          }
         }
 
         const normalizedVal = normalizeTournamentFieldValue(targetKey, val);
@@ -392,7 +459,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
         let val = undefined;
         if (sourceKey.startsWith('{{') && sourceKey.endsWith('}}')) {
           val = ExpressionEngine.resolve(sourceKey, evalContext);
-        } else if (sourceKey in sourceItem) {
+        } else if (sourceItem && sourceKey in sourceItem) {
           val = sourceItem[sourceKey];
         } else {
           val = this.getDeepValue(sourceItem, sourceKey);
@@ -416,17 +483,21 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
         if (first > 0 || second > 0 || third > 0) {
           payload.prizeBreakdown = { first, second, third };
         } else if (payload.prizePool) {
-          const pool = Number(payload.prizePool) || 0;
-          payload.prizeBreakdown = {
-            first: Math.round(pool * 0.5),
-            second: Math.round(pool * 0.3),
-            third: Math.round(pool * 0.2),
-          };
+          const poolNum = typeof payload.prizePool === 'number'
+            ? payload.prizePool
+            : Number(String(payload.prizePool).replace(/[^0-9.-]+/g, '')) || 0;
+          if (poolNum > 0) {
+            payload.prizeBreakdown = {
+              first: Math.round(poolNum * 0.5),
+              second: Math.round(poolNum * 0.3),
+              third: Math.round(poolNum * 0.2),
+            };
+          }
         }
       }
     }
 
-    // Merge any direct root properties on sourceItem
+    // Merge any direct root properties on sourceItem that are not yet set
     if (sourceItem && typeof sourceItem === 'object') {
       for (const [k, v] of Object.entries(sourceItem)) {
         if (payload[k] === undefined && v !== undefined && v !== null) {
@@ -443,19 +514,29 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     const parts = path.split('.');
     let current = obj;
     for (const part of parts) {
-      if (current === null || current === undefined || typeof current !== 'object') return undefined;
+      if (current === undefined || current === null || typeof current !== 'object') {
+        return undefined;
+      }
       current = current[part];
     }
     return current;
   }
 
   /**
-   * Validates required tournament payload attributes
+   * Validates required tournament payload attributes.
    * Required: title, game, mode, prizePool, entryFee, slots, date, time, map
    */
   validateTournamentPayload(payload) {
     if (!payload || typeof payload !== 'object') {
       return 'payload is empty';
+    }
+
+    // Check placeholder values
+    const placeholders = ['title', 'game', 'mode', 'date', 'time', 'map', 'bannerimage', 'description'];
+    for (const ph of placeholders) {
+      if (typeof payload[ph] === 'string' && payload[ph].toLowerCase().trim() === ph) {
+        return `field '${ph}' contains literal placeholder value "${payload[ph]}" instead of extracted document content`;
+      }
     }
 
     if (!payload.title && !payload.name) {
@@ -467,14 +548,14 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     if (!payload.mode) {
       return "required field 'mode' is missing";
     }
-    if (payload.prizePool === undefined || payload.prizePool === null || typeof payload.prizePool !== 'number' || Number.isNaN(payload.prizePool)) {
-      return "required field 'prizePool' must be a valid number";
+    if (payload.prizePool === undefined || payload.prizePool === null || String(payload.prizePool).trim() === '') {
+      return "required field 'prizePool' is missing";
     }
     if (payload.entryFee === undefined || payload.entryFee === null || typeof payload.entryFee !== 'number' || Number.isNaN(payload.entryFee)) {
       return "required field 'entryFee' must be a valid number";
     }
-    if (payload.slots === undefined || payload.slots === null || typeof payload.slots !== 'number' || Number.isNaN(payload.slots)) {
-      return "required field 'slots' must be a valid number";
+    if (payload.slots === undefined || payload.slots === null || typeof payload.slots !== 'number' || Number.isNaN(payload.slots) || payload.slots <= 0) {
+      return "required field 'slots' must be a valid positive number";
     }
     if (!payload.date) {
       return "required field 'date' is missing";
@@ -490,13 +571,38 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
   }
 
   /**
+   * Constructs the target URL handling URL deduplication
+   */
+  buildTargetUrl(baseUrl, endpoint) {
+    const cleanBase = String(baseUrl || '').replace(/\/+$/, '');
+    let cleanEndpoint = String(endpoint || '').trim();
+    if (cleanEndpoint.toUpperCase().startsWith('POST ')) {
+      cleanEndpoint = cleanEndpoint.substring(5).trim();
+    }
+    if (!cleanEndpoint.startsWith('/')) {
+      cleanEndpoint = `/${cleanEndpoint}`;
+    }
+
+    // Deduplicate /api/v1 if cleanBase ends with /api/v1 and cleanEndpoint starts with /api/v1
+    if (cleanBase.endsWith('/api/v1') && cleanEndpoint.startsWith('/api/v1/')) {
+      cleanEndpoint = cleanEndpoint.replace(/^\/api\/v1/, '');
+    } else if (cleanBase.endsWith('/api') && cleanEndpoint.startsWith('/api/')) {
+      cleanEndpoint = cleanEndpoint.replace(/^\/api/, '');
+    }
+
+    if (!cleanEndpoint.startsWith('/')) {
+      cleanEndpoint = `/${cleanEndpoint}`;
+    }
+
+    return `${cleanBase}${cleanEndpoint}`;
+  }
+
+  /**
    * Dispatches tournament creation HTTP request with 3x exponential backoff retries
    */
   async dispatchTournamentCreationWithRetry(connection, endpoint, method, payload, maxRetries = 3) {
     const baseUrl = connection.apiBaseUrl || connection.websiteUrl;
-    const cleanBase = baseUrl.replace(/\/+$/, '');
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const targetUrl = `${cleanBase}${cleanEndpoint}`;
+    const targetUrl = this.buildTargetUrl(baseUrl, endpoint);
 
     const headers = {
       'Content-Type': 'application/json',
@@ -546,7 +652,10 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
         // Handle specific API status codes
         if (response.status === 400) {
-          throw new Error(`HTTP 400 (Validation Error): ${data.message || data.error || text}`);
+          const detailMsg = data.errors
+            ? JSON.stringify(data.errors)
+            : (data.message || data.error || text);
+          throw new Error(`HTTP 400 (Validation Error): ${detailMsg}`);
         } else if (response.status === 401) {
           throw new Error(`HTTP 401 (Unauthorized): Invalid credentials for connected website.`);
         } else if (response.status === 403) {

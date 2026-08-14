@@ -29,7 +29,7 @@ export class GeminiProvider extends AIProvider {
     const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`;
 
     try {
-      const res = await fetch(modelsUrl);
+      const res = await fetch(modelsUrl, { signal: AbortSignal.timeout(3000) });
       if (!res.ok) {
         console.warn(`[Gemini] ⚠️ Could not query models.list (HTTP ${res.status})`);
         return { isAvailable: false, supportsGenContent: false, availableModels: [] };

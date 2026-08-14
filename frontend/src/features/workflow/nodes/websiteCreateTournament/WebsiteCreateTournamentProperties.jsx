@@ -21,16 +21,18 @@ const DEFAULT_MAPPINGS = [
   { sourceKey: 'title', targetKey: 'title' },
   { sourceKey: 'game', targetKey: 'game' },
   { sourceKey: 'mode', targetKey: 'mode' },
-  { sourceKey: 'prizePool', targetKey: 'prizePool' },
   { sourceKey: 'entryFee', targetKey: 'entryFee' },
-  { sourceKey: 'slots', targetKey: 'slots' },
+  { sourceKey: 'prizePool', targetKey: 'prizePool' },
   { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
   { sourceKey: 'firstPrize', targetKey: 'firstPrize' },
   { sourceKey: 'secondPrize', targetKey: 'secondPrize' },
   { sourceKey: 'thirdPrize', targetKey: 'thirdPrize' },
+  { sourceKey: 'slots', targetKey: 'slots' },
   { sourceKey: 'date', targetKey: 'date' },
   { sourceKey: 'time', targetKey: 'time' },
   { sourceKey: 'map', targetKey: 'map' },
+  { sourceKey: 'roomID', targetKey: 'roomID' },
+  { sourceKey: 'password', targetKey: 'password' },
   { sourceKey: 'bannerImage', targetKey: 'bannerImage' },
   { sourceKey: 'description', targetKey: 'description' },
 ];
@@ -44,8 +46,8 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
 
   // Form states
   const connectionId = config.connectionId || '';
-  const tournamentSource = config.tournamentSource || '{{steps["For Each Tournament"].currentTournament}}';
-  const endpoint = config.endpoint || '/api/v1/tournaments';
+  const tournamentSource = config.tournamentSource || '{{steps["Gemini → Structure Tournament"].tournament}}';
+  const endpoint = config.endpoint || '/tournaments';
   const method = config.method || 'POST';
   const dryRun = Boolean(config.dryRun);
   const duplicateStrategy = config.duplicateStrategy || 'skip';
@@ -112,33 +114,36 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
     handleChange('fieldMapping', DEFAULT_MAPPINGS);
   };
 
-  // Dynamic Request Preview Generator
+  // Dynamic Request Preview Generator with REAL sample tournament values
   const requestPreviewJson = useMemo(() => {
     const preview = {};
     const sampleValues = {
-      title: 'AutomateX Test Tournament',
+      title: 'Apex Championship',
       game: 'Valorant',
       mode: 'SQUAD',
-      prizePool: 10000,
       entryFee: 0,
-      slots: 64,
-      winnerCount: 3,
+      prizePool: '₹10,000',
+      winnerCount: '3',
       firstPrize: 5000,
       secondPrize: 3000,
       thirdPrize: 2000,
-      'prizeBreakdown.first': 5000,
-      'prizeBreakdown.second': 3000,
-      'prizeBreakdown.third': 2000,
+      slots: 64,
       date: '2026-08-20',
       time: '18:00',
       map: 'Haven',
-      bannerImage: 'https://example.com/automatex-test-banner.jpg',
+      roomID: '',
+      password: '',
+      bannerImage: '',
       description: 'Official AutomateX test tournament for competitive Valorant teams.',
     };
 
     fieldMapping.forEach(({ sourceKey, targetKey }) => {
       if (!targetKey) return;
-      let val = sampleValues[sourceKey] || sampleValues[targetKey] || (sourceKey.startsWith('{{') ? sourceKey : `[Value: ${sourceKey}]`);
+      let val = sampleValues[sourceKey] !== undefined
+        ? sampleValues[sourceKey]
+        : sampleValues[targetKey] !== undefined
+        ? sampleValues[targetKey]
+        : (sourceKey.startsWith('{{') ? sourceKey : '');
       
       // Handle nested dot notation
       const parts = targetKey.split('.');
@@ -210,7 +215,7 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
           <span>Apex Esports REST Tournament Creator</span>
         </div>
         <p className="text-[11px] text-slate-400 leading-relaxed">
-          Create tournaments on connected websites with full schema mapping, nested prize pools, rate limiting, and zero token re-entry.
+          Create tournaments directly from extracted Word documents via Apex Esports REST API (<code>POST /tournaments</code>).
         </p>
       </div>
 
@@ -254,11 +259,11 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
           type="text"
           value={tournamentSource}
           onChange={(e) => handleChange('tournamentSource', e.target.value)}
-          placeholder='{{steps["For Each Tournament"].currentItem}}'
+          placeholder='{{steps["Gemini → Structure Tournament"].tournament}}'
           className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-100 focus:outline-none focus:border-violet-500"
         />
         <p className="text-[10px] text-slate-400">
-          Source tournament object or array passed into field mapping engine.
+          Structured tournament object from <code>Gemini → Structure Tournament</code>.
         </p>
       </div>
 
@@ -282,7 +287,7 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
             type="text"
             value={endpoint}
             onChange={(e) => handleChange('endpoint', e.target.value)}
-            placeholder="/api/v1/tournaments"
+            placeholder="/tournaments"
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-100"
           />
         </div>
@@ -298,68 +303,69 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
             </span>
             <p className="text-[10px] text-slate-400">Map tournament source properties or expressions to API payload keys.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleResetDefaultMappings}
-              title="Reset to default Apex fields"
-              className="px-2 py-1 text-[10px] font-medium text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 rounded border border-slate-700 transition"
-            >
-              Reset
-            </button>
+          <button
+            type="button"
+            onClick={handleResetDefaultMappings}
+            className="text-[10px] text-violet-400 hover:text-violet-300 flex items-center gap-1"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Reset Defaults
+          </button>
+        </div>
+
+        <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-950/40">
+          <div className="grid grid-cols-12 gap-1 p-2 bg-slate-900/80 border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <div className="col-span-5">Source Property / Expression</div>
+            <div className="col-span-1 text-center">→</div>
+            <div className="col-span-5">API Key (Target)</div>
+            <div className="col-span-1 text-center"></div>
+          </div>
+
+          <div className="divide-y divide-slate-850 max-h-56 overflow-y-auto">
+            {fieldMapping.map((row, idx) => (
+              <div key={idx} className="grid grid-cols-12 gap-1 p-1.5 items-center hover:bg-slate-900/30">
+                <div className="col-span-5">
+                  <input
+                    type="text"
+                    value={row.sourceKey}
+                    onChange={(e) => handleMappingChange(idx, 'sourceKey', e.target.value)}
+                    placeholder="sourceKey or {{expression}}"
+                    className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[11px] font-mono text-slate-200"
+                  />
+                </div>
+                <div className="col-span-1 text-center text-slate-500 text-[11px]">→</div>
+                <div className="col-span-5">
+                  <input
+                    type="text"
+                    value={row.targetKey}
+                    onChange={(e) => handleMappingChange(idx, 'targetKey', e.target.value)}
+                    placeholder="target_json_key"
+                    className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-[11px] font-mono text-violet-300"
+                  />
+                </div>
+                <div className="col-span-1 text-center">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMappingRow(idx)}
+                    className="p-1 text-slate-500 hover:text-rose-400 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-2 bg-slate-900/40 border-t border-slate-800">
             <button
               type="button"
               onClick={handleAddMappingRow}
-              className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium text-violet-300 bg-violet-950/40 hover:bg-violet-900/60 border border-violet-800/50 rounded-md transition"
+              className="w-full py-1.5 border border-dashed border-slate-700 hover:border-violet-500 rounded text-[11px] text-slate-400 hover:text-violet-300 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Plus className="w-3 h-3" />
-              Add Field
+              Add Custom Mapping Field
             </button>
           </div>
-        </div>
-
-        {/* Table rows */}
-        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-          <div className="grid grid-cols-12 gap-2 px-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            <div className="col-span-5">Source Key / Expression</div>
-            <div className="col-span-1 text-center">→</div>
-            <div className="col-span-5">Target API Key</div>
-            <div className="col-span-1"></div>
-          </div>
-
-          {fieldMapping.map((row, idx) => (
-            <div key={idx} className="grid grid-cols-12 gap-2 items-center bg-slate-900/80 p-1.5 rounded-lg border border-slate-800 group hover:border-slate-700 transition">
-              <div className="col-span-5">
-                <input
-                  type="text"
-                  value={row.sourceKey}
-                  onChange={(e) => handleMappingChange(idx, 'sourceKey', e.target.value)}
-                  placeholder="source property"
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded px-2 py-1 text-[11px] font-mono text-slate-200 focus:outline-none focus:border-violet-500"
-                />
-              </div>
-              <div className="col-span-1 text-center text-slate-500 text-xs">→</div>
-              <div className="col-span-5">
-                <input
-                  type="text"
-                  value={row.targetKey}
-                  onChange={(e) => handleMappingChange(idx, 'targetKey', e.target.value)}
-                  placeholder="target key (e.g. prizeBreakdown.first)"
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded px-2 py-1 text-[11px] font-mono text-violet-300 focus:outline-none focus:border-violet-500"
-                />
-              </div>
-              <div className="col-span-1 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => handleRemoveMappingRow(idx)}
-                  className="p-1 text-slate-500 hover:text-rose-400 transition"
-                  title="Remove field"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -367,105 +373,104 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
       <div className="space-y-2 pt-2 border-t border-slate-800">
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-            <Eye className="w-3.5 h-3.5 text-violet-400" />
-            Request Preview
+            <Code className="w-3.5 h-3.5 text-violet-400" />
+            Live Request Body Preview (REAL Values)
           </label>
-          <span className="text-[10px] text-slate-400">Dynamic Payload Output</span>
+          <span className="text-[10px] text-emerald-400 font-medium">Zero Placeholders</span>
         </div>
-        <div className="relative">
-          <pre className="p-3 bg-slate-950 border border-slate-800 rounded-lg text-[11px] font-mono text-emerald-400 overflow-x-auto max-h-[160px] leading-relaxed">
-            {requestPreviewJson}
-          </pre>
-        </div>
+        <pre className="p-3 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-mono text-violet-300 overflow-x-auto max-h-48 leading-relaxed">
+          {requestPreviewJson}
+        </pre>
       </div>
 
-      {/* Execution Options & Duplicate Strategy */}
+      {/* Execution Controls: Dry Run & Duplicate Strategy */}
       <div className="space-y-3 pt-2 border-t border-slate-800">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-slate-200">Duplicate Strategy</label>
-            <select
-              value={duplicateStrategy}
-              onChange={(e) => handleChange('duplicateStrategy', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100"
-            >
-              <option value="skip">Skip Duplicate</option>
-              <option value="update">Update Existing</option>
-              <option value="create">Create Anyway</option>
-              <option value="stop">Stop Workflow</option>
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-slate-200 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-slate-400" />
-              Delay (ms)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="5000"
-              step="50"
-              value={rateLimitMs}
-              onChange={(e) => handleChange('rateLimitMs', Number(e.target.value))}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-100"
-            />
-          </div>
-        </div>
-
-        {/* Dry Run Toggle */}
-        <label className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-slate-900/60 border border-slate-800">
           <div className="space-y-0.5">
-            <div className="text-xs font-semibold text-slate-200">Dry Run Mode</div>
-            <div className="text-[10px] text-slate-400">Validate payload without sending real HTTP requests.</div>
+            <span className="text-xs font-medium text-slate-200">Dry Run Mode</span>
+            <p className="text-[10px] text-slate-400">Validate payload without sending real HTTP requests</p>
           </div>
           <input
             type="checkbox"
             checked={dryRun}
             onChange={(e) => handleChange('dryRun', e.target.checked)}
-            className="w-4 h-4 rounded text-violet-500 bg-slate-950 border-slate-700 focus:ring-violet-500"
+            className="w-4 h-4 rounded text-violet-600 bg-slate-800 border-slate-700 focus:ring-violet-500 cursor-pointer"
           />
-        </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold text-slate-200">Duplicate Strategy</label>
+            <select
+              value={duplicateStrategy}
+              onChange={(e) => handleChange('duplicateStrategy', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
+            >
+              <option value="skip">Skip Duplicate</option>
+              <option value="create">Allow (Create Anyway)</option>
+              <option value="stop">Stop Workflow on Duplicate</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold text-slate-200">Delay Between Items</label>
+            <select
+              value={rateLimitMs}
+              onChange={(e) => handleChange('rateLimitMs', Number(e.target.value))}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
+            >
+              <option value="0">None (0ms)</option>
+              <option value="500">500ms</option>
+              <option value="1000">1000ms (1s)</option>
+              <option value="2000">2000ms (2s)</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Test Tournament Creation Button & Diagnostic Feedback */}
-      <div className="pt-2 border-t border-slate-800 space-y-2">
+      {/* Test Creation Button and Feedback */}
+      <div className="space-y-2 pt-2 border-t border-slate-800">
         <button
           type="button"
-          onClick={handleTestCreation}
           disabled={testStatus === 'testing'}
-          className="w-full py-2.5 px-4 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 disabled:opacity-50 text-white font-medium rounded-lg text-xs flex items-center justify-center gap-2 shadow-lg shadow-violet-600/20 transition-all"
+          onClick={handleTestCreation}
+          className="w-full py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-violet-950/40 transition-all disabled:opacity-60"
         >
           {testStatus === 'testing' ? (
             <>
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>Validating Connection & Payload...</span>
+              <span>Validating & Dispatching...</span>
             </>
           ) : (
             <>
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Test Tournament Creation</span>
+              <span>{dryRun ? 'Test Dry Run (No Request)' : 'Test Tournament Creation'}</span>
             </>
           )}
         </button>
 
-        {testResult && (
-          <div
-            className={`p-3 rounded-lg border text-xs space-y-1 ${
-              testStatus === 'success'
-                ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300'
-                : 'bg-rose-950/40 border-rose-800 text-rose-300'
-            }`}
-          >
-            <div className="flex items-center gap-1.5 font-medium">
-              {testStatus === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              ) : (
-                <AlertCircle className="w-4 h-4 text-rose-400" />
-              )}
-              <span>{testStatus === 'success' ? 'Validation Successful' : 'Validation Failed'}</span>
+        {testStatus === 'success' && (
+          <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-800/40 text-emerald-300 space-y-1 text-[11px]">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>{testResult?.dryRun ? 'Dry Run Passed — Payload Valid' : 'Tournament Created Successfully'}</span>
             </div>
-            <p className="text-[11px] leading-relaxed text-slate-300">{testResult.message}</p>
+            <p className="text-emerald-400/80">{testResult?.message}</p>
+            {testResult?.response && (
+              <pre className="mt-1.5 p-2 bg-black/40 rounded text-[10px] font-mono text-emerald-200 overflow-x-auto max-h-32">
+                {JSON.stringify(testResult.response, null, 2)}
+              </pre>
+            )}
+          </div>
+        )}
+
+        {testStatus === 'failed' && (
+          <div className="p-3 rounded-lg bg-rose-950/30 border border-rose-800/40 text-rose-300 space-y-1 text-[11px]">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <AlertCircle className="w-4 h-4 text-rose-400" />
+              <span>Tournament Creation Failed</span>
+            </div>
+            <p className="text-rose-400/90">{testResult?.message}</p>
           </div>
         )}
       </div>
