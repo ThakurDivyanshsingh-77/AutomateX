@@ -7,6 +7,8 @@ import { GeminiStructureProductsProperties } from '../../../features/workflow/no
 import { ForEachProductProperties } from '../../../features/workflow/nodes/forEachProduct/ForEachProductProperties';
 import { WebsiteCreateProductProperties } from '../../../features/workflow/nodes/websiteCreateProduct/WebsiteCreateProductProperties';
 import WebsiteCreateTournamentProperties from '../../../features/workflow/nodes/websiteCreateTournament/WebsiteCreateTournamentProperties';
+import GeminiStructureTournamentProperties from '../../../features/workflow/nodes/geminiStructureTournament/GeminiStructureTournamentProperties';
+import ForEachTournamentProperties from '../../../features/workflow/nodes/forEachTournament/ForEachTournamentProperties';
 
 export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClose }) => {
   if (!selectedNode) return null;
@@ -313,6 +315,34 @@ export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClos
             node={selectedNode}
             onUpdateNode={(updatedNode) => {
               onUpdateNode(selectedNode.id, updatedNode.data);
+            }}
+          />
+        )}
+
+        {(nodeType === 'geminiStructureTournament' || nodeType === 'GEMINI_STRUCTURE_TOURNAMENT' || nodeType === 'gemini_structure_tournament' || nodeType === 'structureTournament') && (
+          <GeminiStructureTournamentProperties
+            node={selectedNode}
+            nodeData={selectedNode.data}
+            onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
+            }}
+          />
+        )}
+
+        {(nodeType === 'forEachTournament' || nodeType === 'FOR_EACH_TOURNAMENT' || nodeType === 'for_each_tournament') && (
+          <ForEachTournamentProperties
+            node={selectedNode}
+            nodeData={selectedNode.data}
+            onUpdateNodeData={(id, data) => onUpdateNode(id, { ...selectedNode.data, ...data })}
+            onUpdateConfig={(nextConfig) => {
+              onUpdateNode(selectedNode.id, {
+                ...selectedNode.data,
+                config: nextConfig,
+              });
             }}
           />
         )}

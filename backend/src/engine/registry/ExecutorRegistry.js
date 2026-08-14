@@ -23,6 +23,8 @@ import { GeminiStructureProductsExecutor } from '../executors/GeminiStructurePro
 import { ForEachProductExecutor } from '../executors/ForEachProductExecutor.js';
 import { WebsiteCreateProductExecutor } from '../executors/WebsiteCreateProductExecutor.js';
 import { WebsiteCreateTournamentExecutor } from '../executors/WebsiteCreateTournamentExecutor.js';
+import { GeminiStructureTournamentExecutor } from '../executors/GeminiStructureTournamentExecutor.js';
+import { ForEachTournamentExecutor } from '../executors/ForEachTournamentExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -40,6 +42,8 @@ const geminiStructureProductsExecutor = new GeminiStructureProductsExecutor();
 const forEachProductExecutor = new ForEachProductExecutor();
 const websiteCreateProductExecutor = new WebsiteCreateProductExecutor();
 const websiteCreateTournamentExecutor = new WebsiteCreateTournamentExecutor();
+const geminiStructureTournamentExecutor = new GeminiStructureTournamentExecutor();
+const forEachTournamentExecutor = new ForEachTournamentExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -119,7 +123,14 @@ export class ExecutorRegistry {
     ['createProduct', websiteCreateProductExecutor],
     ['websiteCreateTournament', websiteCreateTournamentExecutor],
     ['website_create_tournament', websiteCreateTournamentExecutor],
-    ['createTournament', websiteCreateTournamentExecutor],    // Google Sheets Node Executors (Exact matching string registration)
+    ['createTournament', websiteCreateTournamentExecutor],
+    ['geminiStructureTournament', geminiStructureTournamentExecutor],
+    ['gemini_structure_tournament', geminiStructureTournamentExecutor],
+    ['structureTournament', geminiStructureTournamentExecutor],
+    ['forEachTournament', forEachTournamentExecutor],
+    ['for_each_tournament', forEachTournamentExecutor],
+
+    // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],
     ['googleSheetsTrigger', googleSheetsTriggerExecutor],
     ['googleSheetsTriggerWatchRows', googleSheetsTriggerExecutor],

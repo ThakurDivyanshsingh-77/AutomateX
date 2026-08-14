@@ -32,6 +32,8 @@ import { GeminiStructureProductsNode } from '../nodes/geminiStructureProducts/Ge
 import { ForEachProductNode } from '../nodes/forEachProduct/ForEachProductNode';
 import { WebsiteCreateProductNode } from '../nodes/websiteCreateProduct/WebsiteCreateProductNode';
 import WebsiteCreateTournamentNode from '../nodes/websiteCreateTournament/WebsiteCreateTournamentNode';
+import GeminiStructureTournamentNode from '../nodes/geminiStructureTournament/GeminiStructureTournamentNode';
+import ForEachTournamentNode from '../nodes/forEachTournament/ForEachTournamentNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 
@@ -89,6 +91,13 @@ const nodeTypes = {
   websiteCreateTournament: WebsiteCreateTournamentNode,
   website_create_tournament: WebsiteCreateTournamentNode,
   createTournament: WebsiteCreateTournamentNode,
+  [NODE_TYPES.GEMINI_STRUCTURE_TOURNAMENT]: GeminiStructureTournamentNode,
+  geminiStructureTournament: GeminiStructureTournamentNode,
+  gemini_structure_tournament: GeminiStructureTournamentNode,
+  structureTournament: GeminiStructureTournamentNode,
+  [NODE_TYPES.FOR_EACH_TOURNAMENT]: ForEachTournamentNode,
+  forEachTournament: ForEachTournamentNode,
+  for_each_tournament: ForEachTournamentNode,
   googleSheetsTrigger: GoogleSheetsTriggerNode,
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,

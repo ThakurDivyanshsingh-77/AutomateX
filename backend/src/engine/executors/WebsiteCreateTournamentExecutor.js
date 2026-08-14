@@ -3,66 +3,52 @@ import { websiteConnectionService } from '../../services/WebsiteConnectionServic
 import { ExpressionEngine } from '../expression/ExpressionEngine.js';
 
 /**
- * Utility helper to set deep nested property on an object (e.g. "prizeBreakdown.first")
+ * Utility to assign nested object paths like "prizeBreakdown.first" -> 5000
  */
 function setDeepValue(obj, path, value) {
-  if (!path || typeof path !== 'string') return;
-  const parts = path.split('.');
+  if (!obj || !path) return;
+  const parts = String(path).split('.');
   let current = obj;
-
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (!(part in current) || typeof current[part] !== 'object' || current[part] === null) {
+    if (!current[part] || typeof current[part] !== 'object') {
       current[part] = {};
     }
     current = current[part];
   }
-
-  const finalKey = parts[parts.length - 1];
-  current[finalKey] = value;
+  current[parts[parts.length - 1]] = value;
 }
 
 /**
- * Utility helper to cast/coerce value based on key or content
+ * Normalize and cast field values according to tournament attributes
  */
-function normalizeTournamentFieldValue(targetKey, val) {
-  if (val === undefined || val === null) return null;
-  if (typeof val === 'number' || typeof val === 'boolean' || typeof val === 'object') return val;
+function normalizeTournamentFieldValue(key, val) {
+  if (val === undefined || val === null) return val;
+  const lower = key.toLowerCase();
 
-  const keyLower = targetKey.toLowerCase();
-  const trimmed = String(val).trim();
-
-  // Numeric fields
   if (
-    keyLower === 'entryfee' ||
-    keyLower === 'prizepool' ||
-    keyLower === 'winnercount' ||
-    keyLower === 'slots' ||
-    keyLower.endsWith('.first') ||
-    keyLower.endsWith('.second') ||
-    keyLower.endsWith('.third')
+    lower.includes('prizepool') ||
+    lower.includes('entryfee') ||
+    lower.includes('slots') ||
+    lower.includes('winnercount') ||
+    lower.includes('firstprize') ||
+    lower.includes('secondprize') ||
+    lower.includes('thirdprize') ||
+    lower.endsWith('.first') ||
+    lower.endsWith('.second') ||
+    lower.endsWith('.third')
   ) {
-    const num = Number(trimmed);
-    return isNaN(num) ? val : num;
-  }
-
-  // JSON string objects/arrays
-  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-    try {
-      return JSON.parse(trimmed);
-    } catch {
-      return val;
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const cleaned = val.replace(/[^0-9.-]+/g, '');
+      const num = Number(cleaned);
+      return Number.isNaN(num) ? 0 : num;
     }
   }
 
   return val;
 }
 
-/**
- * WebsiteCreateTournamentExecutor
- * Dispatches tournament creation payloads to connected websites (e.g., Apex Esports API)
- * with dynamic field mappings, nested keys, Dry Run mode, rate limiting, and duplicate handling.
- */
 export class WebsiteCreateTournamentExecutor extends BaseExecutor {
   constructor() {
     super('websiteCreateTournament');
@@ -102,7 +88,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     const method = (config.method || 'POST').toUpperCase();
 
     // 4. Resolve Tournaments Source
-    let rawTournaments = config.tournaments || config.tournament || config.items || config.tournamentSource || [];
+    let rawTournaments = config.tournaments || config.tournament || config.items || config.currentTournament || config.tournamentSource || [];
     if (typeof rawTournaments === 'string') {
       try {
         const resolved = this.interpolate(rawTournaments, context);
@@ -112,16 +98,20 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       }
     }
 
-    // Normalize single item to array
+    // Normalize single item or object to array
     let tournamentList = Array.isArray(rawTournaments)
       ? rawTournaments
       : rawTournaments && typeof rawTournaments === 'object'
       ? [rawTournaments]
       : [];
 
-    // Fallback check: if tournamentList is empty, look in currentContext variables
-    if (tournamentList.length === 0 && context.variables?.currentItem) {
+    // Fallback check: look in context variables
+    if (tournamentList.length === 0 && context.variables?.currentTournament) {
+      tournamentList = [context.variables.currentTournament];
+    } else if (tournamentList.length === 0 && context.variables?.currentItem) {
       tournamentList = [context.variables.currentItem];
+    } else if (tournamentList.length === 0 && context.currentData?.currentTournament) {
+      tournamentList = [context.currentData.currentTournament];
     } else if (tournamentList.length === 0 && context.currentData?.tournament) {
       tournamentList = [context.currentData.tournament];
     } else if (tournamentList.length === 0 && context.currentData?.tournaments) {
@@ -130,7 +120,6 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     }
 
     if (tournamentList.length === 0) {
-      // Create a default empty template tournament so field mappings can evaluate root context expressions
       tournamentList = [{}];
     }
 
@@ -139,11 +128,13 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       { sourceKey: 'title', targetKey: 'title' },
       { sourceKey: 'game', targetKey: 'game' },
       { sourceKey: 'mode', targetKey: 'mode' },
-      { sourceKey: 'entryFee', targetKey: 'entryFee' },
       { sourceKey: 'prizePool', targetKey: 'prizePool' },
-      { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
-      { sourceKey: 'prizeBreakdown', targetKey: 'prizeBreakdown' },
+      { sourceKey: 'entryFee', targetKey: 'entryFee' },
       { sourceKey: 'slots', targetKey: 'slots' },
+      { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
+      { sourceKey: 'firstPrize', targetKey: 'firstPrize' },
+      { sourceKey: 'secondPrize', targetKey: 'secondPrize' },
+      { sourceKey: 'thirdPrize', targetKey: 'thirdPrize' },
       { sourceKey: 'date', targetKey: 'date' },
       { sourceKey: 'time', targetKey: 'time' },
       { sourceKey: 'map', targetKey: 'map' },
@@ -160,6 +151,9 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     console.log(`🏆 TOURNAMENT PROCESSING [${dryRun ? 'DRY RUN MODE' : 'LIVE API MODE'}]`);
     console.log(`Total Tournaments: ${tournamentList.length}`);
     console.log(`Target: ${connection.apiBaseUrl || connection.websiteUrl} (${resolvedEndpoint})`);
+    if (dryRun) {
+      console.log(`⚠️ DRY RUN — NO REQUEST SENT`);
+    }
     console.log(`======================================================`);
 
     const results = [];
@@ -167,6 +161,8 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     let createdCount = 0;
     let failedCount = 0;
     let skippedCount = 0;
+    let wouldCreateCount = 0;
+    let lastErrorDetails = null;
     const executionDedupeCache = new Set();
 
     for (let i = 0; i < tournamentList.length; i++) {
@@ -181,7 +177,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       // Build payload from field mapping
       const payload = this.buildTournamentPayload(rawItem, fieldMapping, context, i);
 
-      // Validate required core fields
+      // Strict Pre-validation of required fields
       const validationError = this.validateTournamentPayload(payload);
       const tournamentTitle = payload.title || payload.name || `Tournament #${i + 1}`;
 
@@ -189,14 +185,23 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
       if (validationError) {
         console.error(`   ✕ Validation Failed: ${validationError}`);
+        const errObj = {
+          status: 400,
+          message: `Tournament creation stopped because ${validationError}.`,
+        };
+        lastErrorDetails = errObj;
         results.push({
           index: i,
           title: tournamentTitle,
           status: 'failed',
-          error: validationError,
+          error: errObj,
           durationMs: Date.now() - itemStartTime,
         });
         failedCount++;
+        // If strict validation fails on single tournament execution, throw error to stop workflow
+        if (tournamentList.length === 1) {
+          throw new Error(errObj.message);
+        }
         continue;
       }
 
@@ -223,14 +228,14 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
       // Dry Run Branch
       if (dryRun) {
-        console.log(`   ✓ Payload Validated [Dry Run]`);
+        console.log(`   ✓ Payload Validated [Dry Run — No Request Sent]`);
         const itemDuration = Date.now() - itemStartTime;
         console.log(`   ${itemDuration}ms`);
-        createdCount++;
+        wouldCreateCount++;
         const dryItem = {
           index: i,
           title: tournamentTitle,
-          status: 'dry_run_success',
+          status: 'validated',
           payload,
           durationMs: itemDuration,
         };
@@ -267,11 +272,17 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       } catch (err) {
         const itemDuration = Date.now() - itemStartTime;
         console.error(`   ✕ Failed (${err.message})`);
+        const statusMatch = err.message.match(/HTTP\s*(\d{3})/i);
+        const errObj = {
+          status: statusMatch ? parseInt(statusMatch[1], 10) : 500,
+          message: err.message,
+        };
+        lastErrorDetails = errObj;
         results.push({
           index: i,
           title: tournamentTitle,
           status: 'failed',
-          error: err.message,
+          error: errObj,
           payload,
           durationMs: itemDuration,
         });
@@ -283,25 +294,54 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     const summary = {
       total: tournamentList.length,
       created: createdCount,
+      wouldCreate: wouldCreateCount,
       failed: failedCount,
       skipped: skippedCount,
       durationMs: totalDuration,
     };
 
     console.log(`\n------------------------------------------------------`);
-    console.log(`SUMMARY: Total: ${summary.total} | Created: ${summary.created} | Failed: ${summary.failed} | Skipped: ${summary.skipped}`);
+    console.log(`SUMMARY: Total: ${summary.total} | Created: ${summary.created} | WouldCreate: ${summary.wouldCreate} | Failed: ${summary.failed} | Skipped: ${summary.skipped}`);
     console.log(`======================================================\n`);
 
-    const isOverallSuccess = failedCount === 0 || createdCount > 0;
+    if (dryRun) {
+      return {
+        success: failedCount === 0,
+        dryRun: true,
+        validated: failedCount === 0,
+        wouldCreate: wouldCreateCount,
+        created: 0,
+        failed: failedCount,
+        payload: createdTournaments[0] || null,
+        tournaments: createdTournaments,
+        summary,
+        results,
+      };
+    }
+
+    if (failedCount > 0 && createdCount === 0) {
+      return {
+        success: false,
+        dryRun: false,
+        created: 0,
+        failed: failedCount,
+        error: lastErrorDetails || { status: 500, message: 'Tournament creation failed.' },
+        summary,
+        results,
+      };
+    }
 
     return {
-      success: isOverallSuccess,
-      dryRun,
+      success: true,
+      dryRun: false,
+      created: createdCount,
+      failed: failedCount,
+      response: results[0]?.response || null,
+      tournamentId: results[0]?.tournamentId || null,
+      tournament: createdTournaments[0] || null,
+      tournaments: createdTournaments,
       summary,
       results,
-      tournaments: createdTournaments,
-      createdTournament: createdTournaments[0] || null,
-      tournamentId: results[0]?.tournamentId || null,
     };
   }
 
@@ -312,16 +352,15 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
   buildTournamentPayload(sourceItem, fieldMapping, context, index) {
     const payload = {};
 
-    // Prepare evaluation context
     const evalContext = {
       ...context,
       item: sourceItem,
       currentItem: sourceItem,
+      currentTournament: sourceItem,
       index,
       currentIndex: index,
     };
 
-    // If fieldMapping is an array of { sourceKey, targetKey, type }
     if (Array.isArray(fieldMapping)) {
       for (const row of fieldMapping) {
         if (!row || !row.targetKey) continue;
@@ -331,16 +370,13 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
         let val = undefined;
 
-        // Check if rawSource is an expression like {{...}}
         if (rawSource.startsWith('{{') && rawSource.endsWith('}}')) {
           val = ExpressionEngine.resolve(rawSource, evalContext);
         } else if (rawSource in sourceItem) {
           val = sourceItem[rawSource];
         } else if (rawSource) {
-          // Attempt dot-path resolution on sourceItem
           val = this.getDeepValue(sourceItem, rawSource);
           if (val === undefined) {
-            // Attempt expression resolution
             val = ExpressionEngine.resolve(rawSource, evalContext);
           }
         }
@@ -351,7 +387,6 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
         }
       }
     } else if (typeof fieldMapping === 'object' && fieldMapping !== null) {
-      // If fieldMapping is a key-value object { [sourceKey]: targetKey }
       for (const [sourceKey, targetKey] of Object.entries(fieldMapping)) {
         if (!targetKey) continue;
         let val = undefined;
@@ -370,22 +405,39 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       }
     }
 
-    // Default prizeBreakdown object if flat keys weren't set but prizePool exists
-    if (!payload.prizeBreakdown && payload.prizePool) {
-      const pool = Number(payload.prizePool) || 0;
-      payload.prizeBreakdown = {
-        first: Math.round(pool * 0.5),
-        second: Math.round(pool * 0.3),
-        third: Math.round(pool * 0.2),
-      };
+    // Default prizeBreakdown object if flat prizes or prizePool exists
+    if (!payload.prizeBreakdown) {
+      if (sourceItem?.prizeBreakdown && typeof sourceItem.prizeBreakdown === 'object') {
+        payload.prizeBreakdown = { ...sourceItem.prizeBreakdown };
+      } else {
+        const first = Number(payload.firstPrize || 0);
+        const second = Number(payload.secondPrize || 0);
+        const third = Number(payload.thirdPrize || 0);
+        if (first > 0 || second > 0 || third > 0) {
+          payload.prizeBreakdown = { first, second, third };
+        } else if (payload.prizePool) {
+          const pool = Number(payload.prizePool) || 0;
+          payload.prizeBreakdown = {
+            first: Math.round(pool * 0.5),
+            second: Math.round(pool * 0.3),
+            third: Math.round(pool * 0.2),
+          };
+        }
+      }
+    }
+
+    // Merge any direct root properties on sourceItem
+    if (sourceItem && typeof sourceItem === 'object') {
+      for (const [k, v] of Object.entries(sourceItem)) {
+        if (payload[k] === undefined && v !== undefined && v !== null) {
+          payload[k] = v;
+        }
+      }
     }
 
     return payload;
   }
 
-  /**
-   * Helper to retrieve nested property from object using dot path
-   */
   getDeepValue(obj, path) {
     if (!obj || typeof obj !== 'object' || !path) return undefined;
     const parts = path.split('.');
@@ -399,21 +451,41 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
 
   /**
    * Validates required tournament payload attributes
+   * Required: title, game, mode, prizePool, entryFee, slots, date, time, map
    */
   validateTournamentPayload(payload) {
     if (!payload || typeof payload !== 'object') {
-      return 'Tournament payload is empty.';
+      return 'payload is empty';
     }
-    const missing = [];
-    if (!payload.title && !payload.name) missing.push('title');
-    if (!payload.game) missing.push('game');
-    if (!payload.mode) missing.push('mode');
-    if (!payload.date) missing.push('date');
-    if (!payload.time) missing.push('time');
 
-    if (missing.length > 0) {
-      return `Missing required tournament fields: ${missing.join(', ')}`;
+    if (!payload.title && !payload.name) {
+      return "required field 'title' is missing";
     }
+    if (!payload.game) {
+      return "required field 'game' is missing";
+    }
+    if (!payload.mode) {
+      return "required field 'mode' is missing";
+    }
+    if (payload.prizePool === undefined || payload.prizePool === null || typeof payload.prizePool !== 'number' || Number.isNaN(payload.prizePool)) {
+      return "required field 'prizePool' must be a valid number";
+    }
+    if (payload.entryFee === undefined || payload.entryFee === null || typeof payload.entryFee !== 'number' || Number.isNaN(payload.entryFee)) {
+      return "required field 'entryFee' must be a valid number";
+    }
+    if (payload.slots === undefined || payload.slots === null || typeof payload.slots !== 'number' || Number.isNaN(payload.slots)) {
+      return "required field 'slots' must be a valid number";
+    }
+    if (!payload.date) {
+      return "required field 'date' is missing";
+    }
+    if (!payload.time) {
+      return "required field 'time' is missing";
+    }
+    if (!payload.map) {
+      return "required field 'map' is missing";
+    }
+
     return null;
   }
 

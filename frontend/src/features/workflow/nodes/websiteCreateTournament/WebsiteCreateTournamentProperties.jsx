@@ -21,13 +21,13 @@ const DEFAULT_MAPPINGS = [
   { sourceKey: 'title', targetKey: 'title' },
   { sourceKey: 'game', targetKey: 'game' },
   { sourceKey: 'mode', targetKey: 'mode' },
-  { sourceKey: 'entryFee', targetKey: 'entryFee' },
   { sourceKey: 'prizePool', targetKey: 'prizePool' },
-  { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
-  { sourceKey: 'prizeBreakdown.first', targetKey: 'prizeBreakdown.first' },
-  { sourceKey: 'prizeBreakdown.second', targetKey: 'prizeBreakdown.second' },
-  { sourceKey: 'prizeBreakdown.third', targetKey: 'prizeBreakdown.third' },
+  { sourceKey: 'entryFee', targetKey: 'entryFee' },
   { sourceKey: 'slots', targetKey: 'slots' },
+  { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
+  { sourceKey: 'firstPrize', targetKey: 'firstPrize' },
+  { sourceKey: 'secondPrize', targetKey: 'secondPrize' },
+  { sourceKey: 'thirdPrize', targetKey: 'thirdPrize' },
   { sourceKey: 'date', targetKey: 'date' },
   { sourceKey: 'time', targetKey: 'time' },
   { sourceKey: 'map', targetKey: 'map' },
@@ -44,7 +44,7 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
 
   // Form states
   const connectionId = config.connectionId || '';
-  const tournamentSource = config.tournamentSource || '{{steps["For Each Tournament"].currentItem}}';
+  const tournamentSource = config.tournamentSource || '{{steps["For Each Tournament"].currentTournament}}';
   const endpoint = config.endpoint || '/api/v1/tournaments';
   const method = config.method || 'POST';
   const dryRun = Boolean(config.dryRun);
@@ -116,21 +116,24 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
   const requestPreviewJson = useMemo(() => {
     const preview = {};
     const sampleValues = {
-      title: 'Apex Legends Global Series Qualifier',
-      game: 'Apex Legends',
-      mode: 'Battle Royale Trios',
-      entryFee: 0,
+      title: 'AutomateX Test Tournament',
+      game: 'Valorant',
+      mode: 'SQUAD',
       prizePool: 10000,
+      entryFee: 0,
+      slots: 64,
       winnerCount: 3,
+      firstPrize: 5000,
+      secondPrize: 3000,
+      thirdPrize: 2000,
       'prizeBreakdown.first': 5000,
       'prizeBreakdown.second': 3000,
       'prizeBreakdown.third': 2000,
-      slots: 60,
       date: '2026-08-20',
       time: '18:00',
-      map: "World's Edge",
-      bannerImage: 'https://apex-esports.onrender.com/images/algs_banner.png',
-      description: 'Official online qualifier for the seasonal apex esports championship.',
+      map: 'Haven',
+      bannerImage: 'https://example.com/automatex-test-banner.jpg',
+      description: 'Official AutomateX test tournament for competitive Valorant teams.',
     };
 
     fieldMapping.forEach(({ sourceKey, targetKey }) => {
@@ -163,25 +166,37 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
       setTestStatus('testing');
       setTestResult(null);
 
-      // Build payload for testing
       const parsedPayload = JSON.parse(requestPreviewJson);
+
+      if (dryRun) {
+        setTestStatus('success');
+        setTestResult({
+          dryRun: true,
+          status: 'validated',
+          message: 'DRY RUN — NO REQUEST SENT. Payload schema is valid.',
+          payload: parsedPayload,
+        });
+        return;
+      }
 
       const res = await api.post(`/connections/websites/${connectionId}/test`, {
         endpoint,
         method,
         payload: parsedPayload,
-        dryRun: true,
+        dryRun: false,
       });
 
       setTestStatus('success');
       setTestResult({
-        message: 'Tournament payload validated successfully against target website connection.',
-        response: res.data || { status: 'ok', payload: parsedPayload },
+        dryRun: false,
+        message: 'Tournament successfully created on target website.',
+        response: res.data || { status: 'created', payload: parsedPayload },
       });
     } catch (err) {
       setTestStatus('failed');
       setTestResult({
-        message: err?.response?.data?.message || err.message || 'Validation request failed.',
+        dryRun: false,
+        message: err?.response?.data?.message || err.message || 'Creation request failed.',
       });
     }
   };

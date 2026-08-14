@@ -18,6 +18,8 @@ import { geminiStructureProductsManifest } from '../geminiStructureProducts/gemi
 import { forEachProductManifest } from '../forEachProduct/forEachProductManifest';
 import { websiteCreateProductManifest } from '../websiteCreateProduct/websiteCreateProductManifest';
 import { websiteCreateTournamentManifest } from '../websiteCreateTournament/websiteCreateTournamentManifest';
+import { geminiStructureTournamentManifest } from '../geminiStructureTournament/geminiStructureTournamentManifest';
+import { forEachTournamentManifest } from '../forEachTournament/forEachTournamentManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -59,6 +61,8 @@ export const NODE_TYPES = {
   FOR_EACH_PRODUCT: 'forEachProduct',
   WEBSITE_CREATE_PRODUCT: 'websiteCreateProduct',
   WEBSITE_CREATE_TOURNAMENT: 'websiteCreateTournament',
+  GEMINI_STRUCTURE_TOURNAMENT: 'geminiStructureTournament',
+  FOR_EACH_TOURNAMENT: 'forEachTournament',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
   ...AI_NODE_TYPES,
@@ -118,6 +122,13 @@ export const nodeDefinitions = {
   websiteCreateTournament: websiteCreateTournamentManifest,
   website_create_tournament: websiteCreateTournamentManifest,
   createTournament: websiteCreateTournamentManifest,
+  [NODE_TYPES.GEMINI_STRUCTURE_TOURNAMENT]: geminiStructureTournamentManifest,
+  geminiStructureTournament: geminiStructureTournamentManifest,
+  gemini_structure_tournament: geminiStructureTournamentManifest,
+  structureTournament: geminiStructureTournamentManifest,
+  [NODE_TYPES.FOR_EACH_TOURNAMENT]: forEachTournamentManifest,
+  forEachTournament: forEachTournamentManifest,
+  for_each_tournament: forEachTournamentManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
   discordMessageReceived: discordNodeDefinitions.discordMessageReceived,

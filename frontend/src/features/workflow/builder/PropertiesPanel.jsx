@@ -33,6 +33,8 @@ import { GeminiStructureProductsProperties } from '../nodes/geminiStructureProdu
 import { ForEachProductProperties } from '../nodes/forEachProduct/ForEachProductProperties';
 import { WebsiteCreateProductProperties } from '../nodes/websiteCreateProduct/WebsiteCreateProductProperties';
 import WebsiteCreateTournamentProperties from '../nodes/websiteCreateTournament/WebsiteCreateTournamentProperties';
+import GeminiStructureTournamentProperties from '../nodes/geminiStructureTournament/GeminiStructureTournamentProperties';
+import ForEachTournamentProperties from '../nodes/forEachTournament/ForEachTournamentProperties';
 import { WorkflowBuilderProvider } from '../../../context/WorkflowBuilderContext';
 
 
@@ -71,6 +73,8 @@ export const PropertiesPanel = ({
   const isForEachProductNode = selectedNode.type === 'forEachProduct' || selectedNode.type === 'for_each_product' || selectedNode.type === 'forEach';
   const isWebsiteCreateProductNode = selectedNode.type === 'websiteCreateProduct' || selectedNode.type === 'website_create_product' || selectedNode.type === 'createProduct';
   const isWebsiteCreateTournamentNode = selectedNode.type === 'websiteCreateTournament' || selectedNode.type === 'website_create_tournament' || selectedNode.type === 'createTournament';
+  const isGeminiStructureTournamentNode = selectedNode.type === 'geminiStructureTournament' || selectedNode.type === 'gemini_structure_tournament' || selectedNode.type === 'structureTournament';
+  const isForEachTournamentNode = selectedNode.type === 'forEachTournament' || selectedNode.type === 'for_each_tournament';
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -240,6 +244,22 @@ export const PropertiesPanel = ({
                 onUpdateNode={(updatedNode) => {
                   onUpdateNodeData(selectedNode.id, updatedNode.data);
                 }}
+              />
+            ) : isGeminiStructureTournamentNode ? (
+              <GeminiStructureTournamentProperties
+                node={selectedNode}
+                nodeData={selectedNode.data}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
+              />
+            ) : isForEachTournamentNode ? (
+              <ForEachTournamentProperties
+                node={selectedNode}
+                nodeData={selectedNode.data}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
               />
             ) : isGmailNode ? (
               <GmailProperties

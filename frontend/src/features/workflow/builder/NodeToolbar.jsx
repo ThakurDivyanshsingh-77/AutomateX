@@ -80,6 +80,7 @@ export const NodeToolbar = () => {
         (nCat.includes('DOCUMENT') ||
           nCat.includes('AI') ||
           n.type === 'geminiStructureProducts' ||
+          n.type === 'geminiStructureTournament' ||
           n.type === 'documentExtractContent')
       )
         return true;
@@ -88,7 +89,8 @@ export const NodeToolbar = () => {
         (nCat.includes('CONTROL') ||
           nCat.includes('FLOW') ||
           nCat.includes('LOOP') ||
-          n.type === 'forEachProduct')
+          n.type === 'forEachProduct' ||
+          n.type === 'forEachTournament')
       )
         return true;
       if (

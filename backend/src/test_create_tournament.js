@@ -177,7 +177,8 @@ async function runTournamentTests() {
 
       assert.strictEqual(dryRes.success, true);
       assert.strictEqual(dryRes.dryRun, true);
-      assert.strictEqual(dryRes.summary.created, 1);
+      assert.strictEqual(dryRes.summary.wouldCreate, 1);
+      assert.strictEqual(dryRes.summary.created, 0);
       assert.strictEqual(dryRes.summary.failed, 0);
       assert.strictEqual(receivedRequests.length, 0, 'Dry Run must never dispatch HTTP calls');
     });
@@ -243,7 +244,7 @@ async function runTournamentTests() {
       );
 
       assert.strictEqual(dupeRes.summary.total, 2);
-      assert.strictEqual(dupeRes.summary.created, 1);
+      assert.strictEqual(dupeRes.summary.wouldCreate, 1);
       assert.strictEqual(dupeRes.summary.skipped, 1);
       assert.strictEqual(dupeRes.results[1].status, 'skipped');
     });
@@ -284,7 +285,8 @@ async function runTournamentTests() {
 
       assert.strictEqual(failRes.summary.failed, 1);
       assert.strictEqual(failRes.results[0].status, 'failed');
-      assert.ok(failRes.results[0].error.includes('403'));
+      const errStr = typeof failRes.results[0].error === 'string' ? failRes.results[0].error : JSON.stringify(failRes.results[0].error);
+      assert.ok(errStr.includes('403'));
     });
 
     // ----------------------------------------------------------------
@@ -341,7 +343,7 @@ async function runTournamentTests() {
 
       const tournLog = execResult.logs.find((l) => l.nodeId === 'create_tournament_node');
       assert.ok(tournLog && tournLog.output.success);
-      assert.strictEqual(tournLog.output.summary.created, 1);
+      assert.strictEqual(tournLog.output.summary.wouldCreate, 1);
     });
 
   } finally {

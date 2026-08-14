@@ -11,6 +11,8 @@ import { GeminiStructureProductsExecutor } from './executors/GeminiStructureProd
 import { ForEachProductExecutor } from './executors/ForEachProductExecutor.js';
 import { WebsiteCreateProductExecutor } from './executors/WebsiteCreateProductExecutor.js';
 import { WebsiteCreateTournamentExecutor } from './executors/WebsiteCreateTournamentExecutor.js';
+import { GeminiStructureTournamentExecutor } from './executors/GeminiStructureTournamentExecutor.js';
+import { ForEachTournamentExecutor } from './executors/ForEachTournamentExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -59,6 +61,11 @@ class ExecutorRegistry {
     this.register('websiteCreateTournament', new WebsiteCreateTournamentExecutor());
     this.register('website_create_tournament', new WebsiteCreateTournamentExecutor());
     this.register('createTournament', new WebsiteCreateTournamentExecutor());
+    this.register('geminiStructureTournament', new GeminiStructureTournamentExecutor());
+    this.register('gemini_structure_tournament', new GeminiStructureTournamentExecutor());
+    this.register('structureTournament', new GeminiStructureTournamentExecutor());
+    this.register('forEachTournament', new ForEachTournamentExecutor());
+    this.register('for_each_tournament', new ForEachTournamentExecutor());
   }
 
   register(nodeType, executorInstance) {

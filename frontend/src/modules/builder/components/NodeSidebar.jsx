@@ -38,7 +38,7 @@ export const NodeSidebar = () => {
     (n) => n.category === 'INPUT' || n.category === 'Input' || n.type === 'fileUpload'
   );
   const documentNodes = filteredNodes.filter(
-    (n) => n.category === 'DOCUMENT / DATA' || n.category === 'DOCUMENT' || n.type === 'documentExtractContent' || n.type === 'geminiStructureProducts' || (n.category || '').includes('DOCUMENT')
+    (n) => n.category === 'DOCUMENT / DATA' || n.category === 'DOCUMENT' || n.type === 'documentExtractContent' || n.type === 'geminiStructureProducts' || n.type === 'geminiStructureTournament' || (n.category || '').includes('DOCUMENT')
   );
   const websiteNodes = filteredNodes.filter(
     (n) =>
@@ -53,7 +53,7 @@ export const NodeSidebar = () => {
       (n.type && n.type.toLowerCase().includes('tournament'))
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
-  const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI' || n.type === 'geminiStructureProducts' || (n.category || '').includes('AI'));
+  const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI' || n.category === 'AI / DOCUMENT PROCESSING' || n.type === 'geminiStructureProducts' || n.type === 'geminiStructureTournament' || (n.category || '').includes('AI'));
   const communication = filteredNodes.filter(
     (n) =>
       n.category === 'Communication' ||
@@ -62,7 +62,7 @@ export const NodeSidebar = () => {
       (n.type && n.type.toLowerCase().includes('discord'))
   );
   const googleSheets = filteredNodes.filter((n) => n.category === 'Google Sheets');
-  const logic = filteredNodes.filter((n) => n.category === 'LOGIC' || n.category === 'Logic' || n.category === 'CONTROL / FLOW' || n.type === 'forEachProduct');
+  const logic = filteredNodes.filter((n) => n.category === 'LOGIC' || n.category === 'Logic' || n.category === 'CONTROL / FLOW' || n.type === 'forEachProduct' || n.type === 'forEachTournament');
 
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType);

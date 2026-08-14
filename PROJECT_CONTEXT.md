@@ -727,6 +727,20 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Automated Verification**:
   - Executed `test_create_tournament.js`: **6/6** tests passed verifying dynamic nested dot-notation payload construction, Dry Run mode, live REST API dispatch with decrypted Bearer authentication, duplicate protection, HTTP 403 Forbidden handling, and full `WorkflowEngine.run` graph execution.
   - Ran regression test suites `test_multi_product_phase3b.js` (**9/9** passed) and `test_website_connect_phase3a.js` (**15/15** passed).
+### **Phase 3D Complete — Dedicated Tournament Document Automation Pipeline (Gemini → Structure Tournament & For Each Tournament)** — ✅ COMPLETED
+- **Backend Architecture & AI Zero-Hallucination Pipeline**:
+  - `GeminiStructureTournamentExecutor.js`: Dedicated AI document structurer tailored specifically for esports tournament documents. Enforces strict zero-hallucination rules (never invents or guesses values, never falls back to arbitrary defaults like World's Edge or 60 slots; missing attributes return `null`). Normalizes currency values (removes `₹` and commas) and standardizes dates (`YYYY-MM-DD`) and times (`HH:mm`). Returns `{ success: true, count, tournament, tournaments, currentTournament }`.
+  - `ForEachTournamentExecutor.js`: Dedicated tournament iterator node exposing `currentTournament`, `currentItem`, `currentIndex`, and `totalItems` to downstream steps in the workflow context.
+  - `WebsiteCreateTournamentExecutor.js`: Enhanced with strict pre-validation of required fields (`title`, `game`, `mode`, `prizePool`, `entryFee`, `slots`, `date`, `time`, `map`). Stops execution before HTTP request dispatch if any required field is missing. Provides structured Dry Run responses (`{ success: true, dryRun: true, validated: true, wouldCreate: 1, created: 0, failed: 0 }`) and distinct real execution responses (`{ success: true, dryRun: false, created: 1, failed: 0, response: {...} }`).
+  - Registered under `ExecutorRegistry.js` and `registry/ExecutorRegistry.js`.
+- **Frontend Visual Builder & Configuration Panels**:
+  - `geminiStructureTournament`: Manifest, custom React Flow canvas card with Trophy icon & amber theme, and properties panel (`GeminiStructureTournamentProperties.jsx`) with model selection, temperature slider, dynamic document text expression input (`{{steps["Document → Extract Content"].content.text}}`), system prompt editor, and interactive **Test Tournament Extraction** button.
+  - `forEachTournament`: Manifest, custom React Flow canvas card with Repeat icon & cyan theme, and properties panel (`ForEachTournamentProperties.jsx`) with tournament collection expression input (`{{steps["Gemini → Structure Tournament"].tournaments}}`).
+  - `websiteCreateTournament`: Updated properties panel with default tournament field mapping and dynamic preview using extracted tournament data.
+  - Registered across `nodeRegistry.js`, `NodeToolbar.jsx`, `NodeSidebar.jsx`, `WorkflowCanvas.jsx`, `PropertiesPanel.jsx`, `NodeInspector.jsx`, and `VariableEngine.js`.
+- **Automated Verification**:
+  - Executed `test_tournament_workflow_e2e.js`: **7/7** tests passed verifying exact Valorant document extraction, zero-hallucination guarantees, `For Each Tournament` scoping, Dry Run mode, live REST API creation on Apex Esports backend, pre-validation failure halting, and full 7-node workflow execution (`Start Trigger` → `File → Upload Document` → `Document → Extract Content` → `Gemini → Structure Tournament` → `For Each Tournament` → `Website → Connect` → `Website → Create Tournament` → `End Completion`).
+  - Executed regression suites: `test_create_tournament.js` (**6/6** passed), `test_multi_product_phase3b.js` (**9/9** passed), and `test_website_connect_phase3a.js` (**15/15** passed) — total **37/37** automated tests passing.
   - Verified Vite production build (`npm run build`).
 
 ---
