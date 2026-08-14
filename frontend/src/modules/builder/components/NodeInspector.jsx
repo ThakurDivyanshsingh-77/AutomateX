@@ -6,6 +6,7 @@ import { WebsiteConnectProperties } from '../../../features/workflow/nodes/websi
 import { GeminiStructureProductsProperties } from '../../../features/workflow/nodes/geminiStructureProducts/GeminiStructureProductsProperties';
 import { ForEachProductProperties } from '../../../features/workflow/nodes/forEachProduct/ForEachProductProperties';
 import { WebsiteCreateProductProperties } from '../../../features/workflow/nodes/websiteCreateProduct/WebsiteCreateProductProperties';
+import WebsiteCreateTournamentProperties from '../../../features/workflow/nodes/websiteCreateTournament/WebsiteCreateTournamentProperties';
 
 export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClose }) => {
   if (!selectedNode) return null;
@@ -303,6 +304,15 @@ export const NodeInspector = ({ selectedNode, onUpdateNode, onDeleteNode, onClos
                 ...selectedNode.data,
                 config: nextConfig,
               });
+            }}
+          />
+        )}
+
+        {(nodeType === 'websiteCreateTournament' || nodeType === 'WEBSITE_CREATE_TOURNAMENT' || nodeType === 'website_create_tournament' || nodeType === 'createTournament') && (
+          <WebsiteCreateTournamentProperties
+            node={selectedNode}
+            onUpdateNode={(updatedNode) => {
+              onUpdateNode(selectedNode.id, updatedNode.data);
             }}
           />
         )}

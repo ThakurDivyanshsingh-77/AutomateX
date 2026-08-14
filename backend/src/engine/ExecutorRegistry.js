@@ -10,6 +10,7 @@ import { WebsiteConnectExecutor } from './executors/WebsiteConnectExecutor.js';
 import { GeminiStructureProductsExecutor } from './executors/GeminiStructureProductsExecutor.js';
 import { ForEachProductExecutor } from './executors/ForEachProductExecutor.js';
 import { WebsiteCreateProductExecutor } from './executors/WebsiteCreateProductExecutor.js';
+import { WebsiteCreateTournamentExecutor } from './executors/WebsiteCreateTournamentExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -55,6 +56,9 @@ class ExecutorRegistry {
     this.register('websiteCreateProduct', new WebsiteCreateProductExecutor());
     this.register('website_create_product', new WebsiteCreateProductExecutor());
     this.register('createProduct', new WebsiteCreateProductExecutor());
+    this.register('websiteCreateTournament', new WebsiteCreateTournamentExecutor());
+    this.register('website_create_tournament', new WebsiteCreateTournamentExecutor());
+    this.register('createTournament', new WebsiteCreateTournamentExecutor());
   }
 
   register(nodeType, executorInstance) {

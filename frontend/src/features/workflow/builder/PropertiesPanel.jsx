@@ -32,6 +32,7 @@ import { WebsiteConnectProperties } from '../nodes/websiteConnect/WebsiteConnect
 import { GeminiStructureProductsProperties } from '../nodes/geminiStructureProducts/GeminiStructureProductsProperties';
 import { ForEachProductProperties } from '../nodes/forEachProduct/ForEachProductProperties';
 import { WebsiteCreateProductProperties } from '../nodes/websiteCreateProduct/WebsiteCreateProductProperties';
+import WebsiteCreateTournamentProperties from '../nodes/websiteCreateTournament/WebsiteCreateTournamentProperties';
 import { WorkflowBuilderProvider } from '../../../context/WorkflowBuilderContext';
 
 
@@ -69,6 +70,7 @@ export const PropertiesPanel = ({
   const isGeminiStructureProductsNode = selectedNode.type === 'geminiStructureProducts' || selectedNode.type === 'gemini_structure_products' || selectedNode.type === 'structureProducts';
   const isForEachProductNode = selectedNode.type === 'forEachProduct' || selectedNode.type === 'for_each_product' || selectedNode.type === 'forEach';
   const isWebsiteCreateProductNode = selectedNode.type === 'websiteCreateProduct' || selectedNode.type === 'website_create_product' || selectedNode.type === 'createProduct';
+  const isWebsiteCreateTournamentNode = selectedNode.type === 'websiteCreateTournament' || selectedNode.type === 'website_create_tournament' || selectedNode.type === 'createTournament';
   const isGmailNode = selectedNode.type === 'gmail';
   const isConditionNode = selectedNode.type === 'condition';
   const isWebhookNode = selectedNode.type === 'webhook';
@@ -231,6 +233,13 @@ export const PropertiesPanel = ({
                 onUpdateNodeData={onUpdateNodeData}
                 workflowNodes={workflowNodes}
                 executionSnapshot={executionSnapshot}
+              />
+            ) : isWebsiteCreateTournamentNode ? (
+              <WebsiteCreateTournamentProperties
+                node={selectedNode}
+                onUpdateNode={(updatedNode) => {
+                  onUpdateNodeData(selectedNode.id, updatedNode.data);
+                }}
               />
             ) : isGmailNode ? (
               <GmailProperties

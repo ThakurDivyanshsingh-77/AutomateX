@@ -48,7 +48,9 @@ export const NodeSidebar = () => {
       n.category === 'WEBSITE' ||
       n.type === 'websiteConnect' ||
       n.type === 'websiteCreateProduct' ||
-      (n.type && n.type.toLowerCase().includes('website'))
+      n.type === 'websiteCreateTournament' ||
+      (n.type && n.type.toLowerCase().includes('website')) ||
+      (n.type && n.type.toLowerCase().includes('tournament'))
   );
   const actions = filteredNodes.filter((n) => n.category === 'ACTION' || n.category === 'Action');
   const aiNodes = filteredNodes.filter((n) => n.category === 'AI / Artificial Intelligence' || n.category === 'AI' || n.type === 'geminiStructureProducts' || (n.category || '').includes('AI'));

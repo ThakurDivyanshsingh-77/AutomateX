@@ -22,6 +22,7 @@ import { WebsiteConnectExecutor } from '../executors/WebsiteConnectExecutor.js';
 import { GeminiStructureProductsExecutor } from '../executors/GeminiStructureProductsExecutor.js';
 import { ForEachProductExecutor } from '../executors/ForEachProductExecutor.js';
 import { WebsiteCreateProductExecutor } from '../executors/WebsiteCreateProductExecutor.js';
+import { WebsiteCreateTournamentExecutor } from '../executors/WebsiteCreateTournamentExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -38,6 +39,7 @@ const websiteConnectExecutor = new WebsiteConnectExecutor();
 const geminiStructureProductsExecutor = new GeminiStructureProductsExecutor();
 const forEachProductExecutor = new ForEachProductExecutor();
 const websiteCreateProductExecutor = new WebsiteCreateProductExecutor();
+const websiteCreateTournamentExecutor = new WebsiteCreateTournamentExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -114,7 +116,10 @@ export class ExecutorRegistry {
     ['forEach', forEachProductExecutor],
     ['websiteCreateProduct', websiteCreateProductExecutor],
     ['website_create_product', websiteCreateProductExecutor],
-    ['createProduct', websiteCreateProductExecutor],    // Google Sheets Node Executors (Exact matching string registration)
+    ['createProduct', websiteCreateProductExecutor],
+    ['websiteCreateTournament', websiteCreateTournamentExecutor],
+    ['website_create_tournament', websiteCreateTournamentExecutor],
+    ['createTournament', websiteCreateTournamentExecutor],    // Google Sheets Node Executors (Exact matching string registration)
     ['googleSheets', googleSheetsExecutor],
     ['googleSheetsTrigger', googleSheetsTriggerExecutor],
     ['googleSheetsTriggerWatchRows', googleSheetsTriggerExecutor],

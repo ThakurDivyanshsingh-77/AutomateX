@@ -712,6 +712,23 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - Executed `test_multi_product_phase3b.js`: **9/9** tests passed verifying multi-product parsing (Beta-citronellol, Geraniol, Nerol), zero-hallucination rules, loop context variables, Dry Run mode, Live REST API creation, partial failure isolation, duplicate skipping, and end-to-end workflow execution (`Start Trigger` → `Gemini → Structure Products` → `For Each Product` → `Website → Create Product` → `End Completion`).
   - Ran Phase 3A regression test suite `test_website_connect_phase3a.js`: **15/15** passed.
 
+### **Phase 3C Complete — Website → Create Tournament Integration Node (Apex Esports REST)** — ✅ COMPLETED
+- **Backend Architecture & Tournament Execution Engine**:
+  - `WebsiteCreateTournamentExecutor.js`: Generic REST API tournament creation executor consuming `Website → Connect` connection credentials without token re-entry.
+  - **Dynamic Field Mapping Engine**: Maps source fields or mustache expressions (`{{item.title}}`) to API JSON keys with full support for deep nested dot-notation (`prizeBreakdown.first`, `prizeBreakdown.second`, `prizeBreakdown.third`).
+  - **Dry Run Mode**: Validates payload schemas and mappings locally without dispatching network calls.
+  - **Fault Tolerance & Duplicate Protection**: Configurable duplicate handling (`skip`, `update`, `create`, `stop`), configurable rate limiting delay ($0-5000\text{ ms}$), and automatic $3\times$ exponential backoff retries on $408/429/5\text{xx}$ transient errors.
+  - **API Status Handling**: Graceful error formatting for HTTP 201, 400, 401, 403, 409, and 500 responses.
+- **Frontend Visual Builder & Configuration Panel**:
+  - `websiteCreateTournamentManifest.js`: Manifest registered under `Integrations / Website` with violet theme and `Trophy` icon.
+  - `WebsiteCreateTournamentNode.jsx`: Custom React Flow canvas card displaying endpoint, HTTP method badge, and connection status.
+  - `WebsiteCreateTournamentProperties.jsx`: Full interactive properties panel with Website Connection selector, Tournament Source expression input, Method/Endpoint inputs, **Editable Field Mapping Table** (Add Field, Remove Field, Edit Source/Target keys), **Live Request Preview JSON Box**, **Test Tournament Creation** validation button, duplicate strategy dropdown, and Dry Run toggle.
+  - Wired into `nodeRegistry.js`, `NodeToolbar.jsx`, `NodeSidebar.jsx`, `WorkflowCanvas.jsx`, `PropertiesPanel.jsx`, `NodeInspector.jsx`, and `VariableEngine.js`.
+- **Automated Verification**:
+  - Executed `test_create_tournament.js`: **6/6** tests passed verifying dynamic nested dot-notation payload construction, Dry Run mode, live REST API dispatch with decrypted Bearer authentication, duplicate protection, HTTP 403 Forbidden handling, and full `WorkflowEngine.run` graph execution.
+  - Ran regression test suites `test_multi_product_phase3b.js` (**9/9** passed) and `test_website_connect_phase3a.js` (**15/15** passed).
+  - Verified Vite production build (`npm run build`).
+
 ---
 
 

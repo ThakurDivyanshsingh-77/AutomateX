@@ -31,6 +31,7 @@ import { WebsiteConnectNode } from '../nodes/websiteConnect/WebsiteConnectNode';
 import { GeminiStructureProductsNode } from '../nodes/geminiStructureProducts/GeminiStructureProductsNode';
 import { ForEachProductNode } from '../nodes/forEachProduct/ForEachProductNode';
 import { WebsiteCreateProductNode } from '../nodes/websiteCreateProduct/WebsiteCreateProductNode';
+import WebsiteCreateTournamentNode from '../nodes/websiteCreateTournament/WebsiteCreateTournamentNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 
@@ -84,6 +85,10 @@ const nodeTypes = {
   [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: WebsiteCreateProductNode,
   websiteCreateProduct: WebsiteCreateProductNode,
   website_create_product: WebsiteCreateProductNode,
+  [NODE_TYPES.WEBSITE_CREATE_TOURNAMENT]: WebsiteCreateTournamentNode,
+  websiteCreateTournament: WebsiteCreateTournamentNode,
+  website_create_tournament: WebsiteCreateTournamentNode,
+  createTournament: WebsiteCreateTournamentNode,
   googleSheetsTrigger: GoogleSheetsTriggerNode,
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,

@@ -17,6 +17,7 @@ import { websiteConnectManifest } from '../websiteConnect/websiteConnectManifest
 import { geminiStructureProductsManifest } from '../geminiStructureProducts/geminiStructureProductsManifest';
 import { forEachProductManifest } from '../forEachProduct/forEachProductManifest';
 import { websiteCreateProductManifest } from '../websiteCreateProduct/websiteCreateProductManifest';
+import { websiteCreateTournamentManifest } from '../websiteCreateTournament/websiteCreateTournamentManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -57,6 +58,7 @@ export const NODE_TYPES = {
   GEMINI_STRUCTURE_PRODUCTS: 'geminiStructureProducts',
   FOR_EACH_PRODUCT: 'forEachProduct',
   WEBSITE_CREATE_PRODUCT: 'websiteCreateProduct',
+  WEBSITE_CREATE_TOURNAMENT: 'websiteCreateTournament',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
   ...AI_NODE_TYPES,
@@ -112,6 +114,10 @@ export const nodeDefinitions = {
   [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: websiteCreateProductManifest,
   websiteCreateProduct: websiteCreateProductManifest,
   website_create_product: websiteCreateProductManifest,
+  [NODE_TYPES.WEBSITE_CREATE_TOURNAMENT]: websiteCreateTournamentManifest,
+  websiteCreateTournament: websiteCreateTournamentManifest,
+  website_create_tournament: websiteCreateTournamentManifest,
+  createTournament: websiteCreateTournamentManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
   discordMessageReceived: discordNodeDefinitions.discordMessageReceived,
@@ -178,6 +184,10 @@ export const nodeValidators = {
   [NODE_TYPES.WEBSITE_CREATE_PRODUCT]: websiteCreateProductManifest.validate,
   websiteCreateProduct: websiteCreateProductManifest.validate,
   website_create_product: websiteCreateProductManifest.validate,
+  [NODE_TYPES.WEBSITE_CREATE_TOURNAMENT]: websiteCreateTournamentManifest.validate,
+  websiteCreateTournament: websiteCreateTournamentManifest.validate,
+  website_create_tournament: websiteCreateTournamentManifest,
+  createTournament: websiteCreateTournamentManifest.validate,
   [GOOGLE_SHEETS_NODE_TYPES.TRIGGER_WATCH_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.READ_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.FIND_ROW]: googleSheetsValidator,

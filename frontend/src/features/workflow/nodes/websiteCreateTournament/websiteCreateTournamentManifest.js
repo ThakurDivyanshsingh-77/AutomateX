@@ -1,0 +1,60 @@
+import { Trophy } from 'lucide-react';
+
+export const websiteCreateTournamentManifest = {
+  type: 'websiteCreateTournament',
+  name: 'Website → Create Tournament',
+  label: 'Website → Create Tournament',
+  category: 'Integrations',
+  subcategory: 'Website',
+  description: 'Create a tournament on the connected website via REST API.',
+  icon: Trophy,
+  color: 'violet',
+  tags: ['tournament', 'create tournament', 'website tournament', 'apex', 'esports', 'gaming', 'competition', 'rest'],
+  defaultConfig: {
+    connectionId: '',
+    tournamentSource: '{{steps["For Each Tournament"].currentItem}}',
+    endpoint: '/api/v1/tournaments',
+    method: 'POST',
+    dryRun: false,
+    duplicateStrategy: 'skip',
+    rateLimitMs: 0,
+    fieldMapping: [
+      { sourceKey: 'title', targetKey: 'title' },
+      { sourceKey: 'game', targetKey: 'game' },
+      { sourceKey: 'mode', targetKey: 'mode' },
+      { sourceKey: 'entryFee', targetKey: 'entryFee' },
+      { sourceKey: 'prizePool', targetKey: 'prizePool' },
+      { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
+      { sourceKey: 'prizeBreakdown.first', targetKey: 'prizeBreakdown.first' },
+      { sourceKey: 'prizeBreakdown.second', targetKey: 'prizeBreakdown.second' },
+      { sourceKey: 'prizeBreakdown.third', targetKey: 'prizeBreakdown.third' },
+      { sourceKey: 'slots', targetKey: 'slots' },
+      { sourceKey: 'date', targetKey: 'date' },
+      { sourceKey: 'time', targetKey: 'time' },
+      { sourceKey: 'map', targetKey: 'map' },
+      { sourceKey: 'bannerImage', targetKey: 'bannerImage' },
+      { sourceKey: 'description', targetKey: 'description' },
+    ],
+  },
+  inputs: [
+    {
+      id: 'input',
+      label: 'Input',
+      type: 'main',
+    },
+  ],
+  outputs: [
+    {
+      id: 'output',
+      label: 'Created Tournament',
+      type: 'main',
+      schema: {
+        success: 'boolean',
+        tournamentId: 'string',
+        createdTournament: 'object',
+        summary: 'object',
+        results: 'array',
+      },
+    },
+  ],
+};

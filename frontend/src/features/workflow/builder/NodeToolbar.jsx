@@ -71,6 +71,7 @@ export const NodeToolbar = () => {
           nCat.includes('WEBSITE') ||
           n.type === 'websiteConnect' ||
           n.type === 'websiteCreateProduct' ||
+          n.type === 'websiteCreateTournament' ||
           (n.type && n.type.toLowerCase().includes('website')))
       )
         return true;
