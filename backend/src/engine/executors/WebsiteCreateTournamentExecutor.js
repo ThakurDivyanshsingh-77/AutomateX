@@ -22,6 +22,7 @@ function setDeepValue(obj, path, value) {
 /**
  * Normalize and cast field values according to tournament attributes.
  * Prevents literal placeholder leakage (e.g. "title", "game", "mode").
+ * Strips currency symbols (₹, $, etc.) and commas for numeric fields.
  */
 function normalizeTournamentFieldValue(key, val) {
   const targetKey = String(key || '').trim();
@@ -33,22 +34,29 @@ function normalizeTournamentFieldValue(key, val) {
   }
 
   if (val === undefined || val === null) {
-    if (['entryFee', 'firstPrize', 'secondPrize', 'thirdPrize', 'slots'].includes(targetKey) || lower.endsWith('.first') || lower.endsWith('.second') || lower.endsWith('.third')) {
+    if (['entryFee', 'firstPrize', 'secondPrize', 'thirdPrize'].includes(targetKey) || lower.endsWith('.first') || lower.endsWith('.second') || lower.endsWith('.third')) {
       return 0;
     }
     return null;
   }
 
   if (targetKey === 'winnerCount') {
-    const num = typeof val === 'number' ? val : parseInt(String(val).replace(/[^0-9]/g, ''), 10);
+    if (typeof val === 'number') return Number.isNaN(val) ? 3 : val;
+    const num = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
     return Number.isNaN(num) ? 3 : num;
   }
 
   if (targetKey === 'prizePool') {
-    if (typeof val === 'number') return val;
-    const cleaned = String(val).replace(/[^0-9.-]+/g, '');
-    const num = Number(cleaned);
-    return Number.isNaN(num) ? val : num;
+    if (typeof val === 'number') return Number.isNaN(val) ? null : val;
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      if (!trimmed) return null;
+      const cleaned = trimmed.replace(/[^0-9.-]+/g, '');
+      if (!cleaned || cleaned === '-' || cleaned === '.') return null;
+      const num = Number(cleaned);
+      return Number.isNaN(num) ? null : num;
+    }
+    return val;
   }
 
   if (
@@ -63,9 +71,12 @@ function normalizeTournamentFieldValue(key, val) {
   ) {
     if (typeof val === 'number') return Number.isNaN(val) ? 0 : val;
     if (typeof val === 'string') {
-      const cleaned = val.replace(/[^0-9.-]+/g, '');
+      const trimmed = val.trim();
+      if (!trimmed) return targetKey === 'slots' ? null : 0;
+      const cleaned = trimmed.replace(/[^0-9.-]+/g, '');
+      if (!cleaned || cleaned === '-' || cleaned === '.') return targetKey === 'slots' ? null : 0;
       const num = Number(cleaned);
-      return Number.isNaN(num) ? 0 : num;
+      return Number.isNaN(num) ? (targetKey === 'slots' ? null : 0) : num;
     }
     return 0;
   }
@@ -454,6 +465,64 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       currentIndex: index,
     };
 
+    const findSourceValue = (sourceKey, targetKey) => {
+      let val = undefined;
+
+      if (sourceKey.startsWith('{{') && sourceKey.endsWith('}}')) {
+        return ExpressionEngine.resolve(sourceKey, evalContext);
+      }
+
+      if (!sourceItem || typeof sourceItem !== 'object') return undefined;
+
+      // 1. Direct key lookups
+      if (sourceKey in sourceItem && sourceItem[sourceKey] !== undefined) {
+        return sourceItem[sourceKey];
+      }
+      if (targetKey in sourceItem && sourceItem[targetKey] !== undefined) {
+        return sourceItem[targetKey];
+      }
+
+      // 2. Deep value lookups
+      val = this.getDeepValue(sourceItem, sourceKey);
+      if (val !== undefined) return val;
+
+      val = this.getDeepValue(sourceItem, targetKey);
+      if (val !== undefined) return val;
+
+      // 3. Known Aliases for tournament attributes
+      const keyAliases = {
+        title: ['name', 'tournamentName', 'Tournament Title', 'Title'],
+        game: ['gameName', 'Game Name', 'Game'],
+        mode: ['gameMode', 'tournamentMode', 'Game Mode', 'Mode'],
+        prizePool: ['Total Prize Pool', 'Total Prize Pool (₹)', 'totalPrizePool', 'totalPrize', 'Total Prize', 'Prize Pool', 'prize_pool', 'prizePoolStr'],
+        entryFee: ['Entry Fee', 'Entry Fee (₹)', 'fee', 'entry_fee'],
+        winnerCount: ['Winner Count', 'winners', 'Total Winners', 'winner_count'],
+        firstPrize: ['prizeBreakdown.first', 'first', '1stPlacePrize', '1st Place Prize', '1st Place Prize (₹)', '1st Prize', '1st'],
+        secondPrize: ['prizeBreakdown.second', 'second', '2ndPlacePrize', '2nd Place Prize', '2nd Place Prize (₹)', '2nd Prize', '2nd'],
+        thirdPrize: ['prizeBreakdown.third', 'third', '3rdPlacePrize', '3rd Place Prize', '3rd Place Prize (₹)', '3rd Prize', '3rd'],
+        'prizeBreakdown.first': ['firstPrize', 'first', '1stPlacePrize', '1st Place Prize', '1st Place Prize (₹)', '1st Prize'],
+        'prizeBreakdown.second': ['secondPrize', 'second', '2ndPlacePrize', '2nd Place Prize', '2nd Place Prize (₹)', '2nd Prize'],
+        'prizeBreakdown.third': ['thirdPrize', 'third', '3rdPlacePrize', '3rd Place Prize', '3rd Place Prize (₹)', '3rd Prize'],
+        slots: ['Max Capacity Slots', 'Max Capacity', 'maxCapacity', 'maxTeams', 'maxSlots', 'capacity', 'totalSlots', 'Total Slots'],
+        date: ['tournamentDate', 'eventDate', 'Tournament Date', 'Date'],
+        time: ['startTime', 'eventTime', 'Start Time', 'Time'],
+        map: ['mapName', 'playingMap', 'Map Name', 'Map'],
+        bannerImage: ['bannerImageUrl', 'bannerUrl', 'imageUrl', 'Banner Image URL', 'Banner Image'],
+        description: ['rules', 'details', 'Description & Rules', 'Description'],
+      };
+
+      const aliases = [...(keyAliases[sourceKey] || []), ...(keyAliases[targetKey] || [])];
+      for (const alias of aliases) {
+        if (alias in sourceItem && sourceItem[alias] !== undefined) {
+          return sourceItem[alias];
+        }
+        val = this.getDeepValue(sourceItem, alias);
+        if (val !== undefined) return val;
+      }
+
+      return undefined;
+    };
+
     if (Array.isArray(fieldMapping)) {
       for (const row of fieldMapping) {
         if (!row || !row.targetKey) continue;
@@ -461,27 +530,7 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
         const rawSource = String(row.sourceKey || '').trim();
         if (!targetKey) continue;
 
-        let val = undefined;
-
-        if (rawSource.startsWith('{{') && rawSource.endsWith('}}')) {
-          val = ExpressionEngine.resolve(rawSource, evalContext);
-        } else if (sourceItem && rawSource in sourceItem) {
-          val = sourceItem[rawSource];
-        } else if (sourceItem && targetKey in sourceItem) {
-          val = sourceItem[targetKey];
-        } else if (rawSource) {
-          val = this.getDeepValue(sourceItem, rawSource);
-          if (val === undefined && targetKey) {
-            val = this.getDeepValue(sourceItem, targetKey);
-          }
-          if (val === undefined && rawSource === 'firstPrize') {
-            val = sourceItem?.prizeBreakdown?.first;
-          } else if (val === undefined && rawSource === 'secondPrize') {
-            val = sourceItem?.prizeBreakdown?.second;
-          } else if (val === undefined && rawSource === 'thirdPrize') {
-            val = sourceItem?.prizeBreakdown?.third;
-          }
-        }
+        const val = findSourceValue(rawSource, targetKey);
 
         if (val !== undefined && val !== null) {
           const normalizedVal = normalizeTournamentFieldValue(targetKey, val);
@@ -492,20 +541,35 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       }
     }
 
-    // Default prizeBreakdown object if flat prizes or prizePool exists
-    if (!payload.prizeBreakdown) {
+    // Direct fallbacks for standard tournament schema if missing from payload
+    if (payload.prizePool === undefined || payload.prizePool === null) {
+      const rawPool = findSourceValue('prizePool', 'prizePool');
+      if (rawPool !== undefined && rawPool !== null) {
+        payload.prizePool = normalizeTournamentFieldValue('prizePool', rawPool);
+      }
+    }
+
+    if (payload.entryFee === undefined || payload.entryFee === null) {
+      const rawFee = findSourceValue('entryFee', 'entryFee');
+      payload.entryFee = normalizeTournamentFieldValue('entryFee', rawFee ?? 0);
+    }
+
+    // Normalize prizeBreakdown
+    if (!payload.prizeBreakdown || typeof payload.prizeBreakdown !== 'object') {
       if (sourceItem?.prizeBreakdown && typeof sourceItem.prizeBreakdown === 'object') {
-        payload.prizeBreakdown = { ...sourceItem.prizeBreakdown };
+        payload.prizeBreakdown = {
+          first: normalizeTournamentFieldValue('firstPrize', sourceItem.prizeBreakdown.first),
+          second: normalizeTournamentFieldValue('secondPrize', sourceItem.prizeBreakdown.second),
+          third: normalizeTournamentFieldValue('thirdPrize', sourceItem.prizeBreakdown.third),
+        };
       } else {
-        const first = Number(payload.firstPrize || sourceItem?.firstPrize || 0);
-        const second = Number(payload.secondPrize || sourceItem?.secondPrize || 0);
-        const third = Number(payload.thirdPrize || sourceItem?.thirdPrize || 0);
+        const first = normalizeTournamentFieldValue('firstPrize', payload.firstPrize || sourceItem?.firstPrize);
+        const second = normalizeTournamentFieldValue('secondPrize', payload.secondPrize || sourceItem?.secondPrize);
+        const third = normalizeTournamentFieldValue('thirdPrize', payload.thirdPrize || sourceItem?.thirdPrize);
         if (first > 0 || second > 0 || third > 0) {
           payload.prizeBreakdown = { first, second, third };
         } else if (payload.prizePool) {
-          const poolNum = typeof payload.prizePool === 'number'
-            ? payload.prizePool
-            : Number(String(payload.prizePool).replace(/[^0-9.-]+/g, '')) || 0;
+          const poolNum = Number(payload.prizePool) || 0;
           if (poolNum > 0) {
             payload.prizeBreakdown = {
               first: Math.round(poolNum * 0.5),
@@ -515,13 +579,27 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
           }
         }
       }
+    } else {
+      payload.prizeBreakdown.first = normalizeTournamentFieldValue('firstPrize', payload.prizeBreakdown.first);
+      payload.prizeBreakdown.second = normalizeTournamentFieldValue('secondPrize', payload.prizeBreakdown.second);
+      payload.prizeBreakdown.third = normalizeTournamentFieldValue('thirdPrize', payload.prizeBreakdown.third);
+    }
+
+    // If prizePool is still missing but prizeBreakdown has values, sum them up
+    if (payload.prizePool === undefined || payload.prizePool === null) {
+      if (payload.prizeBreakdown) {
+        const sum = (payload.prizeBreakdown.first || 0) + (payload.prizeBreakdown.second || 0) + (payload.prizeBreakdown.third || 0);
+        if (sum > 0) {
+          payload.prizePool = sum;
+        }
+      }
     }
 
     // Merge any direct root properties on sourceItem that are not yet set
     if (sourceItem && typeof sourceItem === 'object') {
       for (const [k, v] of Object.entries(sourceItem)) {
         if (payload[k] === undefined && v !== undefined && v !== null) {
-          payload[k] = v;
+          payload[k] = normalizeTournamentFieldValue(k, v);
         }
       }
     }
@@ -568,15 +646,70 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     if (!payload.mode || (typeof payload.mode === 'string' && payload.mode.trim() === '')) {
       return "Required tournament field 'mode' could not be extracted from the uploaded document.";
     }
-    if (payload.prizePool === undefined || payload.prizePool === null || String(payload.prizePool).trim() === '') {
+
+    // CRITICAL: 0 or positive number is VALID. Only undefined, null, empty string, or NaN should fail.
+    if (
+      payload.prizePool === undefined ||
+      payload.prizePool === null ||
+      payload.prizePool === '' ||
+      (typeof payload.prizePool === 'number' && Number.isNaN(payload.prizePool))
+    ) {
       return "Required tournament field 'prizePool' could not be extracted from the uploaded document.";
     }
-    if (payload.entryFee === undefined || payload.entryFee === null || typeof payload.entryFee !== 'number' || Number.isNaN(payload.entryFee)) {
+    if (typeof payload.prizePool === 'string') {
+      const cleaned = payload.prizePool.replace(/[^0-9.-]+/g, '');
+      const num = Number(cleaned);
+      if (!cleaned || Number.isNaN(num)) {
+        return "Required tournament field 'prizePool' could not be extracted from the uploaded document.";
+      }
+      payload.prizePool = num;
+    }
+    if (typeof payload.prizePool !== 'number' || Number.isNaN(payload.prizePool)) {
+      return "Required tournament field 'prizePool' could not be extracted from the uploaded document.";
+    }
+
+    // CRITICAL: entryFee - 0 is a VALID value!
+    if (
+      payload.entryFee === undefined ||
+      payload.entryFee === null ||
+      payload.entryFee === '' ||
+      (typeof payload.entryFee === 'number' && Number.isNaN(payload.entryFee))
+    ) {
       return "Required tournament field 'entryFee' must be a valid number.";
     }
-    if (payload.slots === undefined || payload.slots === null || typeof payload.slots !== 'number' || Number.isNaN(payload.slots) || payload.slots <= 0) {
+    if (typeof payload.entryFee === 'string') {
+      const cleaned = payload.entryFee.replace(/[^0-9.-]+/g, '');
+      const num = Number(cleaned);
+      if (Number.isNaN(num)) {
+        return "Required tournament field 'entryFee' must be a valid number.";
+      }
+      payload.entryFee = num;
+    }
+    if (typeof payload.entryFee !== 'number' || Number.isNaN(payload.entryFee)) {
+      return "Required tournament field 'entryFee' must be a valid number.";
+    }
+
+    // slots
+    if (
+      payload.slots === undefined ||
+      payload.slots === null ||
+      payload.slots === '' ||
+      (typeof payload.slots === 'number' && Number.isNaN(payload.slots))
+    ) {
       return "Required tournament field 'slots' must be a valid positive number.";
     }
+    if (typeof payload.slots === 'string') {
+      const cleaned = payload.slots.replace(/[^0-9.-]+/g, '');
+      const num = Number(cleaned);
+      if (!cleaned || Number.isNaN(num) || num <= 0) {
+        return "Required tournament field 'slots' must be a valid positive number.";
+      }
+      payload.slots = num;
+    }
+    if (typeof payload.slots !== 'number' || Number.isNaN(payload.slots) || payload.slots <= 0) {
+      return "Required tournament field 'slots' must be a valid positive number.";
+    }
+
     if (!payload.date || (typeof payload.date === 'string' && payload.date.trim() === '')) {
       return "Required tournament field 'date' could not be extracted from the uploaded document.";
     }

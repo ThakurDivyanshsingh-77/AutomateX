@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test';
 import http from 'http';
 import assert from 'assert';
 import { GeminiStructureTournamentExecutor } from './engine/executors/GeminiStructureTournamentExecutor.js';
@@ -35,8 +36,8 @@ const TEST_DOCUMENT_TEXT = `
 Tournament Title: AutomateX Test Tournament
 Game: Valorant
 Mode: SQUAD
-Total Prize Pool: ₹10000
-Entry Fee: ₹0
+Total Prize Pool (₹): ₹10000
+Entry Fee (₹): ₹0
 Max Capacity Slots: 64
 Winner Count: 3
 1st Place Prize: ₹5000
@@ -121,8 +122,8 @@ async function runTournamentWorkflowTests() {
         rows: [
           ['Game', 'Valorant'],
           ['Mode', 'SQUAD'],
-          ['Total Prize Pool', '₹10000'],
-          ['Entry Fee', '₹0'],
+          ['Total Prize Pool (₹)', '₹10000'],
+          ['Entry Fee (₹)', '₹0'],
           ['Max Capacity Slots', '64'],
           ['Winner Count', '3'],
           ['1st Place Prize', '₹5000'],
@@ -139,7 +140,7 @@ async function runTournamentWorkflowTests() {
       const formatted = docxParser._formatTableAsText(mockTableBlock);
       assert.ok(formatted.includes('Game: Valorant'));
       assert.ok(formatted.includes('Mode: SQUAD'));
-      assert.ok(formatted.includes('Total Prize Pool: ₹10000'));
+      assert.ok(formatted.includes('Total Prize Pool (₹): ₹10000'));
       assert.ok(formatted.includes('Map Name: Haven'));
       assert.ok(!formatted.includes('Field: Value'), 'Generic header row should be skipped');
     });
@@ -293,6 +294,7 @@ async function runTournamentWorkflowTests() {
       assert.strictEqual(req.body.title, 'AutomateX Test Tournament');
       assert.strictEqual(req.body.game, 'Valorant');
       assert.strictEqual(req.body.mode, 'SQUAD');
+      assert.strictEqual(req.body.entryFee, 0);
       assert.strictEqual(req.body.prizePool, 10000);
       assert.strictEqual(req.body.winnerCount, 3);
       assert.deepStrictEqual(req.body.prizeBreakdown, {
@@ -405,7 +407,14 @@ async function runTournamentWorkflowTests() {
       assert.strictEqual(geminiLog.output.tournament.game, 'Valorant');
       assert.strictEqual(geminiLog.output.tournament.mode, 'SQUAD');
       assert.strictEqual(geminiLog.output.tournament.map, 'Haven');
+      assert.strictEqual(geminiLog.output.tournament.entryFee, 0);
+      assert.strictEqual(geminiLog.output.tournament.prizePool, 10000);
       assert.strictEqual(geminiLog.output.tournament.winnerCount, 3);
+      assert.deepStrictEqual(geminiLog.output.tournament.prizeBreakdown, {
+        first: 5000,
+        second: 3000,
+        third: 2000,
+      });
 
       const createLog = execResult.logs.find((l) => l.nodeId === 'create_tournament_node');
       assert.ok(createLog && createLog.output.success);
@@ -422,7 +431,7 @@ async function runTournamentWorkflowTests() {
   console.log(`\n======================================================`);
   console.log(`📊 TOURNAMENT WORKFLOW TEST SUMMARY: ${passedTests} PASSED, ${failedTests} FAILED`);
   console.log(`======================================================\n`);
-  process.exitCode = failedTests > 0 ? 1 : 0;
+  process.exit(failedTests > 0 ? 1 : 0);
 }
 
 runTournamentWorkflowTests().catch((err) => {

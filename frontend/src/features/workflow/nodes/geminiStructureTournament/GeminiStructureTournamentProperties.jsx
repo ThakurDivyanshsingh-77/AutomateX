@@ -45,39 +45,38 @@ Never substitute values from previous runs.
 Never use values from another document.
 Never output field names like "title", "game", "mode", "date", "time", "map", "bannerImage", "description" as placeholder values.
 
-If a field is missing from the document:
-- Return an empty string "" for missing string fields.
-- Return 0 for missing numeric fields.
-- For winnerCount, return "3" if winner count is 3 or unspecified.
+If a field does not exist in the document, return null.
 
 Return exactly ONE JSON object adhering strictly to this schema:
 {
-  "title": "",
-  "game": "",
-  "mode": "",
-  "entryFee": 0,
-  "prizePool": "",
-  "winnerCount": "3",
-  "firstPrize": 0,
-  "secondPrize": 0,
-  "thirdPrize": 0,
-  "slots": 0,
-  "date": "",
-  "time": "",
-  "map": "",
-  "roomID": "",
-  "password": "",
-  "bannerImage": "",
-  "description": ""
+  "title": string | null,
+  "game": string | null,
+  "mode": string | null,
+  "entryFee": number | null,
+  "prizePool": number | null,
+  "winnerCount": number | null,
+  "prizeBreakdown": {
+    "first": number | null,
+    "second": number | null,
+    "third": number | null
+  },
+  "slots": number | null,
+  "date": string | null,
+  "time": string | null,
+  "map": string | null,
+  "bannerImage": string | null,
+  "description": string | null
 }
 
 Data type rules:
-- entryFee, firstPrize, secondPrize, thirdPrize, slots must be numbers (without currency symbols or commas).
-- winnerCount must be a string: "1", "2", or "3".
-- prizePool must be a string preserving the formatted value (e.g. "₹10,000" or "$10,000").
+- entryFee, first, second, third, slots must be numbers (e.g. 0, 5000, 64) without currency symbols or commas.
+- prizePool must be a number (e.g. 10000) representing total prize pool, or null if absent. Currency symbols such as ₹, $, commas, and parentheses must be stripped.
+- "Total Prize Pool" in the document must map to prizePool (e.g. 10000) as a plain number and NOT to prizeBreakdown.
+- winnerCount must be an integer (e.g. 3, 2, 1).
+- prizeBreakdown must contain first, second, third as plain numbers (e.g. 5000, 3000, 2000).
 - date must be formatted as YYYY-MM-DD if available.
 - time must be formatted as HH:mm if available.
-- Return valid JSON only.`;
+- Return valid JSON only without markdown formatting.`;
 
   const handleChange = (key, value) => {
     const nextConfig = { ...config, [key]: value };

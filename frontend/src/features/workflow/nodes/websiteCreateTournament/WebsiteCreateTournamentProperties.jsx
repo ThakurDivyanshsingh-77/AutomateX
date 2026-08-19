@@ -24,9 +24,9 @@ const DEFAULT_MAPPINGS = [
   { sourceKey: 'entryFee', targetKey: 'entryFee' },
   { sourceKey: 'prizePool', targetKey: 'prizePool' },
   { sourceKey: 'winnerCount', targetKey: 'winnerCount' },
-  { sourceKey: 'firstPrize', targetKey: 'firstPrize' },
-  { sourceKey: 'secondPrize', targetKey: 'secondPrize' },
-  { sourceKey: 'thirdPrize', targetKey: 'thirdPrize' },
+  { sourceKey: 'prizeBreakdown.first', targetKey: 'prizeBreakdown.first' },
+  { sourceKey: 'prizeBreakdown.second', targetKey: 'prizeBreakdown.second' },
+  { sourceKey: 'prizeBreakdown.third', targetKey: 'prizeBreakdown.third' },
   { sourceKey: 'slots', targetKey: 'slots' },
   { sourceKey: 'date', targetKey: 'date' },
   { sourceKey: 'time', targetKey: 'time' },
@@ -118,12 +118,15 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
   const requestPreviewJson = useMemo(() => {
     const preview = {};
     const sampleValues = {
-      title: 'Apex Championship',
+      title: 'AutomateX Test Tournament',
       game: 'Valorant',
       mode: 'SQUAD',
       entryFee: 0,
-      prizePool: '₹10,000',
-      winnerCount: '3',
+      prizePool: 10000,
+      winnerCount: 3,
+      'prizeBreakdown.first': 5000,
+      'prizeBreakdown.second': 3000,
+      'prizeBreakdown.third': 2000,
       firstPrize: 5000,
       secondPrize: 3000,
       thirdPrize: 2000,
@@ -133,8 +136,8 @@ export const WebsiteCreateTournamentProperties = ({ node, onUpdateNode }) => {
       map: 'Haven',
       roomID: '',
       password: '',
-      bannerImage: '',
-      description: 'Official AutomateX test tournament for competitive Valorant teams.',
+      bannerImage: 'https://example.com/automatex-test-banner.jpg',
+      description: 'Official AutomateX test tournament. Players must follow the tournament rules and join before the scheduled start time.',
     };
 
     fieldMapping.forEach(({ sourceKey, targetKey }) => {
