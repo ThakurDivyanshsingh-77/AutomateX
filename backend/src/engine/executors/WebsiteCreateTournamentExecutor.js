@@ -361,10 +361,17 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       } catch (err) {
         const itemDuration = Date.now() - itemStartTime;
         console.error(`   ✕ Failed (${err.message})`);
+        
         const statusMatch = err.message.match(/HTTP\s*(\d{3})/i);
+        const httpStatus = err.status || (statusMatch ? parseInt(statusMatch[1], 10) : 500);
+
         const errObj = {
-          status: statusMatch ? parseInt(statusMatch[1], 10) : 500,
-          message: err.message,
+          status: httpStatus,
+          statusText: err.statusText || 'Error',
+          message: err.validationMessage || err.message,
+          responseBody: err.responseBody || null,
+          requestPayload: payload,
+          targetUrl: err.targetUrl || resolvedEndpoint,
         };
         lastErrorDetails = errObj;
         results.push({
@@ -374,7 +381,9 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
           validated: true,
           requested: true,
           created: false,
+          httpStatus,
           error: errObj,
+          response: err.responseBody || null,
           payload,
           durationMs: itemDuration,
         });
@@ -426,7 +435,13 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
         requested: requestedCount > 0,
         created: 0,
         failed: failedCount,
+        httpStatus: lastErrorDetails?.status || 500,
         error: lastErrorDetails || { status: 500, message: 'Tournament creation failed.' },
+        response: lastErrorDetails?.responseBody || null,
+        requestPayload: primaryPayload,
+        previewJson: JSON.stringify(primaryPayload, null, 2),
+        tournament: primaryPayload,
+        tournaments: createdTournaments,
         summary,
         results,
       };
@@ -604,7 +619,71 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
       }
     }
 
-    return payload;
+    return this.cleanFinalPayload(payload);
+  }
+
+  /**
+   * Sanitizes final tournament object to match expected schema and strip internal engine keys
+   */
+  cleanFinalPayload(payload) {
+    const clean = {};
+    const standardKeys = [
+      'title',
+      'game',
+      'mode',
+      'entryFee',
+      'prizePool',
+      'winnerCount',
+      'prizeBreakdown',
+      'slots',
+      'date',
+      'time',
+      'map',
+      'bannerImage',
+      'description',
+      'rules',
+      'roomID',
+      'password',
+    ];
+
+    for (const key of standardKeys) {
+      if (payload[key] !== undefined && payload[key] !== null) {
+        if (typeof payload[key] === 'string' && payload[key].trim() === '' && ['roomID', 'password'].includes(key)) {
+          continue;
+        }
+        clean[key] = payload[key];
+      }
+    }
+
+    // Include any custom mapped keys that are not engine internal properties
+    const excludedInternalKeys = new Set([
+      'firstPrize',
+      'secondPrize',
+      'thirdPrize',
+      'extractionDebug',
+      'rawResponse',
+      'durationMs',
+      'success',
+      'count',
+      'currentTournament',
+      'tournament',
+      'tournaments',
+      'nodeId',
+      'stepId',
+      'executionId',
+      'previewJson',
+      'results',
+      'summary',
+      'name',
+    ]);
+
+    for (const [k, v] of Object.entries(payload)) {
+      if (!standardKeys.includes(k) && !excludedInternalKeys.has(k) && v !== undefined && v !== null) {
+        clean[k] = v;
+      }
+    }
+
+    return clean;
   }
 
   getDeepValue(obj, path) {
@@ -621,33 +700,40 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
   }
 
   /**
-   * Validates required tournament payload attributes before API call.
-   * Required: title, game, mode, prizePool, entryFee, slots, date, time, map
+   * Validates required tournament payload fields according to platform schema
    */
   validateTournamentPayload(payload) {
     if (!payload || typeof payload !== 'object') {
-      return 'Tournament payload is empty.';
+      return 'Tournament payload is empty or invalid.';
     }
 
-    // Check placeholder values
-    const placeholders = ['title', 'game', 'mode', 'date', 'time', 'map', 'bannerimage', 'description'];
-    for (const ph of placeholders) {
-      if (typeof payload[ph] === 'string' && payload[ph].toLowerCase().trim() === ph) {
-        return `Required tournament field '${ph}' contains literal placeholder value "${payload[ph]}".`;
-      }
-    }
+    const placeholderPattern = /^(title|game|mode|map|date|time|description|https?:\/\/example\.com\/placeholder.*)$/i;
 
-    if (!payload.title && !payload.name) {
+    // title
+    if (!payload.title || (typeof payload.title === 'string' && payload.title.trim() === '')) {
       return "Required tournament field 'title' could not be extracted from the uploaded document.";
     }
+    if (typeof payload.title === 'string' && placeholderPattern.test(payload.title.trim())) {
+      return "Required tournament field 'title' contains invalid placeholder value.";
+    }
+
+    // game
     if (!payload.game || (typeof payload.game === 'string' && payload.game.trim() === '')) {
       return "Required tournament field 'game' could not be extracted from the uploaded document.";
     }
+    if (typeof payload.game === 'string' && placeholderPattern.test(payload.game.trim())) {
+      return "Required tournament field 'game' contains invalid placeholder value.";
+    }
+
+    // mode
     if (!payload.mode || (typeof payload.mode === 'string' && payload.mode.trim() === '')) {
       return "Required tournament field 'mode' could not be extracted from the uploaded document.";
     }
+    if (typeof payload.mode === 'string' && placeholderPattern.test(payload.mode.trim())) {
+      return "Required tournament field 'mode' contains invalid placeholder value.";
+    }
 
-    // CRITICAL: 0 or positive number is VALID. Only undefined, null, empty string, or NaN should fail.
+    // prizePool: numeric validation (0 or greater is valid)
     if (
       payload.prizePool === undefined ||
       payload.prizePool === null ||
@@ -659,23 +745,23 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
     if (typeof payload.prizePool === 'string') {
       const cleaned = payload.prizePool.replace(/[^0-9.-]+/g, '');
       const num = Number(cleaned);
-      if (!cleaned || Number.isNaN(num)) {
-        return "Required tournament field 'prizePool' could not be extracted from the uploaded document.";
+      if (!cleaned || Number.isNaN(num) || num < 0) {
+        return "Required tournament field 'prizePool' must be a valid non-negative number.";
       }
       payload.prizePool = num;
     }
-    if (typeof payload.prizePool !== 'number' || Number.isNaN(payload.prizePool)) {
-      return "Required tournament field 'prizePool' could not be extracted from the uploaded document.";
+    if (typeof payload.prizePool !== 'number' || Number.isNaN(payload.prizePool) || payload.prizePool < 0) {
+      return "Required tournament field 'prizePool' must be a valid non-negative number.";
     }
 
-    // CRITICAL: entryFee - 0 is a VALID value!
+    // entryFee: 0 is completely valid!
     if (
       payload.entryFee === undefined ||
       payload.entryFee === null ||
       payload.entryFee === '' ||
       (typeof payload.entryFee === 'number' && Number.isNaN(payload.entryFee))
     ) {
-      return "Required tournament field 'entryFee' must be a valid number.";
+      return "Required tournament field 'entryFee' must be a valid number (0 is allowed).";
     }
     if (typeof payload.entryFee === 'string') {
       const cleaned = payload.entryFee.replace(/[^0-9.-]+/g, '');
@@ -803,20 +889,42 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
           return data;
         }
 
-        // Handle specific API status codes
-        if (response.status === 400) {
-          const detailMsg = data.errors
-            ? JSON.stringify(data.errors)
-            : (data.message || data.error || text);
-          throw new Error(`HTTP 400 (Validation Error): ${detailMsg}`);
-        } else if (response.status === 401) {
-          throw new Error(`HTTP 401 (Unauthorized): Invalid credentials for connected website.`);
-        } else if (response.status === 403) {
-          throw new Error(`HTTP 403 (Forbidden): Insufficient permissions to create tournaments.`);
-        } else if (response.status === 409) {
-          throw new Error(`HTTP 409 (Conflict): Tournament already exists.`);
+        // Extract full descriptive error message from backend response
+        let detailMsg = '';
+        if (data.errors) {
+          detailMsg = typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors);
+        } else if (data.message) {
+          detailMsg = data.message;
+        } else if (data.error) {
+          detailMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+        } else if (data.detail) {
+          detailMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+        } else if (data.details) {
+          detailMsg = typeof data.details === 'string' ? data.details : JSON.stringify(data.details);
+        } else if (data.msg) {
+          detailMsg = data.msg;
+        } else {
+          detailMsg = text || response.statusText || `HTTP ${response.status}`;
         }
 
+        console.error(`\n======================================================`);
+        console.error(`❌ HTTP REQUEST REJECTED: ${method} ${targetUrl}`);
+        console.error(`HTTP Status     : ${response.status} ${response.statusText || ''}`);
+        console.error(`Validation Msg  : ${detailMsg}`);
+        console.error(`Response Body   :`, JSON.stringify(data, null, 2));
+        console.error(`Request Payload :`, JSON.stringify(payload, null, 2));
+        console.error(`======================================================\n`);
+
+        const err = new Error(`HTTP ${response.status} (${response.statusText || 'Error'}): ${detailMsg}`);
+        err.status = response.status;
+        err.statusText = response.statusText;
+        err.responseBody = data;
+        err.validationMessage = detailMsg;
+        err.requestPayload = payload;
+        err.targetUrl = targetUrl;
+        err.method = method;
+
+        // Check if retryable
         const isRetryable = response.status === 408 || response.status === 429 || response.status >= 500;
         if (isRetryable && attempt < maxRetries) {
           const backoffMs = Math.pow(2, attempt) * 200;
@@ -825,10 +933,10 @@ export class WebsiteCreateTournamentExecutor extends BaseExecutor {
           continue;
         }
 
-        throw new Error(`HTTP ${response.status}: ${data.message || data.error || text}`);
+        throw err;
       } catch (err) {
         lastError = err;
-        if (attempt < maxRetries && !err.message.includes('400') && !err.message.includes('401') && !err.message.includes('403')) {
+        if (attempt < maxRetries && err.status && (err.status === 408 || err.status === 429 || err.status >= 500)) {
           const backoffMs = Math.pow(2, attempt) * 200;
           await new Promise((r) => setTimeout(r, backoffMs));
           continue;
