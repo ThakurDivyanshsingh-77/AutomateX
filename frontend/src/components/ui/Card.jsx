@@ -1,12 +1,15 @@
 import React from 'react';
 
-export const Card = ({ children, className = '', ...props }) => {
+export const Card = ({ children, className = '', hoverable = false, ...props }) => {
   return (
     <div
-      className={`bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl ${className}`}
+      className={`glass-card rounded-2xl p-6 shadow-xl relative overflow-hidden ${
+        hoverable ? 'hover:border-brand-500/40 hover:shadow-glow-brand/20' : ''
+      } ${className}`}
       {...props}
     >
       {children}
     </div>
   );
 };
+

@@ -9,15 +9,18 @@ export const EmptyState = ({
   className = '',
 }) => {
   return (
-    <div className={`py-14 px-6 text-center bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3 ${className}`}>
-      <div className="p-3.5 bg-slate-800/80 border border-slate-700/60 rounded-2xl w-fit mx-auto text-slate-400">
+    <div className={`py-14 px-6 text-center glass-panel-subtle border border-slate-800/80 rounded-2xl space-y-3.5 backdrop-blur-md ${className}`}>
+      <div className="p-4 bg-gradient-to-tr from-slate-900 to-slate-800 border border-slate-700/60 rounded-2xl w-fit mx-auto text-brand-400 shadow-inner">
         <Icon className="w-8 h-8" />
       </div>
-      <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
-      <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-        {description}
-      </p>
+      <div className="space-y-1">
+        <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
+        <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+          {description}
+        </p>
+      </div>
       {actionButton && <div className="pt-2">{actionButton}</div>}
     </div>
   );
 };
+

@@ -213,15 +213,17 @@ export const ReliabilityDashboard = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto select-none font-sans text-slate-100">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel border border-slate-800/80 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-80 h-32 bg-amber-500/10 blur-[70px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10">
+          <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
               <ShieldCheck className="w-5 h-5" />
             </div>
             Reliability & Recovery Engine
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-400 mt-1 max-w-xl">
             Automated node retries, per-node timeouts, error classification, dead letter queue, and execution recovery.
           </p>
         </div>
@@ -232,72 +234,72 @@ export const ReliabilityDashboard = () => {
             if (activeTab === 'failures') fetchFailures();
             else fetchDlq();
           }}
-          className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-2 border border-slate-700 transition-colors"
+          className="px-3.5 py-2.5 glass-panel-subtle hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-2 border border-slate-700/60 transition-colors relative z-10 shadow-sm"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Refresh Data
         </button>
       </div>
 
       {/* Stats Cards Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3.5">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="glass-card border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
           <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-indigo-400" /> Total Executions
+            <Activity className="w-3.5 h-3.5 text-brand-400" /> Total Executions
           </div>
           <div className="text-2xl font-extrabold font-mono text-white mt-2">
-            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-slate-600" /> : stats.total}
+            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats.total}
           </div>
-          <div className="text-[10px] text-slate-500 mt-1 font-mono">{stats.successRate}% success rate</div>
+          <div className="text-[10px] text-slate-400 mt-1 font-mono">{stats.successRate}% success rate</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
+        <div className="glass-card border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
           <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Succeeded
           </div>
           <div className="text-2xl font-extrabold font-mono text-emerald-400 mt-2">
-            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-slate-600" /> : stats.succeeded}
+            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats.succeeded}
           </div>
-          <div className="text-[10px] text-emerald-500/70 mt-1 font-mono">Completed cleanly</div>
+          <div className="text-[10px] text-emerald-400/80 mt-1 font-mono">Completed cleanly</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
+        <div className="glass-card border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
           <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
             <RotateCcw className="w-3.5 h-3.5 text-cyan-400" /> Auto-Recovered
           </div>
           <div className="text-2xl font-extrabold font-mono text-cyan-400 mt-2">
-            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-slate-600" /> : stats.recovered}
+            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats.recovered}
           </div>
-          <div className="text-[10px] text-cyan-500/70 mt-1 font-mono">Succeeded on retry</div>
+          <div className="text-[10px] text-cyan-400/80 mt-1 font-mono">Succeeded on retry</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
+        <div className="glass-card border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
           <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-amber-400" /> Timeouts
           </div>
           <div className="text-2xl font-extrabold font-mono text-amber-400 mt-2">
-            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-slate-600" /> : stats.timeout}
+            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats.timeout}
           </div>
-          <div className="text-[10px] text-amber-500/70 mt-1 font-mono">Exceeded node limit</div>
+          <div className="text-[10px] text-amber-400/80 mt-1 font-mono">Exceeded node limit</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
+        <div className="glass-card border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
           <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
             <XCircle className="w-3.5 h-3.5 text-rose-400" /> Failed
           </div>
           <div className="text-2xl font-extrabold font-mono text-rose-400 mt-2">
-            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-slate-600" /> : stats.failed}
+            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats.failed}
           </div>
-          <div className="text-[10px] text-rose-500/70 mt-1 font-mono">Halted executions</div>
+          <div className="text-[10px] text-rose-400/80 mt-1 font-mono">Halted executions</div>
         </div>
 
-        <div className="bg-slate-900 border border-indigo-500/30 bg-indigo-500/5 rounded-2xl p-4 flex flex-col justify-between shadow-lg">
-          <div className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Inbox className="w-3.5 h-3.5 text-indigo-400" /> Dead Letter Q
+        <div className="glass-card border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
+          <div className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+            <Inbox className="w-3.5 h-3.5 text-amber-400" /> Dead Letter Q
           </div>
-          <div className="text-2xl font-extrabold font-mono text-indigo-300 mt-2">
-            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-slate-600" /> : stats.deadLetter}
+          <div className="text-2xl font-extrabold font-mono text-amber-400 mt-2">
+            {loadingStats ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats.deadLetter}
           </div>
-          <div className="text-[10px] text-indigo-400/70 mt-1 font-mono">Awaiting replay</div>
+          <div className="text-[10px] text-amber-300/80 mt-1 font-mono">Awaiting replay</div>
         </div>
       </div>
 
@@ -307,8 +309,8 @@ export const ReliabilityDashboard = () => {
           onClick={() => setActiveTab('failures')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
             activeTab === 'failures'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              ? 'bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-glow-brand'
+              : 'glass-panel-subtle text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <ShieldAlert className="w-4 h-4" /> Failed Executions & Recovery
@@ -318,8 +320,8 @@ export const ReliabilityDashboard = () => {
           onClick={() => setActiveTab('dlq')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
             activeTab === 'dlq'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-glow-brand'
+              : 'glass-panel-subtle text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <Inbox className="w-4 h-4" /> Dead Letter Queue
@@ -334,12 +336,12 @@ export const ReliabilityDashboard = () => {
           onClick={() => setActiveTab('cron')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
             activeTab === 'cron'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-glow-indigo'
+              : 'glass-panel-subtle text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
           <Clock className="w-4 h-4" /> Cron Scheduler
-          {cronStatus.registeredJobsCount > 0 && (
+          {cronStatus?.registeredJobsCount > 0 && (
             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500 text-white">
               {cronStatus.registeredJobsCount} Active
             </span>

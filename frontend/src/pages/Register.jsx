@@ -2,20 +2,13 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { User, Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
-
-/* ─── Bolt wordmark ─────────────────────────────────────────────────────── */
-const BoltMark = () => (
-  <svg width={40} height={40} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-    <rect width="32" height="32" rx="8" fill="#ff4f00" />
-    <path d="M19 4L9 18h8l-4 10 14-16h-9l3-8z" fill="#fffefb" strokeLinejoin="round" />
-  </svg>
-);
+import { Flame, User, Mail, Lock, ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 
 const PERKS = [
-  'Free forever — no credit card needed',
-  '5 active workflows immediately',
-  'AI nodes: OpenAI & Gemini included',
+  'Unlimited visual DAG workflows',
+  'Real-time execution logs & debug inspector',
+  'Encrypted Vault: Discord, Sheets, Slack, Gmail',
+  'Integrated AI workflow generation with OpenAI & Gemini',
 ];
 
 export const Register = () => {
@@ -39,72 +32,88 @@ export const Register = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex flex-col lg:flex-row"
-      style={{ backgroundColor: 'var(--color-canvas)', fontFamily: "'Inter', system-ui, sans-serif" }}
-    >
-      {/* ── Left panel (cream-soft) — brand / perks ───────────────────── */}
-      <div
-        className="hidden lg:flex flex-col justify-center p-16"
-        style={{ backgroundColor: 'var(--color-canvas-soft)', flex: '0 0 420px', borderRight: '1px solid var(--color-mute)' }}
-      >
-        <div className="space-y-10">
-          <div>
-            <Link to="/" className="flex items-center gap-2 no-underline mb-10" style={{ textDecoration: 'none' }}>
-              <BoltMark />
-              <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--color-ink)' }}>AutomateX</span>
-            </Link>
-            <h2 style={{ fontSize: 36, fontWeight: 500, color: 'var(--color-ink)', lineHeight: '40px', letterSpacing: '-0.02em' }}>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col lg:flex-row relative overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
+      {/* Ambient background glows */}
+      <div className="fixed top-1/4 left-1/4 w-[32rem] h-[32rem] bg-brand-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed bottom-10 right-1/4 w-[30rem] h-[30rem] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* ── Left panel — brand / perks ───────────────────── */}
+      <div className="hidden lg:flex flex-col justify-between p-16 flex-[0_0_460px] glass-panel-subtle border-r border-slate-800/80 relative z-10 backdrop-blur-2xl">
+        <div className="space-y-12">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-500 text-white shadow-glow-brand group-hover:scale-105 transition-transform">
+              <Flame className="w-6 h-6 fill-white" />
+            </div>
+            <span className="font-extrabold text-2xl tracking-tight text-white group-hover:text-brand-400 transition-colors">
+              AutomateX
+            </span>
+          </Link>
+
+          <div className="space-y-4">
+            <h2 className="text-3xl font-extrabold text-white tracking-tight leading-tight">
               Automate anything.<br />
-              <span style={{ color: 'var(--color-primary)' }}>No code.</span>
+              <span className="text-gradient-brand">Ship in minutes.</span>
             </h2>
-            <p style={{ fontSize: 17, color: 'var(--color-body)', marginTop: 12, lineHeight: '26px' }}>
-              Join 12,000+ teams who use AutomateX to connect apps, run AI workflows, and ship faster.
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Connect your applications, trigger webhooks, build complex logic branches, and inspect executions in real-time.
             </p>
           </div>
-          <ul className="space-y-4">
-            {PERKS.map((perk) => (
-              <li key={perk} className="flex items-center gap-3">
-                <CheckCircle2 size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
-                <span style={{ fontSize: 16, color: 'var(--color-ink-mid)' }}>{perk}</span>
+
+          <ul className="space-y-3.5 pt-2">
+            {PERKS.map((perk, i) => (
+              <li key={i} className="flex items-center gap-3 text-xs text-slate-300">
+                <div className="p-1 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <span>{perk}</span>
               </li>
             ))}
           </ul>
         </div>
+
+        <div className="pt-8 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-mono">
+          <span>Enterprise Grade v1.4</span>
+          <span className="flex items-center gap-1 text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live
+          </span>
+        </div>
       </div>
 
       {/* ── Right panel — registration form ─────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10">
         {/* Mobile wordmark */}
-        <Link to="/" className="flex items-center gap-2 mb-8 lg:hidden no-underline" style={{ textDecoration: 'none' }}>
-          <BoltMark />
-          <span style={{ fontWeight: 700, fontSize: 20, color: 'var(--color-ink)' }}>AutomateX</span>
+        <Link to="/" className="flex items-center gap-2.5 mb-8 lg:hidden group">
+          <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-500 text-white shadow-glow-brand">
+            <Flame className="w-6 h-6 fill-white" />
+          </div>
+          <span className="font-extrabold text-2xl tracking-tight text-white">AutomateX</span>
         </Link>
 
-        <div className="w-full" style={{ maxWidth: 440 }}>
-          <div className="mb-7">
-            <h1 style={{ fontSize: 28, fontWeight: 600, color: 'var(--color-ink)', lineHeight: '34px', letterSpacing: '-0.4px', margin: 0 }}>
+        <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-slate-800/80 shadow-2xl backdrop-blur-2xl">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white tracking-tight">
               Create your account
             </h1>
-            <p style={{ fontSize: 16, color: 'var(--color-body)', marginTop: 6 }}>
-              It's free. No credit card required.
+            <p className="text-xs text-slate-400 mt-1">
+              Start building autonomous workflows for free.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
             {/* Full name */}
-            <div>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
                 Full name
               </label>
-              <div style={{ position: 'relative' }}>
-                <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Divyansh Kumar"
+                  placeholder="Divyansh Singh"
                   autoComplete="name"
-                  className="zap-input"
-                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.name ? '#DC2626' : 'var(--color-ink)' }}
+                  className={`w-full glass-input rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none ${
+                    errors.name ? 'border-rose-500 focus:border-rose-500' : 'focus:border-brand-500'
+                  }`}
                   {...register('name', {
                     required: 'Full name is required',
                     minLength: { value: 3, message: 'At least 3 characters' },
@@ -112,66 +121,69 @@ export const Register = () => {
                   })}
                 />
               </div>
-              {errors.name && <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.name.message}</p>}
+              {errors.name && <p className="text-[11px] text-rose-400 font-medium">{errors.name.message}</p>}
             </div>
 
             {/* Email */}
-            <div>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
                 Email address
               </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   placeholder="you@company.com"
                   autoComplete="email"
-                  className="zap-input"
-                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.email ? '#DC2626' : 'var(--color-ink)' }}
+                  className={`w-full glass-input rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none ${
+                    errors.email ? 'border-rose-500 focus:border-rose-500' : 'focus:border-brand-500'
+                  }`}
                   {...register('email', {
                     required: 'Email is required',
                     pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Enter a valid email' },
                   })}
                 />
               </div>
-              {errors.email && <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.email.message}</p>}
+              {errors.email && <p className="text-[11px] text-rose-400 font-medium">{errors.email.message}</p>}
             </div>
 
             {/* Password */}
-            <div>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
                 Password
               </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   placeholder="At least 8 characters"
                   autoComplete="new-password"
-                  className="zap-input"
-                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.password ? '#DC2626' : 'var(--color-ink)' }}
+                  className={`w-full glass-input rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none ${
+                    errors.password ? 'border-rose-500 focus:border-rose-500' : 'focus:border-brand-500'
+                  }`}
                   {...register('password', {
                     required: 'Password is required',
                     minLength: { value: 8, message: 'At least 8 characters' },
                   })}
                 />
               </div>
-              {errors.password && <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.password.message}</p>}
+              {errors.password && <p className="text-[11px] text-rose-400 font-medium">{errors.password.message}</p>}
             </div>
 
             {/* Confirm password */}
-            <div>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 6 }}>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-300">
                 Confirm password
               </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-body-mid)', pointerEvents: 'none' }} />
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   placeholder="Repeat your password"
                   autoComplete="new-password"
-                  className="zap-input"
-                  style={{ paddingLeft: 40, fontSize: 16, borderColor: errors.confirmPassword ? '#DC2626' : 'var(--color-ink)' }}
+                  className={`w-full glass-input rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none ${
+                    errors.confirmPassword ? 'border-rose-500 focus:border-rose-500' : 'focus:border-brand-500'
+                  }`}
                   {...register('confirmPassword', {
                     required: 'Please confirm your password',
                     validate: (v) => v === password || 'Passwords do not match',
@@ -179,7 +191,7 @@ export const Register = () => {
                 />
               </div>
               {errors.confirmPassword && (
-                <p style={{ fontSize: 13, color: '#DC2626', marginTop: 4 }}>{errors.confirmPassword.message}</p>
+                <p className="text-[11px] text-rose-400 font-medium">{errors.confirmPassword.message}</p>
               )}
             </div>
 
@@ -187,34 +199,28 @@ export const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="zap-btn-primary zap-btn-md"
-              style={{ width: '100%', justifyContent: 'center', opacity: loading ? 0.65 : 1, marginTop: 4 }}
+              className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white rounded-xl text-xs font-bold transition-all shadow-glow-brand flex items-center justify-center gap-2 disabled:opacity-60 hover:scale-[1.01]"
             >
               {loading ? (
-                <span className="zap-pulse">Creating account…</span>
+                <span className="animate-pulse">Creating account…</span>
               ) : (
                 <>
-                  Create free account <ArrowRight size={18} />
+                  <span>Create Free Account</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--color-body)', marginTop: 20 }}>
+          <p className="text-center text-xs text-slate-400 mt-6">
             Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/login" className="text-brand-400 hover:text-brand-300 font-semibold transition-colors">
               Sign in
             </Link>
-          </p>
-
-          <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--color-body-mid)', marginTop: 16 }}>
-            By creating an account you agree to our{' '}
-            <a href="#" style={{ color: 'var(--color-body)', textDecoration: 'underline' }}>Terms</a>{' '}
-            and{' '}
-            <a href="#" style={{ color: 'var(--color-body)', textDecoration: 'underline' }}>Privacy Policy</a>.
           </p>
         </div>
       </div>
     </div>
   );
 };
+

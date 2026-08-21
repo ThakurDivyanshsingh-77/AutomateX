@@ -72,18 +72,18 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
   });
 
   return (
-    <div className="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 shadow-xl hover:shadow-indigo-500/5 relative">
+    <div className="group glass-card border border-slate-800/80 hover:border-brand-500/40 rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 shadow-xl hover:shadow-glow-brand/20 relative">
       <div className="space-y-3">
         {/* Card Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="p-2.5 rounded-xl bg-indigo-600/10 border border-indigo-600/20 text-indigo-400 group-hover:scale-105 transition-transform">
+            <div className="p-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 group-hover:scale-105 transition-transform">
               <GitFork className="w-4 h-4" />
             </div>
             {getStatusBadge(workflow.status)}
             {/* Phase 10: Version badge */}
             {workflow.currentVersion && (
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 flex items-center gap-1">
                 <Tag className="w-2.5 h-2.5" /> {workflow.currentVersion}
               </span>
             )}
@@ -104,20 +104,20 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div className="absolute right-0 top-8 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1 z-30 font-sans text-xs">
+              <div className="absolute right-0 top-8 w-48 glass-panel border border-slate-700/80 rounded-xl shadow-2xl py-1 z-30 font-sans text-xs backdrop-blur-2xl">
                 <button
                   onClick={() => {
                     setShowMenu(false);
                     navigate(`/builder/${workflow._id}`);
                   }}
-                  className="w-full px-3 py-2 text-left text-indigo-300 hover:text-white hover:bg-indigo-600/20 flex items-center gap-2 font-semibold"
+                  className="w-full px-3 py-2 text-left text-brand-300 hover:text-white hover:bg-brand-500/20 flex items-center gap-2 font-semibold"
                 >
-                  <ExternalLink className="w-3.5 h-3.5 text-indigo-400" /> Open Builder
+                  <ExternalLink className="w-3.5 h-3.5 text-brand-400" /> Open Builder
                 </button>
 
                 <button
                   onClick={handleCopyWebhookUrl}
-                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2"
                 >
                   <Webhook className="w-3.5 h-3.5 text-cyan-400" /> Copy Webhook URL
                 </button>
@@ -127,7 +127,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
                     setShowMenu(false);
                     navigate(`/workflows/edit/${workflow._id}`);
                   }}
-                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2"
                 >
                   <Edit3 className="w-3.5 h-3.5 text-slate-400" /> Edit Metadata
                 </button>
@@ -137,7 +137,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
                     setShowMenu(false);
                     onDuplicate(workflow._id);
                   }}
-                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2"
                 >
                   <Copy className="w-3.5 h-3.5 text-cyan-400" /> Duplicate
                 </button>
@@ -147,7 +147,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
                     setShowMenu(false);
                     onPublish(workflow._id);
                   }}
-                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2"
                 >
                   <Globe className="w-3.5 h-3.5 text-emerald-400" />
                   {workflow.status === 'published' ? 'Unpublish' : 'Publish'}
@@ -159,7 +159,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
                       setShowMenu(false);
                       onArchive(workflow._id);
                     }}
-                    className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2"
                   >
                     <Archive className="w-3.5 h-3.5 text-amber-400" /> Archive
                   </button>
@@ -185,7 +185,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
         <div>
           <h3
             onClick={() => navigate(`/builder/${workflow._id}`)}
-            className="text-sm font-semibold text-white group-hover:text-indigo-400 transition-colors line-clamp-1 cursor-pointer"
+            className="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors line-clamp-1 cursor-pointer"
           >
             {workflow.name}
           </h3>
@@ -200,7 +200,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
             {workflow.tags.map((tag, i) => (
               <span
                 key={i}
-                className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-400 text-[10px] font-mono"
+                className="px-2 py-0.5 rounded-md bg-slate-950/80 border border-slate-800 text-slate-400 text-[10px] font-mono"
               >
                 #{tag}
               </span>
@@ -214,7 +214,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] text-slate-500 font-mono">Created {formattedCreated}</span>
           {workflow.totalVersions > 0 && (
-            <span className="text-[9px] text-slate-600 font-mono flex items-center gap-1">
+            <span className="text-[9px] text-slate-500 font-mono flex items-center gap-1">
               <History className="w-2.5 h-2.5" /> {workflow.totalVersions} version{workflow.totalVersions !== 1 ? 's' : ''}
             </span>
           )}
@@ -224,7 +224,7 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
           <button
             onClick={handleCopyWebhookUrl}
             title="Copy Public Webhook URL"
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg border border-slate-700 transition-colors text-xs font-semibold flex items-center gap-1"
+            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-cyan-400 rounded-lg border border-slate-800 transition-colors text-xs font-semibold flex items-center gap-1"
           >
             <Webhook className="w-3.5 h-3.5" />
           </button>
@@ -232,12 +232,13 @@ export const WorkflowCard = ({ workflow, onDuplicate, onPublish, onArchive, onDe
             variant="secondary"
             size="sm"
             onClick={() => navigate(`/builder/${workflow._id}`)}
-            className="text-xs font-semibold"
+            className="text-xs font-semibold hover:border-brand-500/40"
           >
-            Open Builder <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+            Open Builder <ExternalLink className="w-3.5 h-3.5 text-brand-400" />
           </Button>
         </div>
       </div>
     </div>
   );
 };
+

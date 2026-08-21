@@ -89,23 +89,41 @@ export const Workflows = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto select-none font-sans">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            Workflow Management System
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Create, manage, duplicate, publish, and structure your automation projects.
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel border border-slate-800/80 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-80 h-32 bg-brand-500/10 blur-[70px] rounded-full pointer-events-none" />
+        
+        <div className="space-y-1 relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20">
+              <GitFork className="w-5 h-5" />
+            </div>
+            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+              Workflow Management Hub
+            </h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1 max-w-xl">
+            Design, deploy, version, duplicate, and monitor your visual DAG automation flows.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={() => navigate('/workflows/create')}
-          className="w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4" /> Create Workflow
-        </Button>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto relative z-10">
+          <button
+            onClick={fetchWorkflows}
+            disabled={loading}
+            title="Refresh Workflows"
+            className="p-2.5 rounded-xl glass-panel-subtle hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 transition-all shadow-sm"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-400' : ''}`} />
+          </button>
+
+          <Button
+            variant="primary"
+            onClick={() => navigate('/workflows/create')}
+            className="flex-1 sm:flex-initial shadow-glow-brand"
+          >
+            <Plus className="w-4 h-4" /> Create Workflow
+          </Button>
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -170,3 +188,4 @@ export const Workflows = () => {
     </div>
   );
 };
+

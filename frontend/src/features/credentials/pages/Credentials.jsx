@@ -158,35 +158,40 @@ export const Credentials = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 select-none font-sans">
+    <div className="max-w-5xl mx-auto space-y-6 select-none font-sans text-slate-100">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            <h1 className="text-xl font-bold text-white tracking-tight">Credentials Vault</h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel border border-slate-800/80 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-80 h-32 bg-emerald-500/10 blur-[70px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">Credentials Vault</h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-400 mt-1 max-w-xl">
             Store Discord Bot Tokens, MongoDB connections, API keys, OAuth tokens, and secrets encrypted at rest via AES-256-CBC.
           </p>
         </div>
 
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
+        <Button variant="primary" onClick={() => setShowAddModal(true)} className="relative z-10 shadow-glow-brand">
           <Plus className="w-4 h-4" /> Add Credential
         </Button>
       </div>
 
       {/* Add Credential Modal / Form */}
       {showAddModal && (
-        <Card className="space-y-4 border-indigo-500/50 bg-slate-900/90">
+        <Card className="space-y-4 border-brand-500/40 glass-panel shadow-2xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Lock className="w-4 h-4 text-indigo-400" /> Store Encrypted Credential
+              <Lock className="w-4 h-4 text-brand-400" /> Store Encrypted Credential
             </h3>
-            <button onClick={() => setShowAddModal(false)} className="text-xs text-slate-500 hover:text-white">
+            <button onClick={() => setShowAddModal(false)} className="text-xs text-slate-400 hover:text-white">
               Cancel
             </button>
           </div>
+
 
           <form onSubmit={handleCreate} className="space-y-4 text-xs">
             <Input

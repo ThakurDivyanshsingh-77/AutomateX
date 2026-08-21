@@ -22,7 +22,7 @@ export const Input = forwardRef(
         )}
         <div className="relative">
           {Icon && (
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
               <Icon className="w-4 h-4" />
             </div>
           )}
@@ -30,11 +30,11 @@ export const Input = forwardRef(
             ref={ref}
             type={type}
             placeholder={placeholder}
-            className={`w-full bg-slate-950 border ${
-              error ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-indigo-500'
+            className={`w-full glass-input ${
+              error ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-brand-500'
             } rounded-xl ${
               Icon ? 'pl-10' : 'px-3.5'
-            } pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none transition-colors ${className}`}
+            } pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none transition-all ${className}`}
             {...props}
           />
         </div>
@@ -47,3 +47,4 @@ export const Input = forwardRef(
 );
 
 Input.displayName = 'Input';
+
