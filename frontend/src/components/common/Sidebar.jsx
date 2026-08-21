@@ -19,10 +19,10 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full p-4 select-none justify-between bg-[#0a0a0c]">
+    <div className="flex flex-col h-full p-4 select-none justify-between bg-white">
       <div className="space-y-4">
         <div>
-          <h4 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-3 mb-2">
+          <h4 className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider px-3 mb-2">
             Main Navigation
           </h4>
           <div className="space-y-1">
@@ -36,8 +36,8 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                       isActive
-                        ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30 shadow-[0_0_15px_rgba(255,79,0,0.12)]'
-                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/70'
+                        ? 'bg-orange-50 text-orange-600 border border-orange-200/80 shadow-sm font-bold'
+                        : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                     }`
                   }
                 >
@@ -50,7 +50,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
         </div>
 
         <div>
-          <h4 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider px-3 mb-2">
+          <h4 className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider px-3 mb-2">
             Upcoming Modules
           </h4>
           <div className="space-y-1">
@@ -59,13 +59,13 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
               return (
                 <div
                   key={idx}
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-zinc-600 bg-zinc-950/40 border border-zinc-900 cursor-not-allowed"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-stone-400 bg-stone-50 border border-stone-100 cursor-not-allowed"
                 >
                   <div className="flex items-center gap-3">
                     <Icon className="w-4 h-4 opacity-50" />
                     <span>{item.name}</span>
                   </div>
-                  <span className="text-[9px] font-mono font-normal px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-500 border border-zinc-800">
+                  <span className="text-[9px] font-mono font-normal px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 border border-stone-200">
                     {item.badge}
                   </span>
                 </div>
@@ -75,11 +75,11 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
         </div>
       </div>
 
-      <div className="p-3 rounded-xl bg-black border border-zinc-800/80 text-[11px] text-zinc-400 space-y-1">
-        <div className="flex items-center gap-1.5 text-zinc-300 font-semibold">
-          <Lock className="w-3.5 h-3.5 text-orange-400" /> Platform Status
+      <div className="p-3 rounded-xl bg-orange-50/50 border border-orange-100 text-[11px] text-stone-600 space-y-1">
+        <div className="flex items-center gap-1.5 text-stone-800 font-semibold">
+          <Lock className="w-3.5 h-3.5 text-orange-500" /> Platform Status
         </div>
-        <p className="text-[10px] leading-relaxed text-zinc-500">
+        <p className="text-[10px] leading-relaxed text-stone-500">
           DAG Engine & Realtime Logs Active.
         </p>
       </div>
@@ -89,7 +89,7 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
   return (
     <>
       {/* Desktop Fixed Sidebar */}
-      <aside className="hidden md:flex w-60 bg-[#0a0a0c] border-r border-zinc-800/90 flex-col h-[calc(100vh-4rem)]">
+      <aside className="hidden md:flex w-60 bg-white border-r border-stone-200/90 flex-col h-[calc(100vh-4rem)]">
         {sidebarContent}
       </aside>
 
@@ -97,10 +97,10 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       {isMobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm"
             onClick={onCloseMobile}
           />
-          <aside className="relative w-64 bg-[#0a0a0c] border-r border-zinc-800 h-full shadow-2xl z-10">
+          <aside className="relative w-64 bg-white border-r border-stone-200 h-full shadow-2xl z-10">
             {sidebarContent}
           </aside>
         </div>
