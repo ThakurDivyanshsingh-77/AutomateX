@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Sparkles,
   Wand2,
@@ -39,9 +39,19 @@ const SAMPLE_PROMPTS = [
 
 export const AIBuilderPage = () => {
   const navigate = useNavigate();
-  const [prompt, setPrompt] = useState('');
+  const location = useLocation();
+  const [prompt, setPrompt] = useState(location.state?.initialPrompt || '');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    if (location.state?.initialPrompt) {
+      setPrompt(location.state.initialPrompt);
+      if (location.state?.autoGenerate) {
+        handleGenerate(location.state.initialPrompt);
+      }
+    }
+  }, [location.state]);
 
   const handleGenerate = async (customPrompt) => {
     const textToUse = customPrompt || prompt;
