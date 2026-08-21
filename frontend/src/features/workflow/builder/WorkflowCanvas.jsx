@@ -390,7 +390,12 @@ const BuilderInner = () => {
       <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
         <NodeToolbar />
 
-        <div className="flex-1 h-full relative">
+        <div className="flex-1 h-full relative overflow-hidden bg-slate-50">
+          {/* Ambient Studio Lighting Meshes behind Canvas */}
+          <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-orange-400/10 rounded-full blur-[100px] pointer-events-none z-0" />
+          <div className="absolute top-1/3 -right-24 w-[450px] h-[450px] bg-amber-400/8 rounded-full blur-[100px] pointer-events-none z-0" />
+          <div className="absolute -bottom-24 left-1/3 w-[450px] h-[450px] bg-orange-500/6 rounded-full blur-[100px] pointer-events-none z-0" />
+
           <CanvasControls
             saveStatus={saveStatus}
             onSave={() => saveWorkflow(nodes, edges)}
@@ -422,9 +427,13 @@ const BuilderInner = () => {
             }}
             fitView
             colorMode="light"
-            className="bg-slate-50"
+            className="bg-transparent"
           >
-            <Background color="#cbd5e1" gap={20} size={1} />
+            {/* Layer 1: Major Grid Structural Blueprint Lines */}
+            <Background id="grid-lines" variant="lines" gap={60} color="#e2e8f0" lineWidth={1} className="opacity-75" />
+            {/* Layer 2: Precision Micro-Dot Matrix */}
+            <Background id="grid-dots" variant="dots" gap={15} size={1.2} color="#94a3b8" className="opacity-60" />
+            
             <MiniMap
               nodeColor={(node) => {
                 if (node.type === NODE_TYPES.START) return '#10b981';

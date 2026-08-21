@@ -170,6 +170,8 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
   - `DashboardLayout.jsx`, `Navbar.jsx`, `Sidebar.jsx`: Clean white navbar/sidebar with active orange badges and ambient background glows.
   - `Button.jsx`, `Card.jsx`, `Input.jsx`, `EmptyState.jsx`: All UI primitive variants updated for light theme.
 - **Visual Canvas & Builder Suite Upgraded (`/builder/:id`)**:
+  - **Engineering Blueprint & Micro-Dot Matrix Textures (`src/index.css`)**: Layered ReactFlow background with major structural blueprint grid lines (`gap={60} color="#e2e8f0"`) and precision micro-dot matrix (`gap={15} size={1.2} color="#94a3b8"`).
+  - **Ambient Studio Mesh Glows**: Ambient orange/amber/warm-gold lighting meshes placed behind the canvas for depth and visual richness.
   - **Node Palette Toolbar (`NodeToolbar.jsx`)**: Converted to crisp white container with category headers, search input on `bg-slate-50`, and light draggable node cards with orange hover states.
   - **Node Properties Drawer (`PropertiesPanel.jsx`)**: Converted to white drawer with orange variables explorer button, light status banners, and clean form controls.
   - **Execution Logs Drawer (`ExecutionLogsDrawer.jsx`)**: Converted to white slide-over drawer with light KPI stats cards and structured step logs.
