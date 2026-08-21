@@ -107,15 +107,15 @@ export const PropertiesPanel = ({
       updateNodeData={onUpdateNodeData}
       workflowId={workflowId}
     >
-      <aside className="w-80 bg-slate-900 border-l border-slate-800 flex flex-col h-full select-none shadow-2xl">
+      <aside className="w-80 bg-white border-l border-slate-200 flex flex-col h-full select-none shadow-xl text-slate-900">
         {/* Panel Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className={`p-1.5 rounded-lg border ${registryEntry.badgeColor}`}>
               <Icon className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-200">
+              <h3 className="text-xs font-bold text-slate-900">
                 Node Properties
               </h3>
               <span className="text-[10px] font-mono text-slate-500 uppercase">
@@ -126,7 +126,7 @@ export const PropertiesPanel = ({
 
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+            className="p-1 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100"
           >
             <X className="w-4 h-4" />
           </button>
@@ -138,13 +138,13 @@ export const PropertiesPanel = ({
           <button
             type="button"
             onClick={() => setShowDataMapper(true)}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 font-semibold transition-all cursor-pointer group shadow-sm"
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 font-semibold transition-all cursor-pointer group shadow-sm"
           >
             <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+              <Zap className="w-4 h-4 text-orange-600 group-hover:scale-110 transition-transform" />
               <span>Variables & Data Explorer</span>
             </div>
-            <span className="text-[10px] font-mono bg-indigo-500/20 px-2 py-0.5 rounded-md text-indigo-200">
+            <span className="text-[10px] font-mono bg-white border border-orange-200 px-2 py-0.5 rounded-md text-orange-700 font-bold">
               EXPLORE
             </span>
           </button>
@@ -152,10 +152,10 @@ export const PropertiesPanel = ({
           {/* Node Validation Status Banner */}
           {!isGmailNode && !isWebhookNode && (
             !validationResult.isValid ? (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                 <div className="space-y-1 text-xs">
-                  <span className="font-semibold block">Incomplete Configuration</span>
+                  <span className="font-bold block">Incomplete Configuration</span>
                   <ul className="list-disc list-inside space-y-0.5 text-[11px] opacity-90">
                     {Array.isArray(validationResult.errors) ? (
                       validationResult.errors.map((err, idx) => <li key={idx}>{err}</li>)
@@ -166,16 +166,16 @@ export const PropertiesPanel = ({
                 </div>
               </div>
             ) : (
-              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2 text-xs">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                <span className="font-medium">Valid Node Configuration</span>
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2 text-xs">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span className="font-bold">Valid Node Configuration</span>
               </div>
             )
           )}
 
           {/* Node Custom Title */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-bold text-slate-700">
               Step Label
             </label>
             <input
@@ -183,13 +183,13 @@ export const PropertiesPanel = ({
               value={selectedNode.data?.label || ''}
               onChange={handleLabelChange}
               placeholder="Enter node label..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all shadow-inner"
             />
           </div>
 
           {/* Configuration Parameter Panel */}
-          <div className="pt-3 border-t border-slate-800 space-y-4">
-            <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+          <div className="pt-3 border-t border-slate-100 space-y-4">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               Configuration Parameters
             </h4>
 

@@ -107,25 +107,27 @@ export const NodeToolbar = () => {
 
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-full select-none">
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full select-none shadow-sm">
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-slate-800 space-y-3">
+      <div className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+          <div className="p-1 rounded-lg bg-orange-50 text-orange-600 border border-orange-200">
+            <Layers className="w-3.5 h-3.5" />
+          </div>
+          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
             Node Palette
           </h3>
         </div>
 
         {/* Live Search Bar */}
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search nodes (e.g. http, delay)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all shadow-inner"
           />
         </div>
       </div>
@@ -133,7 +135,7 @@ export const NodeToolbar = () => {
       {/* Nodes List grouped by Category */}
       <div className="p-3 overflow-y-auto space-y-4 flex-1">
         {filteredNodes.length === 0 ? (
-          <p className="text-[11px] text-slate-500 font-mono text-center py-6">
+          <p className="text-[11px] text-slate-400 font-mono text-center py-6">
             No node matching "{searchTerm}"
           </p>
         ) : (
@@ -143,10 +145,10 @@ export const NodeToolbar = () => {
 
             return (
               <div key={cat} className="space-y-1.5">
-                <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-1">
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">
                   {cat}
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {catNodes.map((node) => {
                     const Icon = node.icon;
                     return (
@@ -154,14 +156,14 @@ export const NodeToolbar = () => {
                         key={node.type}
                         draggable
                         onDragStart={(e) => onDragStart(e, node.type)}
-                        className="group p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-indigo-500/50 hover:bg-slate-800/40 cursor-grab active:cursor-grabbing transition-all duration-150 flex items-center justify-between shadow-sm"
+                        className="group p-2.5 rounded-xl bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50/30 cursor-grab active:cursor-grabbing transition-all duration-150 flex items-center justify-between shadow-sm hover:shadow-md"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className={`p-1.5 rounded-lg border ${node.badgeColor}`}>
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div className="truncate">
-                            <h5 className="text-xs font-semibold text-slate-200 group-hover:text-indigo-300 transition-colors truncate">
+                            <h5 className="text-xs font-semibold text-slate-800 group-hover:text-brand-600 transition-colors truncate">
                               {node.label}
                             </h5>
                             <p className="text-[10px] text-slate-500 truncate">
@@ -170,7 +172,7 @@ export const NodeToolbar = () => {
                           </div>
                         </div>
 
-                        <GripVertical className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 flex-shrink-0" />
+                        <GripVertical className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-500 flex-shrink-0" />
                       </div>
                     );
                   })}
@@ -181,7 +183,7 @@ export const NodeToolbar = () => {
         )}
       </div>
 
-      <div className="p-3 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-500 font-mono">
+      <div className="p-3 bg-slate-50 border-t border-slate-200 text-[10px] text-slate-500 font-sans">
         💡 Drag node onto canvas or select node to edit config.
       </div>
     </aside>

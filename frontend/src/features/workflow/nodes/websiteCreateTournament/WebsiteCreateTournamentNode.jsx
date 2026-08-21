@@ -11,10 +11,10 @@ const WebsiteCreateTournamentNode = ({ data, isConnectable, selected }) => {
 
   return (
     <div
-      className={`relative min-w-[260px] max-w-[320px] rounded-xl bg-slate-900/90 backdrop-blur-md border transition-all duration-200 shadow-xl group ${
+      className={`relative min-w-[260px] max-w-[320px] rounded-xl bg-white border transition-all duration-200 shadow-md group ${
         selected
-          ? 'border-violet-500 shadow-violet-500/20 ring-2 ring-violet-500/30'
-          : 'border-slate-800 hover:border-slate-700'
+          ? 'border-brand-500 shadow-brand-500/15 ring-2 ring-brand-500/25'
+          : 'border-slate-200 hover:border-slate-300'
       }`}
     >
       {/* Target Handle */}
@@ -22,28 +22,28 @@ const WebsiteCreateTournamentNode = ({ data, isConnectable, selected }) => {
         type="target"
         position={Position.Top}
         isConnectable={isConnectable}
-        className="!w-3 !h-3 !bg-violet-400 !border-2 !border-slate-900 hover:!scale-125 transition-transform"
+        className="!w-3 !h-3 !bg-violet-500 !border-2 !border-white hover:!scale-125 transition-transform"
       />
 
       {/* Header */}
-      <div className="p-3.5 border-b border-slate-800/80 bg-gradient-to-r from-violet-950/40 via-purple-950/20 to-transparent rounded-t-xl">
+      <div className="p-3.5 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400">
+            <div className="p-2 rounded-lg bg-violet-50 border border-violet-200 text-violet-600">
               <Trophy className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs font-semibold text-slate-100 flex items-center gap-1.5">
+              <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 {data?.label || 'Website → Create Tournament'}
               </div>
-              <div className="text-[10px] text-slate-400 flex items-center gap-1">
+              <div className="text-[10px] text-slate-500 flex items-center gap-1">
                 <span>Apex Esports API</span>
               </div>
             </div>
           </div>
 
           {dryRun && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
               Dry Run
             </span>
           )}
@@ -52,36 +52,36 @@ const WebsiteCreateTournamentNode = ({ data, isConnectable, selected }) => {
 
       {/* Body Content */}
       <div className="p-3 space-y-2 text-xs">
-        <div className="flex items-center justify-between text-[11px] bg-slate-950/50 p-2 rounded-lg border border-slate-800/60">
-          <div className="flex items-center gap-1.5 text-slate-400 truncate">
-            <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            <span className="truncate">{endpoint}</span>
+        <div className="flex items-center justify-between text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200">
+          <div className="flex items-center gap-1.5 text-slate-600 truncate">
+            <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="truncate font-mono">{endpoint}</span>
           </div>
-          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-300 font-semibold uppercase">
+          <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 border border-violet-200 font-bold uppercase">
             {config.method || 'POST'}
           </span>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] px-1 text-slate-400">
+        <div className="flex items-center justify-between text-[11px] px-1 text-slate-600">
           <span>Field Mappings:</span>
-          <span className="font-medium text-slate-200">{mappingCount} fields</span>
+          <span className="font-bold text-slate-800">{mappingCount} fields</span>
         </div>
 
         {/* Connection status indicator */}
-        <div className="pt-1 flex items-center justify-between text-[10px]">
+        <div className="pt-1 flex items-center justify-between text-[10px] border-t border-slate-100">
           {isConfigured ? (
-            <div className="flex items-center gap-1 text-emerald-400 font-medium">
-              <CheckCircle2 className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-emerald-700 font-bold">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
               <span>Connection linked</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-amber-400 font-medium">
-              <AlertCircle className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-amber-700 font-bold">
+              <AlertCircle className="w-3 h-3 text-amber-600" />
               <span>Select connection</span>
             </div>
           )}
 
-          <span className="text-[9px] text-slate-500 uppercase tracking-wider">
+          <span className="text-[9px] text-slate-500 uppercase tracking-wider font-mono">
             {config.duplicateStrategy || 'skip dupe'}
           </span>
         </div>
@@ -92,10 +92,9 @@ const WebsiteCreateTournamentNode = ({ data, isConnectable, selected }) => {
         type="source"
         position={Position.Bottom}
         isConnectable={isConnectable}
-        className="!w-3 !h-3 !bg-violet-400 !border-2 !border-slate-900 hover:!scale-125 transition-transform"
+        className="!w-3 !h-3 !bg-violet-500 !border-2 !border-white hover:!scale-125 transition-transform"
       />
     </div>
   );
 };
-
 export default memo(WebsiteCreateTournamentNode);

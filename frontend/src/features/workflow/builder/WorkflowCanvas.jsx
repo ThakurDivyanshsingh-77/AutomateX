@@ -185,7 +185,7 @@ const BuilderInner = () => {
   const onConnect = useCallback(
     (params) => {
       if (isValidConnection(params)) {
-        setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#6366f1', strokeWidth: 2 } }, eds));
+        setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#ea580c', strokeWidth: 2.5 } }, eds));
       }
     },
     [isValidConnection, setEdges]
@@ -400,7 +400,14 @@ const BuilderInner = () => {
 
           <ReactFlow
             nodes={nodes}
-            edges={edges}
+            edges={edges.map((e) => ({
+              ...e,
+              style: {
+                stroke: (e.style?.stroke === '#6366f1' || !e.style?.stroke) ? '#ea580c' : e.style.stroke,
+                strokeWidth: e.style?.strokeWidth || 2.5,
+                ...e.style,
+              },
+            }))}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -409,6 +416,10 @@ const BuilderInner = () => {
             onNodeClick={onNodeClick}
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
+            defaultEdgeOptions={{
+              animated: true,
+              style: { stroke: '#ea580c', strokeWidth: 2.5 },
+            }}
             fitView
             colorMode="light"
             className="bg-slate-50"
@@ -419,7 +430,7 @@ const BuilderInner = () => {
                 if (node.type === NODE_TYPES.START) return '#10b981';
                 if (node.type === NODE_TYPES.END) return '#f43f5e';
                 if (node.type === NODE_TYPES.GMAIL) return '#ea4335';
-                return '#f97316';
+                return '#ff4f00';
               }}
               maskColor="rgba(241, 245, 249, 0.7)"
               className="!bg-white !border-slate-200 !rounded-xl overflow-hidden shadow-sm"

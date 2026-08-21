@@ -5,19 +5,19 @@ import { Play } from 'lucide-react';
 export const TriggerNode = memo(({ data, selected }) => {
   return (
     <div
-      className={`min-w-[220px] rounded-xl bg-slate-900 border transition-all duration-200 shadow-xl ${
+      className={`min-w-[220px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
         selected
-          ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-emerald-500/10'
-          : 'border-slate-800 hover:border-slate-700'
+          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
+          : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      <div className="flex items-center justify-between p-3 border-b border-slate-800/60 bg-slate-900/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-            <Play className="w-4 h-4 fill-emerald-400" />
+          <div className="p-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-200">
+            <Play className="w-4 h-4 fill-emerald-600" />
           </div>
           <div className="truncate">
-            <h4 className="text-xs font-semibold text-slate-200 truncate">
+            <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Start Trigger'}
             </h4>
             <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
@@ -27,15 +27,16 @@ export const TriggerNode = memo(({ data, selected }) => {
         </div>
       </div>
 
-      <div className="p-3 text-[11px] text-slate-400 bg-slate-950/40 rounded-b-xl font-mono text-[10px] text-emerald-400 flex items-center gap-1">
-        <Play className="w-3 h-3 fill-emerald-400/20" /> Workflow Entry Point
+      <div className="p-3 text-[11px] text-emerald-700 bg-emerald-50/40 rounded-b-xl font-mono text-[10px] flex items-center gap-1">
+        <Play className="w-3 h-3 fill-emerald-600/30 text-emerald-600" /> Workflow Entry Point
       </div>
 
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-emerald-500 !w-3 !h-3 !-right-[7px] border-2 border-slate-900"
+        className="!bg-brand-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
       />
     </div>
   );
 });
+

@@ -13,35 +13,35 @@ export const GeminiStructureProductsNode = memo(({ data, selected }) => {
 
   return (
     <div
-      className={`min-w-[240px] max-w-[300px] rounded-xl bg-slate-900 border transition-all duration-200 shadow-xl ${
+      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
         selected
-          ? 'border-purple-500 ring-2 ring-purple-500/20 shadow-purple-500/10'
+          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
           : executionStatus === 'RUNNING'
           ? 'border-amber-500 animate-pulse ring-2 ring-amber-500/20'
           : executionStatus === 'SUCCESS'
-          ? 'border-emerald-500/80 shadow-emerald-500/5'
+          ? 'border-emerald-500 shadow-emerald-500/10'
           : executionStatus === 'FAILED'
           ? 'border-rose-500 ring-2 ring-rose-500/20'
           : isInvalid
-          ? 'border-amber-500/60 ring-1 ring-amber-500/20'
-          : 'border-slate-800 hover:border-slate-700'
+          ? 'border-amber-400 ring-1 ring-amber-400/30'
+          : 'border-slate-200 hover:border-slate-300'
       }`}
     >
       {/* Target Connection Handle (Left) */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-purple-500 !w-3 !h-3 !-left-[7px] border-2 border-slate-900"
+        className="!bg-purple-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-800/60 bg-slate-900/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-purple-500/10 text-purple-400 border-purple-500/20">
+          <div className="p-1.5 rounded-lg border bg-purple-50 text-purple-600 border-purple-200">
             <Sparkles className="w-4 h-4" />
           </div>
           <div className="truncate">
-            <h4 className="text-xs font-semibold text-slate-200 truncate">
+            <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Gemini → Structure Products'}
             </h4>
             <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
@@ -51,20 +51,20 @@ export const GeminiStructureProductsNode = memo(({ data, selected }) => {
         </div>
 
         {productCount !== null ? (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-medium">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-bold">
             {productCount} Products
           </span>
         ) : (
-          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <Sparkles className="w-3.5 h-3.5 text-purple-500" />
         )}
       </div>
 
       {/* Node Body */}
-      <div className="p-3 text-[11px] text-slate-400 bg-slate-950/40 rounded-b-xl space-y-1.5">
-        <p className="text-[11px] text-slate-300 leading-snug">
+      <div className="p-3 text-[11px] text-slate-600 bg-slate-50/70 rounded-b-xl space-y-1.5">
+        <p className="text-[11px] text-slate-700 leading-snug">
           Convert extracted document content into structured product records.
         </p>
-        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-1">
+        <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-1 border-t border-slate-200">
           <span className="truncate">Model: {config.model || 'gemini-1.5-flash'}</span>
           <span>Temp: {config.temperature !== undefined ? config.temperature : 0.1}</span>
         </div>
@@ -74,8 +74,9 @@ export const GeminiStructureProductsNode = memo(({ data, selected }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-purple-500 !w-3 !h-3 !-right-[7px] border-2 border-slate-900"
+        className="!bg-purple-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
       />
     </div>
   );
 });
+

@@ -17,43 +17,44 @@ export const CronNode = memo(({ data, selected }) => {
 
   return (
     <div
-      className={`min-w-[230px] rounded-xl bg-slate-900 border transition-all duration-200 shadow-xl ${
+      className={`min-w-[230px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
         selected
-          ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-indigo-500/10'
-          : 'border-slate-800 hover:border-slate-700'
+          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
+          : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      <div className="flex items-center justify-between p-3 border-b border-slate-800/60 bg-slate-900/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+          <div className="p-1.5 rounded-lg border bg-indigo-50 text-indigo-600 border-indigo-200">
             <Clock className="w-4 h-4" />
           </div>
           <div className="truncate">
-            <h4 className="text-xs font-semibold text-slate-200 truncate">
+            <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Cron Schedule'}
             </h4>
-            <span className="text-[10px] text-indigo-400 font-mono tracking-tight uppercase">
+            <span className="text-[10px] text-indigo-700 font-mono tracking-tight uppercase">
               SCHEDULE TRIGGER
             </span>
           </div>
         </div>
       </div>
 
-      <div className="p-3 bg-slate-950/40 rounded-b-xl space-y-1">
-        <div className="text-[11px] font-medium text-slate-300 flex items-center justify-between">
+      <div className="p-3 bg-slate-50/70 rounded-b-xl space-y-1">
+        <div className="text-[11px] font-semibold text-slate-800 flex items-center justify-between">
           <span className="truncate">{humanText}</span>
         </div>
         <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
           <span>{cronExpression}</span>
-          <span className="text-indigo-400/80">{timezone}</span>
+          <span className="text-indigo-700 font-medium">{timezone}</span>
         </div>
       </div>
 
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-indigo-500 !w-3 !h-3 !-right-[7px] border-2 border-slate-900"
+        className="!bg-indigo-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
       />
     </div>
   );
 });
+

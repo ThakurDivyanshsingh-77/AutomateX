@@ -159,7 +159,7 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Direct Live Metadata Pre-Flight Validation**: Updated `GoogleSheetsService.deleteWorksheet` to call `sheetsClient.spreadsheets.get({ spreadsheetId })` directly before deletion. Added mandatory live logging (`Spreadsheet ID`, `Spreadsheet title`, `Number of sheets`, `sheetId`, `title`, `index`, and `Total worksheets: N`) and validated `rawSheets.length <= 1` against true live API count, resolving false-positive single tab errors.
 - **Automated Verification**: Passed 6/6 assertions in `test_delete_worksheet.js` (verified Test 1: deleting tab from multi-tab sheet, Test 2: non-existent tab error, and Test 3: sole remaining tab safety error).
 
-### **Phase 18 Complete — Full Platform White & Orange Light Theme Transformation** — ✅ COMPLETED
+### **Phase 18 Complete — Full Platform White & Orange Light Theme Transformation (including Visual Canvas & Node Palette)** — ✅ COMPLETED
 - **Theme Rationale & Aesthetic**: Transformed the entire AutomateX UI/UX from the dark obsidian theme into a crisp, high-contrast, modern **White & Orange Light Theme** inspired by Zapier and enterprise automation design systems.
 - **Color Palette Tokens (`src/index.css`)**:
   - **Canvas & Shell**: `#f8fafc` (`bg-slate-50`) background.
@@ -169,17 +169,23 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Core Primitives & Shell Upgraded**:
   - `DashboardLayout.jsx`, `Navbar.jsx`, `Sidebar.jsx`: Clean white navbar/sidebar with active orange badges and ambient background glows.
   - `Button.jsx`, `Card.jsx`, `Input.jsx`, `EmptyState.jsx`: All UI primitive variants updated for light theme.
+- **Visual Canvas & Builder Suite Upgraded (`/builder/:id`)**:
+  - **Node Palette Toolbar (`NodeToolbar.jsx`)**: Converted to crisp white container with category headers, search input on `bg-slate-50`, and light draggable node cards with orange hover states.
+  - **Node Properties Drawer (`PropertiesPanel.jsx`)**: Converted to white drawer with orange variables explorer button, light status banners, and clean form controls.
+  - **Execution Logs Drawer (`ExecutionLogsDrawer.jsx`)**: Converted to white slide-over drawer with light KPI stats cards and structured step logs.
+  - **ReactFlow & Edges (`WorkflowCanvas.jsx`)**: Canvas background set to `bg-slate-50` with slate `#cbd5e1` dots, light MiniMap, and vibrant `#ea580c` orange animated connecting edges.
+  - **All Custom Canvas Nodes Converted to Light Theme**:
+    - `TriggerNode.jsx` (Start Trigger)
+    - `FileUploadNode.jsx` (File -> Upload Document)
+    - `DocumentExtractNode.jsx` (Document -> Extract Content)
+    - `GeminiStructureTournamentNode.jsx` & `GeminiStructureProductsNode.jsx` (AI structure nodes)
+    - `WebsiteConnectNode.jsx`, `WebsiteCreateTournamentNode.jsx`, `WebsiteCreateProductNode.jsx` (Integration nodes)
+    - `ForEachTournamentNode.jsx` & `ForEachProductNode.jsx` (Loop nodes)
+    - `EndNode.jsx` (End Completion)
+    - `HttpNode.jsx`, `DelayNode.jsx`, `LogNode.jsx`, `GmailNode.jsx`
+    - `ConditionNode.jsx`, `WebhookNode.jsx`, `TryCatchNode.jsx`, `CronNode.jsx`, `PdfGeneratorNode.jsx`, `GoogleSheetsTriggerNode.jsx`, `DiscordMessageReceivedNode.jsx`
 - **All Pages Upgraded**:
-  - `Dashboard.jsx`: Hero banner, 4 KPI metric cards, AI prompt bar, workflow grid, blueprint starters, live execution feed, and integration rail.
-  - `Workflows.jsx`, `WorkflowFilters.jsx`, `WorkflowCard.jsx`, `CreateWorkflow.jsx`, `EditWorkflow.jsx`: Full workflow lifecycle views.
-  - `WorkflowCanvas.jsx` & `CanvasControls.jsx`: ReactFlow light mode (`colorMode="light"` with slate `#cbd5e1` dots) and floating island controls.
-  - `Executions.jsx`: Execution logs, 5 KPI cards, search/filter toolbar, paginated table, and slide-over inspector drawer.
-  - `AIBuilderPage.jsx`: AI Prompt composer, quick templates, intent breakdown, and generated DAG pipeline sequence.
-  - `Credentials.jsx`: Vault header, modal, service selects, test connection buttons, and credential cards.
-  - `Templates.jsx`: Template marketplace, category pill tabs, and template cards.
-  - `ReliabilityDashboard.jsx`: Reliability KPIs, Failed executions table, DLQ table, and Cron scheduler table.
-  - `Profile.jsx`: Profile summary, role badges, and account metadata.
-  - `Login.jsx` & `Register.jsx`: Dual-pane authentication screens.
+  - `Dashboard.jsx`, `Workflows.jsx`, `WorkflowFilters.jsx`, `WorkflowCard.jsx`, `CreateWorkflow.jsx`, `EditWorkflow.jsx`, `Executions.jsx`, `AIBuilderPage.jsx`, `Credentials.jsx`, `Templates.jsx`, `ReliabilityDashboard.jsx`, `Profile.jsx`, `Login.jsx`, `Register.jsx`.
 - **Verification**: Verified production build (`npm run build`) compiles cleanly with **0 errors**.
 
 
