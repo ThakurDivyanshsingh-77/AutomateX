@@ -390,11 +390,11 @@ const BuilderInner = () => {
       <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
         <NodeToolbar />
 
-        <div className="flex-1 h-full relative overflow-hidden bg-slate-50">
+        <div className="flex-1 h-full relative overflow-hidden bg-slate-50 canvas-blueprint-grid">
           {/* Ambient Studio Lighting Meshes behind Canvas */}
-          <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-orange-400/10 rounded-full blur-[100px] pointer-events-none z-0" />
-          <div className="absolute top-1/3 -right-24 w-[450px] h-[450px] bg-amber-400/8 rounded-full blur-[100px] pointer-events-none z-0" />
-          <div className="absolute -bottom-24 left-1/3 w-[450px] h-[450px] bg-orange-500/6 rounded-full blur-[100px] pointer-events-none z-0" />
+          <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-orange-500/12 rounded-full blur-[120px] pointer-events-none z-0" />
+          <div className="absolute top-1/3 -right-24 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-[120px] pointer-events-none z-0" />
+          <div className="absolute -bottom-24 left-1/3 w-[500px] h-[500px] bg-orange-500/8 rounded-full blur-[120px] pointer-events-none z-0" />
 
           <CanvasControls
             saveStatus={saveStatus}
@@ -429,10 +429,12 @@ const BuilderInner = () => {
             colorMode="light"
             className="bg-transparent"
           >
-            {/* Layer 1: Major Grid Structural Blueprint Lines */}
-            <Background id="grid-lines" variant="lines" gap={60} color="#e2e8f0" lineWidth={1} className="opacity-75" />
+            {/* Layer 1: Visible Blueprint Grid Lines */}
+            <Background id="grid-lines" variant="lines" gap={40} color="#cbd5e1" lineWidth={1.2} />
             {/* Layer 2: Precision Micro-Dot Matrix */}
-            <Background id="grid-dots" variant="dots" gap={15} size={1.2} color="#94a3b8" className="opacity-60" />
+            <Background id="grid-dots" variant="dots" gap={20} size={1.8} color="#94a3b8" />
+            {/* Layer 3: High-End Major Section Crosshairs */}
+            <Background id="grid-cross" variant="cross" gap={120} size={8} color="#64748b" lineWidth={1.5} />
             
             <MiniMap
               nodeColor={(node) => {
