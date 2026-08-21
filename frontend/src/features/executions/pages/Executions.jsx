@@ -172,19 +172,19 @@ export const Executions = () => {
   };
 
   return (
-    <div className="p-2 sm:p-4 md:p-6 space-y-6 max-w-7xl mx-auto select-none text-slate-100 font-sans">
+    <div className="p-2 sm:p-4 md:p-6 space-y-6 max-w-7xl mx-auto select-none text-slate-900 font-sans">
       {/* Page Title Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel border border-slate-800/80 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-1/3 w-80 h-32 bg-indigo-500/10 blur-[70px] rounded-full pointer-events-none" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-1/3 w-80 h-32 bg-orange-500/5 blur-[70px] rounded-full pointer-events-none" />
 
         <div className="relative z-10">
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-200">
               <Activity className="w-5 h-5" />
             </div>
             Execution History & Logs
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Inspect, audit, monitor, and replay workflow execution runs across your platform.
           </p>
         </div>
@@ -193,16 +193,16 @@ export const Executions = () => {
           <button
             onClick={fetchExecutions}
             disabled={loading}
-            className="p-2.5 rounded-xl glass-panel-subtle hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+            className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-sm"
             title="Refresh logs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-brand-400' : ''}`} /> Refresh
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-brand-600' : ''}`} /> Refresh
           </button>
 
           <button
             onClick={handleExportPageJSON}
             disabled={executions.length === 0}
-            className="px-3.5 py-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/25 transition-colors flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50 shadow-sm"
+            className="px-3.5 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 transition-colors flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50 shadow-sm"
           >
             <Download className="w-3.5 h-3.5" /> Export JSON
           </button>
@@ -211,50 +211,49 @@ export const Executions = () => {
 
       {/* ── Metric Summary Cards ─────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-2xl glass-card border border-slate-800/80 flex flex-col justify-between shadow-xl">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Executions</span>
-          <div className="text-2xl font-extrabold text-white font-mono mt-2">
-            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats?.totalExecutions || 0}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between shadow-sm">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Executions</span>
+          <div className="text-2xl font-extrabold text-slate-900 font-mono mt-2">
+            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-600" /> : stats?.totalExecutions || 0}
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl glass-card border border-slate-800/80 flex flex-col justify-between shadow-xl">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Success Rate</span>
-          <div className="text-2xl font-extrabold text-emerald-400 font-mono mt-2 flex items-center gap-1">
-            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : `${stats?.successRate || 0}%`}
-            <TrendingUp className="w-4 h-4 text-emerald-400 ml-1" />
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between shadow-sm">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Success Rate</span>
+          <div className="text-2xl font-extrabold text-emerald-600 font-mono mt-2 flex items-center gap-1">
+            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-600" /> : `${stats?.successRate || 0}%`}
+            <TrendingUp className="w-4 h-4 text-emerald-600 ml-1" />
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl glass-card border border-slate-800/80 flex flex-col justify-between shadow-xl">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Successful Runs</span>
-          <div className="text-2xl font-extrabold text-emerald-400 font-mono mt-2">
-            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats?.successful || 0}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between shadow-sm">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Successful Runs</span>
+          <div className="text-2xl font-extrabold text-emerald-600 font-mono mt-2">
+            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-600" /> : stats?.successful || 0}
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl glass-card border border-slate-800/80 flex flex-col justify-between shadow-xl">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Failed Runs</span>
-          <div className="text-2xl font-extrabold text-rose-400 font-mono mt-2">
-            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : stats?.failed || 0}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between shadow-sm">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Failed Runs</span>
+          <div className="text-2xl font-extrabold text-rose-600 font-mono mt-2">
+            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-600" /> : stats?.failed || 0}
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl glass-card border border-slate-800/80 flex flex-col justify-between shadow-xl col-span-2 md:col-span-1">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Average Duration</span>
-          <div className="text-2xl font-extrabold text-indigo-400 font-mono mt-2 flex items-center gap-1">
-            <Clock className="w-4 h-4 text-indigo-400" />
-            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-400" /> : `${stats?.averageDuration || 0} ms`}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 flex flex-col justify-between shadow-sm col-span-2 md:col-span-1">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Average Duration</span>
+          <div className="text-2xl font-extrabold text-orange-600 font-mono mt-2 flex items-center gap-1">
+            <Clock className="w-4 h-4 text-orange-600" />
+            {statsLoading ? <Loader2 className="w-5 h-5 animate-spin text-brand-600" /> : `${stats?.averageDuration || 0} ms`}
           </div>
         </div>
       </div>
 
-
       {/* ── Search & Filter Controls Toolbar ────────────────────────────── */}
-      <div className="p-3 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+      <div className="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-3 flex-wrap shadow-sm">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[240px]">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
@@ -263,20 +262,20 @@ export const Executions = () => {
               setPage(1);
             }}
             placeholder="Search by workflow name, execution ID, or status..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all shadow-inner"
           />
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status:</span>
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status:</span>
           <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none cursor-pointer"
+            className="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none cursor-pointer shadow-sm"
           >
             <option value="all">All Statuses</option>
             <option value="success">🟢 Success</option>
@@ -288,14 +287,14 @@ export const Executions = () => {
 
         {/* Trigger Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Trigger:</span>
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Trigger:</span>
           <select
             value={triggerFilter}
             onChange={(e) => {
               setTriggerFilter(e.target.value);
               setPage(1);
             }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none cursor-pointer"
+            className="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none cursor-pointer shadow-sm"
           >
             <option value="all">All Triggers</option>
             <option value="webhook">⚡ Webhook</option>
@@ -306,14 +305,14 @@ export const Executions = () => {
 
         {/* Date Filter */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date:</span>
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Date:</span>
           <select
             value={dateFilter}
             onChange={(e) => {
               setDateFilter(e.target.value);
               setPage(1);
             }}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none cursor-pointer"
+            className="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none cursor-pointer shadow-sm"
           >
             <option value="">All Time</option>
             <option value="today">Today</option>
@@ -324,10 +323,10 @@ export const Executions = () => {
       </div>
 
       {/* ── Executions Table ────────────────────────────────────────────── */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 text-[10px] uppercase font-bold text-slate-400 tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">Execution ID</th>
                 <th className="py-3 px-4">Workflow</th>
@@ -338,37 +337,37 @@ export const Executions = () => {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-slate-100 font-mono">
               {loading ? (
                 <tr>
                   <td colSpan="7" className="py-12 text-center text-slate-500 font-sans text-xs">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400" />
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-brand-600" />
                     Fetching execution logs...
                   </td>
                 </tr>
               ) : executions.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-500 font-sans text-xs">
-                    <Activity className="w-8 h-8 mx-auto mb-2 text-slate-600 opacity-40" />
+                  <td colSpan="7" className="py-12 text-center text-slate-400 font-sans text-xs">
+                    <Activity className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                     No execution records found matching your filters.
                   </td>
                 </tr>
               ) : (
                 executions.map((exec) => (
-                  <tr key={exec._id} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={exec._id} className="hover:bg-slate-50 transition-colors">
                     {/* Execution ID */}
-                    <td className="py-3 px-4 font-bold text-indigo-400 truncate max-w-[140px]">
+                    <td className="py-3 px-4 font-bold text-brand-600 truncate max-w-[140px]">
                       {exec._id}
                     </td>
 
                     {/* Workflow Name */}
-                    <td className="py-3 px-4 font-sans font-semibold text-slate-200 truncate max-w-[180px]">
+                    <td className="py-3 px-4 font-sans font-semibold text-slate-900 truncate max-w-[180px]">
                       {exec.workflowName || exec.workflow?.name || 'Untitled Workflow'}
                     </td>
 
                     {/* Trigger Type */}
-                    <td className="py-3 px-4 font-sans text-slate-400">
-                      <span className="uppercase text-[10px] font-bold px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                    <td className="py-3 px-4 font-sans text-slate-500">
+                      <span className="uppercase text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 border border-slate-200">
                         {exec.triggerType || 'manual'}
                       </span>
                     </td>
@@ -379,12 +378,12 @@ export const Executions = () => {
                     </td>
 
                     {/* Duration */}
-                    <td className="py-3 px-4 text-slate-300">
+                    <td className="py-3 px-4 text-slate-700">
                       {exec.duration || 0} ms
                     </td>
 
                     {/* Started At */}
-                    <td className="py-3 px-4 text-slate-400 text-[11px]">
+                    <td className="py-3 px-4 text-slate-500 text-[11px]">
                       {new Date(exec.startedAt || exec.createdAt).toLocaleString()}
                     </td>
 
@@ -392,22 +391,22 @@ export const Executions = () => {
                     <td className="py-3 px-4 text-right font-sans space-x-1">
                       <button
                         onClick={() => handleInspect(exec._id)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 rounded-lg text-[11px] font-semibold transition-colors"
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-[11px] font-semibold transition-colors"
                       >
                         Inspect Log
                       </button>
 
                       <button
                         onClick={() => handleReplay(exec._id)}
-                        className="px-2 py-1 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-[11px] font-semibold transition-colors"
+                        className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg text-[11px] font-semibold transition-colors"
                         title="Replay Execution"
                       >
-                        <Play className="w-3 h-3 fill-indigo-400 inline" />
+                        <Play className="w-3 h-3 fill-orange-600 inline" />
                       </button>
 
                       <button
                         onClick={() => handleDelete(exec._id)}
-                        className="p-1 text-slate-500 hover:text-rose-400 rounded-lg transition-colors"
+                        className="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
                         title="Delete Log"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -421,9 +420,9 @@ export const Executions = () => {
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-sans">
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 font-sans">
           <span>
-            Showing <strong className="text-slate-200">{executions.length}</strong> of <strong className="text-slate-200">{total}</strong> total logs
+            Showing <strong className="text-slate-900">{executions.length}</strong> of <strong className="text-slate-900">{total}</strong> total logs
           </span>
 
           <div className="flex items-center gap-2">
@@ -435,14 +434,14 @@ export const Executions = () => {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || loading}
-                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 disabled:opacity-40"
+                className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 disabled:opacity-40 shadow-sm"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
                 disabled={page >= pages || loading}
-                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 disabled:opacity-40"
+                className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 disabled:opacity-40 shadow-sm"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -450,6 +449,7 @@ export const Executions = () => {
           </div>
         </div>
       </div>
+
 
       {/* Slide-over Detailed Log Inspector Drawer */}
       {selectedExecution && (

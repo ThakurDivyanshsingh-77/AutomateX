@@ -79,24 +79,24 @@ export const EditWorkflow = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 select-none font-sans">
+    <div className="max-w-2xl mx-auto space-y-6 select-none font-sans text-slate-900">
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate('/workflows')}
-          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-xs flex items-center gap-1 font-medium"
+          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors text-xs flex items-center gap-1 font-medium"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Workflows
         </button>
       </div>
 
       <Card className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-          <div className="p-2.5 rounded-xl bg-indigo-600/10 border border-indigo-600/20 text-indigo-400">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="p-2.5 rounded-xl bg-orange-50 border border-orange-200 text-brand-600">
             <GitFork className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">Edit Workflow Details</h1>
-            <p className="text-xs text-slate-400">Update workflow metadata, status, and tags</p>
+            <h1 className="text-lg font-bold text-slate-900 tracking-tight">Edit Workflow Details</h1>
+            <p className="text-xs text-slate-500">Update workflow metadata, status, and tags</p>
           </div>
         </div>
 
@@ -119,13 +119,13 @@ export const EditWorkflow = () => {
           />
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700">
               Description
             </label>
             <textarea
               rows={4}
               placeholder="Describe what this workflow automates..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all shadow-sm"
               {...register('description', {
                 maxLength: {
                   value: 500,
@@ -134,16 +134,16 @@ export const EditWorkflow = () => {
               })}
             />
             {errors.description && (
-              <p className="text-[11px] text-rose-400 font-medium">{errors.description.message}</p>
+              <p className="text-[11px] text-rose-600 font-medium">{errors.description.message}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700">
               Status
             </label>
             <select
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-medium"
+              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-brand-500 font-medium shadow-sm"
               {...register('status')}
             >
               <option value="draft">Draft</option>
@@ -158,7 +158,7 @@ export const EditWorkflow = () => {
             {...register('tags')}
           />
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button
               type="button"
               variant="secondary"
@@ -177,5 +177,6 @@ export const EditWorkflow = () => {
         </form>
       </Card>
     </div>
+
   );
 };

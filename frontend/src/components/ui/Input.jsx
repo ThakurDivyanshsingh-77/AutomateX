@@ -16,7 +16,7 @@ export const Input = forwardRef(
     return (
       <div className="space-y-1.5 w-full">
         {label && (
-          <label className="block text-xs font-semibold text-slate-300">
+          <label className="block text-xs font-semibold text-slate-700">
             {label}
           </label>
         )}
@@ -30,21 +30,22 @@ export const Input = forwardRef(
             ref={ref}
             type={type}
             placeholder={placeholder}
-            className={`w-full glass-input ${
-              error ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-brand-500'
+            className={`w-full bg-white border ${
+              error ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/15' : 'border-slate-200 focus:border-brand-500 focus:ring-brand-500/15'
             } rounded-xl ${
               Icon ? 'pl-10' : 'px-3.5'
-            } pr-3.5 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none transition-all ${className}`}
+            } pr-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all shadow-sm ${className}`}
             {...props}
           />
         </div>
         {error && (
-          <p className="text-[11px] text-rose-400 font-medium">{error}</p>
+          <p className="text-[11px] text-rose-600 font-medium">{error}</p>
         )}
       </div>
     );
   }
 );
+
 
 Input.displayName = 'Input';
 

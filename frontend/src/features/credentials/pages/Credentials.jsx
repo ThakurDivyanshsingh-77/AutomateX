@@ -158,40 +158,39 @@ export const Credentials = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 select-none font-sans text-slate-100">
+    <div className="max-w-5xl mx-auto space-y-6 select-none font-sans text-slate-900">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel border border-slate-800/80 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-1/4 w-80 h-32 bg-emerald-500/10 blur-[70px] rounded-full pointer-events-none" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">Credentials Vault</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Credentials Vault</h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-xl">
+          <p className="text-xs text-slate-500 mt-1 max-w-xl">
             Store Discord Bot Tokens, MongoDB connections, API keys, OAuth tokens, and secrets encrypted at rest via AES-256-CBC.
           </p>
         </div>
 
-        <Button variant="primary" onClick={() => setShowAddModal(true)} className="relative z-10 shadow-glow-brand">
+        <Button variant="primary" onClick={() => setShowAddModal(true)} className="relative z-10 shadow-md shadow-brand-500/20">
           <Plus className="w-4 h-4" /> Add Credential
         </Button>
       </div>
 
       {/* Add Credential Modal / Form */}
       {showAddModal && (
-        <Card className="space-y-4 border-brand-500/40 glass-panel shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Lock className="w-4 h-4 text-brand-400" /> Store Encrypted Credential
+        <Card className="space-y-4 border-orange-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-brand-600" /> Store Encrypted Credential
             </h3>
-            <button onClick={() => setShowAddModal(false)} className="text-xs text-slate-400 hover:text-white">
+            <button onClick={() => setShowAddModal(false)} className="text-xs text-slate-400 hover:text-slate-900">
               Cancel
             </button>
           </div>
-
 
           <form onSubmit={handleCreate} className="space-y-4 text-xs">
             <Input
@@ -203,7 +202,7 @@ export const Credentials = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Target Service</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Target Service</label>
                 <select
                   value={service}
                   onChange={(e) => {
@@ -211,7 +210,7 @@ export const Credentials = () => {
                     if (e.target.value === 'discord') setAuthType('botToken');
                     if (e.target.value === 'mongodb') setAuthType('uri');
                   }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-brand-500"
                 >
                   <option value="discord">Discord Bot</option>
                   <option value="mongodb">MongoDB Database</option>
@@ -226,11 +225,11 @@ export const Credentials = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Auth Type</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Auth Type</label>
                 <select
                   value={authType}
                   onChange={(e) => setAuthType(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:outline-none focus:border-brand-500"
                 >
                   {service === 'discord' && <option value="botToken">Bot Token (Bot &lt;token&gt;)</option>}
                   <option value="uri">Connection URI / Object</option>
@@ -243,7 +242,7 @@ export const Credentials = () => {
 
             {/* Discord Specific Form Fields */}
             {service === 'discord' ? (
-              <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <Input
                   label="Bot Token"
                   type="password"
@@ -253,8 +252,8 @@ export const Credentials = () => {
                 />
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     Validated via Discord REST API v10 (GET /users/@me)
                   </span>
 
@@ -262,12 +261,12 @@ export const Credentials = () => {
                     type="button"
                     onClick={handleTestDiscordConnection}
                     disabled={testingDiscordConnection || !discordBotToken}
-                    className="px-3 py-1.5 bg-indigo-600/15 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                    className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
                   >
                     {testingDiscordConnection ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-600" />
                     ) : (
-                      <Activity className="w-3.5 h-3.5 text-indigo-400" />
+                      <Activity className="w-3.5 h-3.5 text-orange-600" />
                     )}
                     Test Connection
                   </button>
@@ -275,32 +274,32 @@ export const Credentials = () => {
 
                 {/* Discord Bot Verified Information Display */}
                 {discordBotInfo && (
-                  <div className="mt-3 p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-3">
+                  <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
                     <div className="relative">
                       {discordBotInfo.avatar ? (
                         <img
                           src={discordBotInfo.avatar}
                           alt={discordBotInfo.botName}
-                          className="w-10 h-10 rounded-full border border-emerald-400/50 object-cover"
+                          className="w-10 h-10 rounded-full border border-emerald-400 object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-emerald-800/50 flex items-center justify-center text-emerald-300">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
                           <Bot className="w-5 h-5" />
                         </div>
                       )}
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 absolute -bottom-1 -right-1 bg-slate-950 rounded-full" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 absolute -bottom-1 -right-1 bg-white rounded-full" />
                     </div>
 
                     <div className="flex-1 space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-white text-xs">{discordBotInfo.botName}</span>
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span className="font-bold text-slate-900 text-xs">{discordBotInfo.botName}</span>
+                        <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold">
                           Connected Successfully
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-300 flex items-center gap-3">
+                      <div className="text-[11px] text-slate-600 flex items-center gap-3">
                         <span>Username: <strong>{discordBotInfo.username}</strong></span>
-                        <span>ID: <strong className="font-mono text-slate-400">{discordBotInfo.botId}</strong></span>
+                        <span>ID: <strong className="font-mono text-slate-500">{discordBotInfo.botId}</strong></span>
                       </div>
                     </div>
                   </div>
@@ -308,14 +307,14 @@ export const Credentials = () => {
 
                 {/* Discord Error Display */}
                 {discordTestError && (
-                  <div className="mt-3 p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl flex items-center gap-2 text-rose-300 text-xs">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                  <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-rose-700 text-xs">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                     <span>{discordTestError}</span>
                   </div>
                 )}
               </div>
             ) : service === 'mongodb' ? (
-              <div className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <Input
                   label="MongoDB Connection URI"
                   placeholder="mongodb://localhost:27017 or mongodb+srv://..."
@@ -339,12 +338,12 @@ export const Credentials = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={tlsEnable}
                       onChange={(e) => setTlsEnable(e.target.checked)}
-                      className="rounded border-slate-800 text-indigo-600 focus:ring-0"
+                      className="rounded border-slate-300 text-brand-600 focus:ring-0"
                     />
                     <span>Enable TLS / SSL Connection</span>
                   </label>
@@ -353,9 +352,9 @@ export const Credentials = () => {
                     type="button"
                     onClick={handleTestMongoConnection}
                     disabled={testingConnection}
-                    className="px-3 py-1.5 bg-indigo-600/15 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                    className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
                   >
-                    {testingConnection ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5 text-indigo-400" />}
+                    {testingConnection ? <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-600" /> : <Activity className="w-3.5 h-3.5 text-orange-600" />}
                     Test Connection
                   </button>
                 </div>
@@ -399,16 +398,16 @@ export const Credentials = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {credentials.map((cred) => (
-            <Card key={cred._id} className="flex items-center justify-between p-4">
+            <Card key={cred._id} className="flex items-center justify-between p-4 bg-white border border-slate-200 hover:border-orange-300">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white">{cred.name}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase">
+                  <span className="text-xs font-bold text-slate-900">{cred.name}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-orange-50 text-orange-700 border border-orange-200 uppercase">
                     {cred.service}
                   </span>
                 </div>
-                <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-emerald-400" /> {cred.maskedValue}
+                <div className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-emerald-600" /> {cred.maskedValue}
                 </div>
               </div>
 
@@ -425,15 +424,15 @@ export const Credentials = () => {
                         }
                       );
                     }}
-                    className="px-2.5 py-1 text-[10px] font-bold bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 rounded-lg transition-colors flex items-center gap-1"
+                    className="px-2.5 py-1 text-[10px] font-bold bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg transition-colors flex items-center gap-1 shadow-sm"
                   >
-                    <Activity className="w-3 h-3 text-indigo-400" /> Test
+                    <Activity className="w-3 h-3 text-orange-600" /> Test
                   </button>
                 )}
 
                 <button
                   onClick={() => handleDelete(cred._id)}
-                  className="p-2 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-colors"
+                  className="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
                   title="Delete credential"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -444,6 +443,7 @@ export const Credentials = () => {
         </div>
       )}
     </div>
+
   );
 };
 

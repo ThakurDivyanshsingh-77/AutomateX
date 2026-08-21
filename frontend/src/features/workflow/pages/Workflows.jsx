@@ -87,21 +87,21 @@ export const Workflows = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto select-none font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto select-none font-sans text-slate-900">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel border border-slate-800/80 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-80 h-32 bg-brand-500/10 blur-[70px] rounded-full pointer-events-none" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-80 h-32 bg-orange-500/5 blur-[70px] rounded-full pointer-events-none" />
         
         <div className="space-y-1 relative z-10">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20">
+            <div className="p-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-200">
               <GitFork className="w-5 h-5" />
             </div>
-            <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
               Workflow Management Hub
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-xl">
+          <p className="text-xs text-slate-500 mt-1 max-w-xl">
             Design, deploy, version, duplicate, and monitor your visual DAG automation flows.
           </p>
         </div>
@@ -111,20 +111,21 @@ export const Workflows = () => {
             onClick={fetchWorkflows}
             disabled={loading}
             title="Refresh Workflows"
-            className="p-2.5 rounded-xl glass-panel-subtle hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/60 transition-all shadow-sm"
+            className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 transition-all shadow-sm"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-400' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-brand-600' : ''}`} />
           </button>
 
           <Button
             variant="primary"
             onClick={() => navigate('/workflows/create')}
-            className="flex-1 sm:flex-initial shadow-glow-brand"
+            className="flex-1 sm:flex-initial shadow-md shadow-brand-500/20"
           >
             <Plus className="w-4 h-4" /> Create Workflow
           </Button>
         </div>
       </div>
+
 
       {/* Filters Bar */}
       <WorkflowFilters

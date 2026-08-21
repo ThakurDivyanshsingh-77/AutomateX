@@ -288,25 +288,25 @@ const BuilderInner = () => {
   const currentVersion = workflow?.currentVersion || workflow?.publishedVersion;
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden select-none">
+    <div className="h-screen w-screen flex flex-col bg-slate-50 text-slate-900 font-sans overflow-hidden select-none">
       {/* Top Header Bar */}
-      <header className="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between z-30">
+      <header className="h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between z-30 shadow-sm">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/workflows')}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1.5 text-xs font-medium"
+            className="p-1.5 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1.5 text-xs font-medium"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Workflows
           </button>
 
-          <div className="h-4 w-px bg-slate-800" />
+          <div className="h-4 w-px bg-slate-200" />
 
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-600/10 border border-indigo-600/20 text-indigo-400">
+            <div className="p-1.5 rounded-lg bg-orange-50 border border-orange-200 text-brand-600">
               <GitFork className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-xs font-bold text-white tracking-tight">
+              <h2 className="text-xs font-bold text-slate-900 tracking-tight">
                 {workflow?.name || 'Untitled Workflow'}
               </h2>
               <div className="flex items-center gap-2">
@@ -314,12 +314,12 @@ const BuilderInner = () => {
                   {workflow?.status || 'draft'}
                 </span>
                 {currentVersion && (
-                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-600/15 border border-indigo-500/25 text-indigo-400 flex items-center gap-0.5">
+                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-50 border border-orange-200 text-orange-700 flex items-center gap-0.5">
                     <Tag className="w-2.5 h-2.5" /> {currentVersion}
                   </span>
                 )}
                 {saveStatus === 'unsaved' && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/25 text-amber-400">
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700">
                     DRAFT
                   </span>
                 )}
@@ -329,19 +329,19 @@ const BuilderInner = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Phase 13: Data Mapper Button */}
+          {/* Data Mapper Button */}
           <button
             onClick={() => setShowDataMapperModal(true)}
-            className="p-1.5 px-3 bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-purple-500/30 transition-colors shadow-sm cursor-pointer"
+            className="p-1.5 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-purple-200 transition-colors shadow-sm cursor-pointer"
             title="Open Universal Visual Data Mapper"
           >
-            <Zap className="w-3.5 h-3.5 text-purple-400 fill-purple-400/20" />
+            <Zap className="w-3.5 h-3.5 text-purple-600 fill-purple-600/20" />
             Data Mapper
           </button>
 
           <button
             onClick={handleCopyWebhookUrl}
-            className="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-colors"
+            className="p-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-cyan-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors shadow-sm"
             title="Copy Public Webhook Endpoint"
           >
             <Webhook className="w-3.5 h-3.5" /> Webhook URL
@@ -349,26 +349,26 @@ const BuilderInner = () => {
 
           <button
             onClick={() => setShowVersionHistory(true)}
-            className="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition-colors"
+            className="p-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors shadow-sm"
             title="View Version History"
           >
-            <History className="w-3.5 h-3.5 text-indigo-400" />
+            <History className="w-3.5 h-3.5 text-brand-600" />
             Version History
           </button>
 
           <button
             onClick={() => setShowAiDrawer(true)}
-            className="p-1.5 px-3 bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-300 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-indigo-500/30 transition-colors shadow-sm"
+            className="p-1.5 px-3 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-orange-200 transition-colors shadow-sm"
             title="Open AI Assistant"
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400/20" />
+            <Sparkles className="w-3.5 h-3.5 text-orange-600 fill-orange-600/20" />
             AI Assistant
           </button>
 
           <button
             onClick={() => setShowPublishDialog(true)}
             disabled={publishingVersion}
-            className="p-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/20 disabled:opacity-60"
+            className="p-1.5 px-3 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-md shadow-brand-500/20 disabled:opacity-60"
             title="Publish New Version"
           >
             <Rocket className="w-3.5 h-3.5" />
@@ -378,9 +378,9 @@ const BuilderInner = () => {
           {activeExecution && (
             <button
               onClick={() => setActiveExecution((prev) => (prev ? null : activeExecution))}
-              className="p-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2 border border-slate-700"
+              className="p-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-2 border border-slate-200 shadow-sm"
             >
-              <Terminal className="w-3.5 h-3.5 text-indigo-400" /> View Run Logs
+              <Terminal className="w-3.5 h-3.5 text-orange-600" /> View Run Logs
             </button>
           )}
         </div>
@@ -410,22 +410,23 @@ const BuilderInner = () => {
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             fitView
-            colorMode="dark"
-            className="bg-slate-950"
+            colorMode="light"
+            className="bg-slate-50"
           >
-            <Background color="#334155" gap={20} size={1} />
+            <Background color="#cbd5e1" gap={20} size={1} />
             <MiniMap
               nodeColor={(node) => {
                 if (node.type === NODE_TYPES.START) return '#10b981';
                 if (node.type === NODE_TYPES.END) return '#f43f5e';
                 if (node.type === NODE_TYPES.GMAIL) return '#ea4335';
-                return '#6366f1';
+                return '#f97316';
               }}
-              maskColor="rgba(15, 23, 42, 0.8)"
-              className="!bg-slate-900 !border-slate-800 !rounded-xl overflow-hidden"
+              maskColor="rgba(241, 245, 249, 0.7)"
+              className="!bg-white !border-slate-200 !rounded-xl overflow-hidden shadow-sm"
             />
           </ReactFlow>
         </div>
+
 
         <PropertiesPanel
           selectedNode={selectedNode}

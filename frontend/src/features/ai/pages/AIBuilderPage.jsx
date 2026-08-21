@@ -87,24 +87,24 @@ export const AIBuilderPage = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto select-none font-sans text-slate-100">
+    <div className="space-y-6 max-w-5xl mx-auto select-none font-sans text-slate-900">
       {/* Header Banner */}
-      <div className="glass-panel border border-indigo-500/30 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white border border-orange-200 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="flex items-center gap-3.5 relative z-10">
-          <div className="p-3 rounded-2xl bg-gradient-to-tr from-indigo-600/30 to-violet-600/30 border border-indigo-500/40 text-indigo-300 shadow-glow-indigo">
+          <div className="p-3 rounded-2xl bg-orange-50 border border-orange-200 text-orange-600 shadow-sm">
             <Sparkles className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
                 AI Natural Language Workflow Builder
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-orange-50 text-orange-700 border border-orange-200">
                 GPT-4o / Grok Engine
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 max-w-xl">
+            <p className="text-xs text-slate-500 mt-1 max-w-xl">
               Describe your desired automation process in plain English. AutomateX AI will construct nodes, handles, connections, and variables instantly.
             </p>
           </div>
@@ -112,23 +112,23 @@ export const AIBuilderPage = () => {
       </div>
 
       {/* Main Prompt Input Area */}
-      <div className="glass-panel border border-slate-800/80 rounded-3xl p-6 shadow-2xl space-y-5">
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5">
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <Wand2 className="w-4 h-4 text-indigo-400" /> Describe Your Automation Workflow
+          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+            <Wand2 className="w-4 h-4 text-orange-600" /> Describe Your Automation Workflow
           </label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
             placeholder="e.g. When a new user signs up, send a welcome email, wait 5 minutes, send a Slack message, and log output..."
-            className="w-full glass-input rounded-2xl p-4 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-all resize-none leading-relaxed font-mono shadow-inner"
+            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all resize-none leading-relaxed font-mono shadow-inner"
           />
         </div>
 
         {/* Quick Sample Prompts */}
         <div className="space-y-2.5">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
             Quick Template Inspiration
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -139,13 +139,13 @@ export const AIBuilderPage = () => {
                   setPrompt(sample.prompt);
                   handleGenerate(sample.prompt);
                 }}
-                className="p-3.5 rounded-2xl glass-card border border-slate-800/80 hover:border-indigo-500/40 text-left transition-all group cursor-pointer shadow-sm"
+                className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-orange-300 text-left transition-all group cursor-pointer shadow-sm"
               >
-                <div className="text-xs font-bold text-slate-200 group-hover:text-indigo-300 transition-colors flex items-center justify-between">
+                <div className="text-xs font-bold text-slate-800 group-hover:text-brand-600 transition-colors flex items-center justify-between">
                   <span>{sample.title}</span>
-                  <Zap className="w-3 h-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Zap className="w-3 h-3 text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <div className="text-[10px] text-slate-400 line-clamp-1 mt-1">{sample.prompt}</div>
+                <div className="text-[10px] text-slate-500 line-clamp-1 mt-1">{sample.prompt}</div>
               </button>
             ))}
           </div>
@@ -156,7 +156,7 @@ export const AIBuilderPage = () => {
           <button
             onClick={() => handleGenerate()}
             disabled={generating || !prompt.trim()}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold flex items-center gap-2.5 transition-all shadow-glow-indigo disabled:opacity-50 hover:scale-[1.02]"
+            className="px-6 py-3 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white rounded-2xl text-xs font-bold flex items-center gap-2.5 transition-all shadow-md shadow-brand-500/20 disabled:opacity-50 hover:scale-[1.02]"
           >
             {generating ? (
               <>
@@ -173,27 +173,26 @@ export const AIBuilderPage = () => {
         </div>
       </div>
 
-
       {/* AI Generated Result or Rejection Notice */}
       {result && (
         result.isAutomation ? (
-          <div className="bg-slate-900 border border-indigo-500/30 bg-indigo-500/5 rounded-2xl p-6 shadow-2xl space-y-5">
+          <div className="bg-white border border-orange-200 rounded-2xl p-6 shadow-sm space-y-5">
             {/* Card Header */}
-            <div className="flex items-start justify-between border-b border-indigo-500/20 pb-4">
+            <div className="flex items-start justify-between border-b border-orange-100 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-orange-50 text-orange-700 border border-orange-200">
                     {result.provider === 'grok' ? '✨ GROK AI' : '⚡ HEURISTIC AI'}
                   </span>
-                  <h3 className="text-sm font-bold text-white">{result.name}</h3>
+                  <h3 className="text-sm font-bold text-slate-900">{result.name}</h3>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">{result.description}</p>
+                <p className="text-xs text-slate-500 mt-1">{result.description}</p>
               </div>
 
               {result.workflow?._id && (
                 <button
                   onClick={handleOpenInBuilder}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-emerald-600/20"
                 >
                   <span>Open in Canvas Builder</span>
                   <ArrowRight className="w-4 h-4" />
@@ -203,23 +202,23 @@ export const AIBuilderPage = () => {
 
             {/* Generated Node Sequence Pipeline */}
             <div className="space-y-2">
-              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 Generated Graph Structure ({result.definition?.nodes?.length || 0} Nodes)
               </h4>
-              <div className="flex items-center gap-2 overflow-x-auto p-3 rounded-xl bg-slate-950 border border-slate-800 custom-scrollbar">
+              <div className="flex items-center gap-2 overflow-x-auto p-3 rounded-xl bg-slate-50 border border-slate-200 custom-scrollbar">
                 {(result.definition?.nodes || []).map((node, i) => (
                   <React.Fragment key={node.id}>
-                    <div className="px-3 py-2 rounded-lg bg-slate-900 border border-indigo-500/30 text-xs font-semibold text-slate-200 flex items-center gap-2 flex-shrink-0">
-                      <span className="w-5 h-5 rounded-full bg-indigo-600/20 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold">
+                    <div className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-800 flex items-center gap-2 flex-shrink-0 shadow-sm">
+                      <span className="w-5 h-5 rounded-full bg-orange-50 text-orange-600 font-mono text-[10px] flex items-center justify-center font-bold">
                         {i + 1}
                       </span>
                       <span>{node.data?.label || node.type}</span>
-                      <span className="text-[9px] font-mono text-slate-500 px-1 py-0.5 rounded bg-slate-950">
+                      <span className="text-[9px] font-mono text-slate-500 px-1 py-0.5 rounded bg-slate-100">
                         {node.type}
                       </span>
                     </div>
                     {i < result.definition.nodes.length - 1 && (
-                      <span className="text-slate-600 font-mono font-bold flex-shrink-0">→</span>
+                      <span className="text-slate-400 font-mono font-bold flex-shrink-0">→</span>
                     )}
                   </React.Fragment>
                 ))}
@@ -228,32 +227,23 @@ export const AIBuilderPage = () => {
 
             {/* Explanation Summary */}
             {result.summary && (
-              <div className="space-y-1.5 p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-indigo-400" /> AI Step-By-Step Breakdown
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <h4 className="text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Bot className="w-3.5 h-3.5 text-orange-600" /> AI Step-By-Step Breakdown
                 </h4>
-                <pre className="text-xs text-slate-300 font-sans whitespace-pre-wrap leading-relaxed">
+                <pre className="text-xs text-slate-700 font-sans whitespace-pre-wrap leading-relaxed">
                   {result.summary}
                 </pre>
               </div>
             )}
           </div>
         ) : (
-          /* Rejection Alert Box for Non-Automation Prompts */
-          <div className="bg-slate-900 border border-rose-500/30 bg-rose-500/5 rounded-2xl p-6 shadow-2xl space-y-4 font-sans animate-fadeIn">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex-shrink-0">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div className="space-y-2 flex-1">
-                <h3 className="text-sm font-bold text-rose-300">
-                  No Automation Workflow Detected
-                </h3>
-                <pre className="text-xs text-slate-300 font-sans whitespace-pre-wrap leading-relaxed">
-                  {result.message}
-                </pre>
-              </div>
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-xs text-rose-800 space-y-2">
+            <div className="flex items-center gap-2 font-bold">
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
+              <span>No Automation Workflow Detected</span>
             </div>
+            <p className="text-xs text-rose-700">{result.message || 'Please provide a clearer automation instruction (e.g. When X happens, do Y).'}</p>
           </div>
         )
       )}

@@ -15,10 +15,10 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden relative selection:bg-brand-500 selection:text-white">
+    <div className="h-screen w-screen bg-slate-50 text-slate-900 flex flex-col font-sans overflow-hidden relative selection:bg-brand-500 selection:text-white">
       {/* Ambient background glows */}
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed bottom-10 right-1/4 w-[30rem] h-[30rem] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed bottom-10 right-1/4 w-[30rem] h-[30rem] bg-orange-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Global Dashboard Navbar */}
       <Navbar onToggleMobileMenu={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
