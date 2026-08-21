@@ -187,6 +187,24 @@ export const PropertiesPanel = ({
             />
           </div>
 
+          {/* Node Private Note */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700">
+                Node Note / Comment
+              </label>
+              <span className="text-[10px] text-slate-400 font-medium">Private</span>
+            </div>
+            <textarea
+              rows={2}
+              value={selectedNode.data?.note || ''}
+              onChange={(e) => onUpdateNodeData(selectedNode.id, { note: e.target.value })}
+              placeholder="Add private notes for this node..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all resize-none leading-relaxed"
+            />
+          </div>
+
+
           {/* Configuration Parameter Panel */}
           <div className="pt-3 border-t border-slate-100 space-y-4">
             <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">

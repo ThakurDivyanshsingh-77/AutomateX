@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { PackagePlus, CheckCircle2, AlertTriangle, XCircle, ShieldCheck } from 'lucide-react';
 import { websiteCreateProductManifest } from './websiteCreateProductManifest';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const WebsiteCreateProductNode = memo(({ data, selected }) => {
+export const WebsiteCreateProductNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = websiteCreateProductManifest.validate(config);
   const isInvalid = !validation.isValid;
@@ -36,7 +37,7 @@ export const WebsiteCreateProductNode = memo(({ data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-200">
             <PackagePlus className="w-4 h-4" />
@@ -51,13 +52,16 @@ export const WebsiteCreateProductNode = memo(({ data, selected }) => {
           </div>
         </div>
 
-        {isDryRun ? (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-mono font-bold">
-            Dry Run
-          </span>
-        ) : (
-          <PackagePlus className="w-3.5 h-3.5 text-emerald-600" />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {isDryRun ? (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-mono font-bold">
+              Dry Run
+            </span>
+          ) : (
+            <PackagePlus className="w-3.5 h-3.5 text-emerald-600" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
 
       {/* Node Body */}

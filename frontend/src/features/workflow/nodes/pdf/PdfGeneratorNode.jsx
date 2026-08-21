@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { FileOutput, AlertTriangle } from 'lucide-react';
 import { pdfGeneratorManifest } from './pdfGeneratorManifest';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const PdfGeneratorNode = memo(({ data, selected }) => {
+export const PdfGeneratorNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = pdfGeneratorManifest.validate(config);
   const isInvalid = !validation.isValid;
@@ -24,7 +25,7 @@ export const PdfGeneratorNode = memo(({ data, selected }) => {
         className="!bg-violet-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
       />
 
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-violet-50 text-violet-600 border-violet-200">
             <FileOutput className="w-4 h-4" />
@@ -39,13 +40,17 @@ export const PdfGeneratorNode = memo(({ data, selected }) => {
           </div>
         </div>
 
-        {isInvalid && (
-          <AlertTriangle
-            className="w-4 h-4 text-amber-500 flex-shrink-0"
-            title={Object.values(validation.errors).join(', ')}
-          />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {isInvalid && (
+            <AlertTriangle
+              className="w-4 h-4 text-amber-500 flex-shrink-0"
+              title={Object.values(validation.errors).join(', ')}
+            />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
+
 
       <div className="p-3 text-[11px] text-slate-600 bg-slate-50/70 rounded-b-xl space-y-1">
         <div className="flex items-center justify-between font-mono text-[10px]">

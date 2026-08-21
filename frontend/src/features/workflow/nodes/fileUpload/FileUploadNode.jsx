@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { UploadCloud, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { fileUploadManifest } from './fileUploadManifest';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const FileUploadNode = memo(({ data, selected }) => {
+export const FileUploadNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = fileUploadManifest.validate(config);
   const isInvalid = !validation.isValid;
@@ -39,7 +40,7 @@ export const FileUploadNode = memo(({ data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-blue-50 text-blue-600 border-blue-200">
             <UploadCloud className="w-4 h-4" />
@@ -54,14 +55,17 @@ export const FileUploadNode = memo(({ data, selected }) => {
           </div>
         </div>
 
-        {isInvalid ? (
-          <AlertTriangle
-            className="w-4 h-4 text-amber-500 shrink-0"
-            title={Object.values(validation.errors).join(', ')}
-          />
-        ) : (
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {isInvalid ? (
+            <AlertTriangle
+              className="w-4 h-4 text-amber-500 shrink-0"
+              title={Object.values(validation.errors).join(', ')}
+            />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
 
       {/* Node Content / Config Preview */}

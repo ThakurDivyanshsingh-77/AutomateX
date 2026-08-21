@@ -2,8 +2,9 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { gmailValidator } from './validators/gmailValidator';
+import { NodeNotesAction } from './components/NodeNotesAction';
 
-export const GmailNode = ({ data, selected }) => {
+export const GmailNode = ({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = gmailValidator(config);
 
@@ -22,7 +23,7 @@ export const GmailNode = ({ data, selected }) => {
 
       {/* Node Card Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-red-50 border border-red-200 text-red-600">
             <Mail className="w-4 h-4" />
           </div>
@@ -36,13 +37,17 @@ export const GmailNode = ({ data, selected }) => {
           </div>
         </div>
 
-        {/* Validation Status Badge */}
-        {!validation.isValid ? (
-          <AlertCircle className="w-4 h-4 text-amber-500" title={validation.errors.join(', ')} />
-        ) : (
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-        )}
+        {/* Validation Status Badge & Notes Actions */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {!validation.isValid ? (
+            <AlertCircle className="w-4 h-4 text-amber-500" title={validation.errors.join(', ')} />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
+
 
       {/* Node Details Preview */}
       <div className="space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-200 font-mono text-[10px]">

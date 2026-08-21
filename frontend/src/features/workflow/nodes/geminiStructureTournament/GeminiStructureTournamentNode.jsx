@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Trophy, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
 export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
@@ -39,17 +40,21 @@ export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
           </div>
         </div>
 
-        {status === 'success' && (
-          <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="h-3 w-3" /> Ready
-          </span>
-        )}
-        {status === 'error' && (
-          <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
-            <AlertCircle className="h-3 w-3" /> Error
-          </span>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {status === 'success' && (
+            <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+              <CheckCircle2 className="h-3 w-3" /> Ready
+            </span>
+          )}
+          {status === 'error' && (
+            <span className="flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+              <AlertCircle className="h-3 w-3" /> Error
+            </span>
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
+
 
       {/* Body */}
       <div className="mt-3 space-y-2 text-[11px]">

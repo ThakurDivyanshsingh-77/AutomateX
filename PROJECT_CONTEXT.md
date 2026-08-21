@@ -159,6 +159,24 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 - **Direct Live Metadata Pre-Flight Validation**: Updated `GoogleSheetsService.deleteWorksheet` to call `sheetsClient.spreadsheets.get({ spreadsheetId })` directly before deletion. Added mandatory live logging (`Spreadsheet ID`, `Spreadsheet title`, `Number of sheets`, `sheetId`, `title`, `index`, and `Total worksheets: N`) and validated `rawSheets.length <= 1` against true live API count, resolving false-positive single tab errors.
 - **Automated Verification**: Passed 6/6 assertions in `test_delete_worksheet.js` (verified Test 1: deleting tab from multi-tab sheet, Test 2: non-existent tab error, and Test 3: sole remaining tab safety error).
 
+### **Phase 19 Complete — Incremental Node Notes & "⋮" Actions Menu System** — ✅ COMPLETED
+- **Reusable Node Notes & More-Actions Component (`NodeNotesAction.jsx`)**:
+  - Implemented modular, non-intrusive action dropdown menu ("⋮") on every workflow node header with `nodrag` & `nopan` safety handlers to prevent canvas/node drag interference.
+  - **Menu States**: Shows "Add Note" when no note exists; dynamically switches to "Edit Note" and "Delete Note" (rose accent) when a note is configured.
+  - **Note Indicator & Hover Preview**: When a note is saved, renders a subtle amber note badge (`StickyNote`) on the node header. Hovering displays an instantaneous preview tooltip (`line-clamp-4`), and clicking opens the popover.
+  - **Interactive Popover Dialog**: In-place modal editor with clean text area, auto-focus, keyboard shortcuts (`Ctrl/Cmd + Enter` to save, `Escape` to close), Cancel, Save, and Delete controls.
+- **Node Data Model & Persistence**:
+  - Stored directly in `node.data.note` (`string`), fully decoupled from execution logic (`WorkflowParser.js`, `WorkflowEngine.js`).
+  - Automatically persists with workflow definition in MongoDB (`Workflow.definition.nodes`) and survives page reloads, cloning, and version publishing.
+  - Handled whitespace trimming and empty note cleanup (`note: undefined`).
+- **All 22 Node Components Integrated**:
+  - Trigger Nodes (`TriggerNode`, `CronNode`, `WebhookNode`, `GoogleSheetsTriggerNode`, `DiscordMessageReceivedNode`).
+  - Document & AI Nodes (`FileUploadNode`, `DocumentExtractNode`, `GeminiStructureTournamentNode`, `GeminiStructureProductsNode`).
+  - Integration Nodes (`WebsiteConnectNode`, `WebsiteCreateTournamentNode`, `WebsiteCreateProductNode`, `GmailNode`, `HttpNode`, `PdfGeneratorNode`).
+  - Logic Nodes (`ConditionNode`, `ForEachTournamentNode`, `ForEachProductNode`, `TryCatchNode`, `DelayNode`, `LogNode`, `EndNode`).
+- **Right Properties Drawer (`PropertiesPanel.jsx`)**: Added synced "Node Note / Comment" textarea for streamlined editing directly from the properties inspector.
+- **Verification**: Verified production build (`npm run build`) compiles cleanly with **0 errors**.
+
 ### **Phase 18 Complete — Full Platform White & Orange Light Theme Transformation (including Visual Canvas & Node Palette)** — ✅ COMPLETED
 - **Theme Rationale & Aesthetic**: Transformed the entire AutomateX UI/UX from the dark obsidian theme into a crisp, high-contrast, modern **White & Orange Light Theme** inspired by Zapier and enterprise automation design systems.
 - **Color Palette Tokens (`src/index.css`)**:

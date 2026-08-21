@@ -1,8 +1,9 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { ShieldAlert, ShieldCheck, Bug } from 'lucide-react';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const TryCatchNode = ({ data, selected }) => {
+export const TryCatchNode = ({ id, data, selected }) => {
   return (
     <div
       className={`min-w-[240px] bg-white border rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
@@ -20,7 +21,7 @@ export const TryCatchNode = ({ data, selected }) => {
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600">
             <ShieldAlert className="w-4 h-4" />
           </div>
@@ -33,7 +34,10 @@ export const TryCatchNode = ({ data, selected }) => {
             </span>
           </div>
         </div>
+
+        <NodeNotesAction nodeId={id} note={data?.note} />
       </div>
+
 
       {/* Handles Labels Summary */}
       <div className="space-y-1.5 font-mono text-[10px]">

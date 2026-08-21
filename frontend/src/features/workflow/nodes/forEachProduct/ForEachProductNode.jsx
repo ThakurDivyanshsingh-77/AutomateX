@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Repeat, CheckCircle2, AlertTriangle, Layers } from 'lucide-react';
 import { forEachProductManifest } from './forEachProductManifest';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const ForEachProductNode = memo(({ data, selected }) => {
+export const ForEachProductNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = forEachProductManifest.validate(config);
   const isInvalid = !validation.isValid;
@@ -35,7 +36,7 @@ export const ForEachProductNode = memo(({ data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-200">
             <Repeat className="w-4 h-4" />
@@ -50,13 +51,16 @@ export const ForEachProductNode = memo(({ data, selected }) => {
           </div>
         </div>
 
-        {total !== null ? (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-mono font-bold">
-            {total} Items
-          </span>
-        ) : (
-          <Repeat className="w-3.5 h-3.5 text-amber-500" />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {total !== null ? (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-mono font-bold">
+              {total} Items
+            </span>
+          ) : (
+            <Repeat className="w-3.5 h-3.5 text-amber-500" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
 
       {/* Node Body */}

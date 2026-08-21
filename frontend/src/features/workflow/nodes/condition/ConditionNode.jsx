@@ -3,8 +3,9 @@ import { Handle, Position } from '@xyflow/react';
 import { GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { validateConditionNode } from './validator';
 import { CONDITION_OPERATORS } from './conditionSchema';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const ConditionNode = ({ data, selected }) => {
+export const ConditionNode = ({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = validateConditionNode(config);
 
@@ -30,7 +31,7 @@ export const ConditionNode = ({ data, selected }) => {
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-600">
             <GitBranch className="w-4 h-4" />
           </div>
@@ -44,13 +45,17 @@ export const ConditionNode = ({ data, selected }) => {
           </div>
         </div>
 
-        {/* Validation Badge */}
-        {!validation.isValid ? (
-          <AlertCircle className="w-4 h-4 text-amber-500" title="Incomplete configuration" />
-        ) : (
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-        )}
+        {/* Validation Badge & Notes Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          {!validation.isValid ? (
+            <AlertCircle className="w-4 h-4 text-amber-500" title="Incomplete configuration" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
+
 
       {/* Condition Summary Preview */}
       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-[10px] space-y-1">

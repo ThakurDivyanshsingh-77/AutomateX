@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Sparkles, Layers, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
 import { geminiStructureProductsManifest } from './geminiStructureProductsManifest';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const GeminiStructureProductsNode = memo(({ data, selected }) => {
+export const GeminiStructureProductsNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = geminiStructureProductsManifest.validate(config);
   const isInvalid = !validation.isValid;
@@ -35,7 +36,7 @@ export const GeminiStructureProductsNode = memo(({ data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-purple-50 text-purple-600 border-purple-200">
             <Sparkles className="w-4 h-4" />
@@ -50,13 +51,16 @@ export const GeminiStructureProductsNode = memo(({ data, selected }) => {
           </div>
         </div>
 
-        {productCount !== null ? (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-bold">
-            {productCount} Products
-          </span>
-        ) : (
-          <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {productCount !== null ? (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-bold">
+              {productCount} Products
+            </span>
+          ) : (
+            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
 
       {/* Node Body */}

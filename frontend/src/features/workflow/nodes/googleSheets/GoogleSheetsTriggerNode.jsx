@@ -1,8 +1,9 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Zap, Clock, FileSpreadsheet } from 'lucide-react';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const GoogleSheetsTriggerNode = ({ data, selected }) => {
+export const GoogleSheetsTriggerNode = ({ id, data, selected }) => {
   const config = data?.config || {};
   const triggerEvent = config.triggerEvent || 'newRow';
   const worksheetTitle = config.worksheetTitle || config.worksheet || 'Sheet1';
@@ -25,7 +26,7 @@ export const GoogleSheetsTriggerNode = ({ data, selected }) => {
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600">
             <Zap className="w-4 h-4" />
           </div>
@@ -39,10 +40,14 @@ export const GoogleSheetsTriggerNode = ({ data, selected }) => {
           </div>
         </div>
 
-        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold border border-emerald-200">
-          LIVE
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold border border-emerald-200">
+            LIVE
+          </span>
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
+
 
       {/* Configuration Summary Badge */}
       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-[10px] space-y-1">

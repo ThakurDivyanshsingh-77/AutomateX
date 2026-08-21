@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { MessageSquare } from 'lucide-react';
+import { NodeNotesAction } from '../nodes/components/NodeNotesAction';
 
-export const DiscordMessageReceivedNode = memo(({ data, selected }) => {
+export const DiscordMessageReceivedNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const guildLabel = config.guildId && config.guildId !== 'all' ? `Guild: ${config.guildId}` : 'All Servers';
   const channelLabel = config.channelId && config.channelId !== 'all' ? `Channel: ${config.channelId}` : 'All Channels';
@@ -15,7 +16,7 @@ export const DiscordMessageReceivedNode = memo(({ data, selected }) => {
           : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-indigo-50 text-indigo-600 border-indigo-200">
             <MessageSquare className="w-4 h-4" />
@@ -29,7 +30,10 @@ export const DiscordMessageReceivedNode = memo(({ data, selected }) => {
             </span>
           </div>
         </div>
+
+        <NodeNotesAction nodeId={id} note={data?.note} />
       </div>
+
 
       <div className="p-3 text-[11px] text-slate-600 bg-slate-50/70 rounded-b-xl space-y-1 font-mono text-[10px]">
         <div className="text-indigo-700 font-bold flex items-center justify-between">

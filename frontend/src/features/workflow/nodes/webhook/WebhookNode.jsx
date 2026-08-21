@@ -1,8 +1,9 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Webhook, ShieldCheck, ShieldAlert, Globe } from 'lucide-react';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const WebhookNode = ({ data, selected }) => {
+export const WebhookNode = ({ id, data, selected }) => {
   const config = data?.config || {};
   const method = (config.method || 'ANY').toUpperCase();
   const authType = config.authType || 'none';
@@ -18,7 +19,7 @@ export const WebhookNode = ({ data, selected }) => {
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-600">
             <Webhook className="w-4 h-4" />
           </div>
@@ -32,13 +33,17 @@ export const WebhookNode = ({ data, selected }) => {
           </div>
         </div>
 
-        {/* Auth status icon */}
-        {authType === 'none' ? (
-          <Globe className="w-4 h-4 text-emerald-600" title="Public Endpoint" />
-        ) : (
-          <ShieldCheck className="w-4 h-4 text-blue-600" title={`Auth: ${authType}`} />
-        )}
+        {/* Auth status icon & Notes Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          {authType === 'none' ? (
+            <Globe className="w-4 h-4 text-emerald-600" title="Public Endpoint" />
+          ) : (
+            <ShieldCheck className="w-4 h-4 text-blue-600" title={`Auth: ${authType}`} />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
+
 
       {/* Endpoint summary badge */}
       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-[10px] flex items-center justify-between gap-2">

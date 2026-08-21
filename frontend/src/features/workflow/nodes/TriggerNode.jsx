@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Play } from 'lucide-react';
+import { NodeNotesAction } from './components/NodeNotesAction';
 
-export const TriggerNode = memo(({ data, selected }) => {
+export const TriggerNode = memo(({ id, data, selected }) => {
   return (
     <div
       className={`min-w-[220px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
@@ -11,7 +12,7 @@ export const TriggerNode = memo(({ data, selected }) => {
           : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-200">
             <Play className="w-4 h-4 fill-emerald-600" />
@@ -25,6 +26,8 @@ export const TriggerNode = memo(({ data, selected }) => {
             </span>
           </div>
         </div>
+
+        <NodeNotesAction nodeId={id} note={data?.note} />
       </div>
 
       <div className="p-3 text-[11px] text-emerald-700 bg-emerald-50/40 rounded-b-xl font-mono text-[10px] flex items-center gap-1">
@@ -39,4 +42,5 @@ export const TriggerNode = memo(({ data, selected }) => {
     </div>
   );
 });
+
 

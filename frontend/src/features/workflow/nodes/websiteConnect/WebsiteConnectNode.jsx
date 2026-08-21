@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Globe, CheckCircle2, AlertTriangle, XCircle, Link2 } from 'lucide-react';
 import { websiteConnectManifest } from './websiteConnectManifest';
+import { NodeNotesAction } from '../components/NodeNotesAction';
 
-export const WebsiteConnectNode = memo(({ data, selected }) => {
+export const WebsiteConnectNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = websiteConnectManifest.validate(config);
   const isInvalid = !validation.isValid;
@@ -49,7 +50,7 @@ export const WebsiteConnectNode = memo(({ data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-cyan-50 text-cyan-700 border-cyan-200">
             <Globe className="w-4 h-4" />
@@ -64,18 +65,21 @@ export const WebsiteConnectNode = memo(({ data, selected }) => {
           </div>
         </div>
 
-        {isConnected ? (
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-        ) : isError ? (
-          <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
-        ) : isInvalid ? (
-          <AlertTriangle
-            className="w-4 h-4 text-amber-500 shrink-0"
-            title={Object.values(validation.errors).join(', ')}
-          />
-        ) : (
-          <Link2 className="w-4 h-4 text-slate-400 shrink-0" />
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {isConnected ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          ) : isError ? (
+            <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          ) : isInvalid ? (
+            <AlertTriangle
+              className="w-4 h-4 text-amber-500 shrink-0"
+              title={Object.values(validation.errors).join(', ')}
+            />
+          ) : (
+            <Link2 className="w-4 h-4 text-slate-400 shrink-0" />
+          )}
+          <NodeNotesAction nodeId={id} note={data?.note} />
+        </div>
       </div>
 
       {/* Node Content / Connection Status */}

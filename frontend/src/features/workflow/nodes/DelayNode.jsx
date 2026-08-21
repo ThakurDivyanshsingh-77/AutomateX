@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Clock } from 'lucide-react';
+import { NodeNotesAction } from './components/NodeNotesAction';
 
-export const DelayNode = memo(({ data, selected }) => {
+export const DelayNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
 
   return (
@@ -19,7 +20,7 @@ export const DelayNode = memo(({ data, selected }) => {
         className="!bg-amber-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
       />
 
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="p-1.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-200">
             <Clock className="w-4 h-4" />
@@ -33,6 +34,8 @@ export const DelayNode = memo(({ data, selected }) => {
             </span>
           </div>
         </div>
+
+        <NodeNotesAction nodeId={id} note={data?.note} />
       </div>
 
       <div className="p-3 text-[11px] text-slate-600 bg-slate-50/70 rounded-b-xl">
@@ -47,4 +50,5 @@ export const DelayNode = memo(({ data, selected }) => {
     </div>
   );
 });
+
 
