@@ -35,7 +35,12 @@ import {
   Wand2,
   Copy,
   Sliders,
-  Check
+  Check,
+  Settings,
+  MoreVertical,
+  Radio,
+  Share2,
+  Gauge
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -58,6 +63,7 @@ export const Dashboard = () => {
   const [workflowFilter, setWorkflowFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [runningWorkflowId, setRunningWorkflowId] = useState(null);
+  const [openActionMenuId, setOpenActionMenuId] = useState(null);
 
   // Recent Executions Feed State
   const [recentExecutions, setRecentExecutions] = useState([]);
@@ -84,7 +90,6 @@ export const Dashboard = () => {
     setExecutionsLoading(true);
 
     try {
-      // Parallel fetch for snappy responsiveness
       const [workflowsRes, execStatsRes, execListRes, credsRes, templatesRes] = await Promise.allSettled([
         workflowService.getWorkflows({ limit: 50 }),
         executionService.getExecutionStats(),
@@ -140,12 +145,13 @@ export const Dashboard = () => {
 
   // Handle Quick Workflow Run
   const handleQuickRun = async (workflowId, e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     setRunningWorkflowId(workflowId);
+    setOpenActionMenuId(null);
     try {
       const res = await executionService.runWorkflow(workflowId);
-      toast.success(res.message || 'Workflow executed successfully!');
-      // Refresh executions feed & stats
+      toast.success(res.message || '⚡ Workflow executed successfully!');
+      
       const [updatedExecs, updatedStats] = await Promise.allSettled([
         executionService.getExecutions({ limit: 6 }),
         executionService.getExecutionStats(),
@@ -163,12 +169,25 @@ export const Dashboard = () => {
     }
   };
 
+  // Handle Workflow Duplication
+  const handleDuplicateWorkflow = async (workflowId, e) => {
+    e?.stopPropagation();
+    setOpenActionMenuId(null);
+    try {
+      await workflowService.duplicateWorkflow(workflowId);
+      toast.success('Workflow cloned successfully!');
+      loadDashboardData();
+    } catch (err) {
+      toast.error('Failed to duplicate workflow');
+    }
+  };
+
   // Handle Quick Template Clone
   const handleInstantiateTemplate = async (templateId) => {
     try {
       const res = await templateService.instantiateTemplate(templateId);
       const newWf = res.workflow || res.data || res;
-      toast.success('Template cloned to your workflows!');
+      toast.success('⚡ Blueprint cloned to your workspace!');
       navigate(`/builder/${newWf._id}`);
     } catch (err) {
       toast.error('Failed to instantiate template');
@@ -179,7 +198,7 @@ export const Dashboard = () => {
   const handleAIGenerate = (e) => {
     e?.preventDefault();
     if (!aiPrompt.trim()) {
-      toast.error('Please enter what workflow you would like to automate');
+      toast.error('Please enter the workflow you want to build');
       return;
     }
     navigate('/ai-builder', {
@@ -207,118 +226,119 @@ export const Dashboard = () => {
     const s = (status || '').toLowerCase();
     if (s === 'success' || s === 'completed') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <CheckCircle2 className="w-3 h-3" /> Success
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Success
         </span>
       );
     }
     if (s === 'failed' || s === 'error') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-          <AlertCircle className="w-3 h-3" /> Failed
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-950/80 text-rose-400 border border-rose-500/30">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-400" /> Failed
         </span>
       );
     }
     if (s === 'running' || s === 'pending') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          <Loader2 className="w-3 h-3 animate-spin" /> {status}
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-orange-950/80 text-orange-400 border border-orange-500/30">
+          <Loader2 className="w-2.5 h-2.5 animate-spin text-orange-400" /> {status}
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
-        {status || 'Unknown'}
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800">
+        {status || 'Draft'}
       </span>
     );
   };
 
   const samplePromptSuggestions = [
-    { title: 'Google Sheets ➔ Discord Alert', prompt: 'Watch Google Sheets row addition and send an embed message to Discord channel' },
-    { title: 'Webhook JSON Filter ➔ Gmail', prompt: 'Receive customer lead webhook, format JSON data, and send email summary via Gmail' },
-    { title: 'Hourly API Healthcheck', prompt: 'Every hour send HTTP GET to production endpoints and alert Slack if status code is not 200' },
+    { title: 'Sheets ➔ Discord Bot', prompt: 'Watch Google Sheets row addition and send an embed message to Discord channel' },
+    { title: 'Webhook ➔ Gmail Dispatch', prompt: 'Receive customer lead webhook, format JSON data, and send email summary via Gmail' },
+    { title: 'Scheduled API Healthcheck', prompt: 'Every hour send HTTP GET to production endpoints and alert Slack if status code is not 200' },
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto select-none font-sans text-slate-100 pb-12">
-      {/* ── 1. Hero Header & Live Workspace Status ──────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/80 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
-        {/* Glow ambient background effect */}
-        <div className="absolute top-0 right-1/4 w-96 h-48 bg-indigo-600/15 blur-[90px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-80 h-36 bg-cyan-600/10 blur-[80px] rounded-full pointer-events-none" />
-
+    <div className="min-h-full space-y-8 max-w-7xl mx-auto select-none font-sans text-zinc-100 pb-16">
+      
+      {/* ── 1. Hero Header & Live Workspace Status (Black & Dark Orange Theme) ── */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0c0c0e] via-[#141216] to-[#0c0c0e] border border-orange-500/20 p-6 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
+        {/* Neon Orange ambient aura */}
+        <div className="absolute top-0 right-1/4 w-96 h-48 bg-orange-600/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-36 bg-amber-600/10 blur-[90px] rounded-full pointer-events-none" />
+        
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 shadow-sm">
-                <Zap className="w-3.5 h-3.5 fill-indigo-400" /> AutomateX Enterprise Engine
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/30 shadow-[0_0_15px_rgba(255,79,0,0.15)]">
+                <Flame className="w-3.5 h-3.5 fill-orange-400 text-orange-400 animate-pulse" /> AutomateX Enterprise Engine
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Live & Operational
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-zinc-900 text-zinc-300 border border-zinc-800">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" /> DAG Engine 100% Active
               </span>
             </div>
 
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                {getGreeting()}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white to-cyan-200">{user?.name || 'Automation Architect'}</span> 👋
+              <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+                {getGreeting()}, <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-200 to-amber-400">{user?.name || 'Architect'}</span> 👋
               </h1>
-              <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                Design visual graphs, orchestrate event-driven APIs, run AI automated pipelines, and inspect real-time execution telemetry.
+              <p className="text-xs md:text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                Visual DAG graph orchestration, serverless micro-workflows, and automated trigger telemetry in high-performance dark mode.
               </p>
             </div>
           </div>
 
-          {/* Action CTAs */}
+          {/* Action CTAs (Orange Glow) */}
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <button
               onClick={() => navigate('/ai-builder')}
-              className="group flex-1 md:flex-initial px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] flex items-center justify-center gap-2"
+              className="group flex-1 md:flex-initial px-4 py-2.5 rounded-2xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-semibold text-xs transition-all shadow-[0_0_25px_rgba(255,79,0,0.35)] hover:shadow-[0_0_35px_rgba(255,79,0,0.5)] hover:scale-[1.02] flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform text-amber-300" />
-              <span>AI Builder</span>
+              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform text-zinc-950 fill-zinc-950" />
+              <span className="font-bold">AI Workflow Builder</span>
             </button>
 
             <button
               onClick={() => navigate('/workflows/create')}
-              className="flex-1 md:flex-initial px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 hover:border-slate-600 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md"
+              className="flex-1 md:flex-initial px-4 py-2.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs border border-zinc-800 hover:border-orange-500/40 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 shadow-md"
             >
-              <Plus className="w-4 h-4 text-indigo-400" />
-              <span>New Workflow</span>
+              <Plus className="w-4 h-4 text-orange-400" />
+              <span>Create Workflow</span>
             </button>
 
             <button
               onClick={loadDashboardData}
-              title="Refresh Dashboard Metrics"
-              className="p-2.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+              title="Refresh Live Telemetry"
+              className="p-2.5 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-orange-400 border border-zinc-800 hover:border-orange-500/30 transition-all shadow-md"
             >
-              <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin text-indigo-400' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin text-orange-400' : ''}`} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── 2. KPI Analytics Grid ─────────────────────────────────────────── */}
+      {/* ── 2. KPI Analytics Grid (Obsidian Glass + Neon Dark Orange) ─────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Workflows */}
         <div
           onClick={() => navigate('/workflows')}
-          className="group cursor-pointer p-5 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800/90 hover:border-indigo-500/40 transition-all duration-300 shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between"
+          className="group cursor-pointer p-5 rounded-2xl bg-[#0e0e11] hover:bg-[#141216] border border-zinc-800/90 hover:border-orange-500/50 transition-all duration-300 shadow-xl hover:shadow-[0_0_30px_rgba(255,79,0,0.12)] flex flex-col justify-between"
         >
           <div className="flex items-start justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Workflows</span>
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Workflows</span>
+            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/25 group-hover:scale-110 transition-transform shadow-[0_0_12px_rgba(255,79,0,0.15)]">
               <GitFork className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-4">
             <div className="text-3xl font-extrabold text-white font-mono tracking-tight">
-              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-indigo-400" /> : totalWorkflows}
+              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-orange-400" /> : totalWorkflows}
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-mono">
+            <div className="flex items-center justify-between text-[11px] text-zinc-400 mt-2 font-mono">
               <span className="text-emerald-400">{activeWorkflowsCount} Active</span>
-              <span className="text-slate-500">·</span>
-              <span className="text-amber-400">{draftWorkflowsCount} Drafts</span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform ml-auto" />
+              <span className="text-zinc-600">·</span>
+              <span className="text-orange-400/80">{draftWorkflowsCount} Drafts</span>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-orange-400 group-hover:translate-x-1 transition-transform ml-auto" />
             </div>
           </div>
         </div>
@@ -326,26 +346,26 @@ export const Dashboard = () => {
         {/* Execution Runs */}
         <div
           onClick={() => navigate('/executions')}
-          className="group cursor-pointer p-5 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800/90 hover:border-emerald-500/40 transition-all duration-300 shadow-xl hover:shadow-emerald-500/10 flex flex-col justify-between"
+          className="group cursor-pointer p-5 rounded-2xl bg-[#0e0e11] hover:bg-[#141216] border border-zinc-800/90 hover:border-orange-500/50 transition-all duration-300 shadow-xl hover:shadow-[0_0_30px_rgba(255,79,0,0.12)] flex flex-col justify-between"
         >
           <div className="flex items-start justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Executions</span>
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Executions Volume</span>
+            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/25 group-hover:scale-110 transition-transform shadow-[0_0_12px_rgba(255,79,0,0.15)]">
               <Activity className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight flex items-center gap-2">
-              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-emerald-400" /> : (executionStats?.totalExecutions || 0)}
-              <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">
+            <div className="text-3xl font-extrabold text-orange-400 font-mono tracking-tight flex items-center gap-2">
+              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-orange-400" /> : (executionStats?.totalExecutions || 0)}
+              <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 {executionStats?.successRate || 100}%
               </span>
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-              <span className="text-emerald-400">{executionStats?.successful || 0} Successful</span>
-              <span className="text-slate-500">·</span>
-              <span className="text-rose-400">{executionStats?.failed || 0} Failed</span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform ml-auto" />
+            <div className="flex items-center justify-between text-[11px] text-zinc-400 mt-2">
+              <span className="text-emerald-400 font-mono">{executionStats?.successful || 0} OK</span>
+              <span className="text-zinc-600">·</span>
+              <span className="text-rose-400 font-mono">{executionStats?.failed || 0} ERR</span>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-orange-400 group-hover:translate-x-1 transition-transform ml-auto" />
             </div>
           </div>
         </div>
@@ -353,83 +373,83 @@ export const Dashboard = () => {
         {/* Average Latency */}
         <div
           onClick={() => navigate('/executions')}
-          className="group cursor-pointer p-5 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800/90 hover:border-cyan-500/40 transition-all duration-300 shadow-xl hover:shadow-cyan-500/10 flex flex-col justify-between"
+          className="group cursor-pointer p-5 rounded-2xl bg-[#0e0e11] hover:bg-[#141216] border border-zinc-800/90 hover:border-orange-500/50 transition-all duration-300 shadow-xl hover:shadow-[0_0_30px_rgba(255,79,0,0.12)] flex flex-col justify-between"
         >
           <div className="flex items-start justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Avg Latency</span>
-            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-110 transition-transform">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-extrabold text-cyan-400 font-mono tracking-tight">
-              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-cyan-400" /> : `${executionStats?.averageDuration || 28} ms`}
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-              <span className="text-cyan-300">DAG Topological Speed</span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform ml-auto" />
-            </div>
-          </div>
-        </div>
-
-        {/* Credentials & Integrations Vault */}
-        <div
-          onClick={() => navigate('/credentials')}
-          className="group cursor-pointer p-5 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800/90 hover:border-amber-500/40 transition-all duration-300 shadow-xl hover:shadow-amber-500/10 flex flex-col justify-between"
-        >
-          <div className="flex items-start justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Connected Vault</span>
-            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:scale-110 transition-transform">
-              <ShieldCheck className="w-4 h-4" />
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Engine Latency</span>
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/25 group-hover:scale-110 transition-transform shadow-[0_0_12px_rgba(245,158,11,0.15)]">
+              <Gauge className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-4">
             <div className="text-3xl font-extrabold text-amber-400 font-mono tracking-tight">
-              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-amber-400" /> : credentialsCount}
+              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-amber-400" /> : `${executionStats?.averageDuration || 24} ms`}
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-              <span className="text-amber-300 font-sans">AES-256 Encrypted</span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform ml-auto" />
+            <div className="flex items-center justify-between text-[11px] text-zinc-400 mt-2">
+              <span className="text-zinc-400">Topological DAG speed</span>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-transform ml-auto" />
+            </div>
+          </div>
+        </div>
+
+        {/* Credentials Vault */}
+        <div
+          onClick={() => navigate('/credentials')}
+          className="group cursor-pointer p-5 rounded-2xl bg-[#0e0e11] hover:bg-[#141216] border border-zinc-800/90 hover:border-orange-500/50 transition-all duration-300 shadow-xl hover:shadow-[0_0_30px_rgba(255,79,0,0.12)] flex flex-col justify-between"
+        >
+          <div className="flex items-start justify-between">
+            <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Encrypted Vault</span>
+            <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/25 group-hover:scale-110 transition-transform shadow-[0_0_12px_rgba(255,79,0,0.15)]">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="text-3xl font-extrabold text-orange-400 font-mono tracking-tight">
+              {statsLoading ? <Loader2 className="w-6 h-6 animate-spin text-orange-400" /> : credentialsCount}
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-zinc-400 mt-2">
+              <span className="text-orange-400/90">AES-256-CBC Keys</span>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-orange-400 group-hover:translate-x-1 transition-transform ml-auto" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 3. AI Workflow Generator Interactive Prompt Bar ───────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900/90 to-purple-950/40 border border-indigo-500/30 p-6 shadow-2xl backdrop-blur-xl">
+      {/* ── 3. AI Workflow Generator Interactive Prompt Bar (Dark Orange Glow) ── */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#121013] via-[#161214] to-[#0d0c0e] border border-orange-500/30 p-6 shadow-[0_0_40px_rgba(255,79,0,0.08)] backdrop-blur-xl">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-1.5 max-w-xl">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                <Sparkles className="w-4 h-4" />
+              <div className="p-1.5 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                <Wand2 className="w-4 h-4" />
               </div>
               <h2 className="text-base font-bold text-white tracking-tight">
                 AI Automation Generator
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                LLM Powered
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-orange-500/10 text-orange-400 border border-orange-500/30">
+                Neural Graph Engine
               </span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Describe the automation flow you need in plain English. AutomateX will auto-generate the trigger, transform nodes, conditional branches, and connectors.
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Type what you want to automate in natural language. AutomateX will generate triggers, transform functions, logic conditions, and app connectors.
             </p>
           </div>
 
           {/* Prompt Bar Form */}
           <form onSubmit={handleAIGenerate} className="w-full lg:max-w-xl flex items-center gap-2">
             <div className="relative flex-1">
-              <Wand2 className="w-4 h-4 text-indigo-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Sparkles className="w-4 h-4 text-orange-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="e.g. When a new Stripe invoice is paid, notify Slack and log in Google Sheets..."
-                className="w-full bg-slate-950/90 border border-indigo-500/30 rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                placeholder="e.g. When a new row is added in Google Sheets, send Discord alert and save to MongoDB..."
+                className="w-full bg-black/80 border border-zinc-800 focus:border-orange-500 rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
               />
             </div>
             <button
               type="submit"
-              className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-600/30 hover:scale-[1.02] flex items-center gap-1.5 whitespace-nowrap"
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold text-xs transition-all shadow-[0_0_20px_rgba(255,79,0,0.3)] hover:scale-[1.02] flex items-center gap-1.5 whitespace-nowrap"
             >
               <span>Build</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -438,8 +458,8 @@ export const Dashboard = () => {
         </div>
 
         {/* Quick Suggestion Pills */}
-        <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mr-1">Quick Ideas:</span>
+        <div className="mt-4 pt-4 border-t border-zinc-800/80 flex items-center gap-2 flex-wrap text-xs">
+          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mr-1">Quick Blueprints:</span>
           {samplePromptSuggestions.map((item, idx) => (
             <button
               key={idx}
@@ -447,9 +467,9 @@ export const Dashboard = () => {
                 setAiPrompt(item.prompt);
                 navigate('/ai-builder', { state: { initialPrompt: item.prompt, autoGenerate: true } });
               }}
-              className="px-3 py-1 rounded-xl bg-slate-900/80 hover:bg-indigo-950/80 text-slate-300 hover:text-indigo-300 border border-slate-800 hover:border-indigo-500/40 text-[11px] transition-all flex items-center gap-1.5"
+              className="px-3 py-1 rounded-xl bg-zinc-900 hover:bg-orange-950/60 text-zinc-300 hover:text-orange-300 border border-zinc-800 hover:border-orange-500/40 text-[11px] transition-all flex items-center gap-1.5"
             >
-              <Bot className="w-3 h-3 text-indigo-400" />
+              <Bot className="w-3 h-3 text-orange-400" />
               <span>{item.title}</span>
             </button>
           ))}
@@ -460,24 +480,24 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Columns: Automation Workflows Workspace */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0d0c0f] p-4 rounded-2xl border border-zinc-800/90">
             <div>
               <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                <GitFork className="w-4 h-4 text-indigo-400" /> Automation Workflows
+                <GitFork className="w-4 h-4 text-orange-400" /> Automation Workflows
               </h2>
-              <p className="text-xs text-slate-400">Manage, test trigger, and edit your visual DAG pipelines.</p>
+              <p className="text-xs text-zinc-400">Manage, test execute, and configure your visual DAG pipelines.</p>
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-1 bg-black p-1 rounded-xl border border-zinc-800">
               {['all', 'active', 'draft'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setWorkflowFilter(tab)}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all ${
                     workflowFilter === tab
-                      ? 'bg-indigo-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-orange-600 text-white shadow-[0_0_12px_rgba(255,79,0,0.4)]'
+                      : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
                   {tab}
@@ -488,13 +508,13 @@ export const Dashboard = () => {
 
           {/* Search Bar for Workflows */}
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search workflows by name or description..."
-              className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              placeholder="Search workflows by title or description..."
+              className="w-full bg-[#0d0c0f] border border-zinc-800 focus:border-orange-500 rounded-xl pl-10 pr-4 py-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-none transition-colors"
             />
           </div>
 
@@ -502,23 +522,23 @@ export const Dashboard = () => {
           {workflowsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-40 bg-slate-900/40 border border-slate-800/60 rounded-2xl animate-pulse" />
+                <div key={i} className="h-40 bg-[#0e0e11] border border-zinc-800/60 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : filteredWorkflows.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-slate-900/40 border border-slate-800/80 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mx-auto flex items-center justify-center">
+            <div className="p-8 rounded-2xl bg-[#0e0e11] border border-zinc-800/80 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-400 border border-orange-500/20 mx-auto flex items-center justify-center">
                 <GitFork className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-semibold text-white">No workflows found</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              <p className="text-xs text-zinc-400 max-w-sm mx-auto">
                 {searchQuery
-                  ? 'No workflows matched your query. Try a different search term.'
-                  : 'You have not created any workflows in this view. Start now or use an AI prompt!'}
+                  ? 'No workflows match your search query.'
+                  : 'Start automating by creating a new workflow or prompt the AI builder!'}
               </p>
               <button
                 onClick={() => navigate('/workflows/create')}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-lg shadow-indigo-600/20"
+                className="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-[0_0_20px_rgba(255,79,0,0.3)]"
               >
                 <Plus className="w-3.5 h-3.5" /> Create Workflow
               </button>
@@ -529,19 +549,19 @@ export const Dashboard = () => {
                 <div
                   key={wf._id}
                   onClick={() => navigate(`/builder/${wf._id}`)}
-                  className="group cursor-pointer p-5 rounded-2xl bg-slate-900/70 hover:bg-slate-900 border border-slate-800/80 hover:border-indigo-500/40 transition-all duration-200 shadow-lg hover:shadow-indigo-500/5 flex flex-col justify-between"
+                  className="group relative cursor-pointer p-5 rounded-2xl bg-[#0e0e11] hover:bg-[#151318] border border-zinc-800/90 hover:border-orange-500/50 transition-all duration-200 shadow-xl hover:shadow-[0_0_25px_rgba(255,79,0,0.12)] flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="p-2.5 rounded-xl bg-slate-800/90 text-indigo-400 group-hover:bg-indigo-500/10 group-hover:scale-105 transition-all border border-slate-700/50">
-                        <Zap className="w-4 h-4" />
+                      <div className="p-2.5 rounded-xl bg-zinc-900 text-orange-400 group-hover:bg-orange-500/15 group-hover:scale-105 transition-all border border-zinc-800 group-hover:border-orange-500/30">
+                        <Zap className="w-4 h-4 fill-orange-400 text-orange-400" />
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
                             wf.status === 'active' || wf.isActive
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                              ? 'bg-emerald-950/80 text-emerald-400 border-emerald-500/30'
+                              : 'bg-zinc-900 text-zinc-400 border-zinc-800'
                           }`}
                         >
                           {wf.status === 'active' || wf.isActive ? 'Active' : 'Draft'}
@@ -550,17 +570,17 @@ export const Dashboard = () => {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-semibold text-white group-hover:text-indigo-300 transition-colors line-clamp-1">
+                      <h3 className="text-sm font-bold text-white group-hover:text-orange-300 transition-colors line-clamp-1">
                         {wf.name || 'Untitled Automation'}
                       </h3>
-                      <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                      <p className="text-xs text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
                         {wf.description || 'Visual automation workflow.'}
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                    <span className="font-mono text-[10px] bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800">
+                  <div className="mt-5 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
+                    <span className="font-mono text-[10px] bg-black px-2 py-0.5 rounded-md border border-zinc-800 text-zinc-300">
                       {wf.nodes?.length || wf.definition?.nodes?.length || 3} Nodes
                     </span>
 
@@ -568,13 +588,13 @@ export const Dashboard = () => {
                       <button
                         onClick={(e) => handleQuickRun(wf._id, e)}
                         disabled={runningWorkflowId === wf._id}
-                        title="Trigger Workflow Run"
-                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                        title="Run Workflow"
+                        className="px-2.5 py-1 rounded-lg bg-orange-600/10 hover:bg-orange-600/25 text-orange-400 border border-orange-500/30 text-[11px] font-semibold flex items-center gap-1 transition-all"
                       >
                         {runningWorkflowId === wf._id ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
                         ) : (
-                          <Play className="w-3 h-3 fill-emerald-400" />
+                          <Play className="w-3 h-3 fill-orange-400" />
                         )}
                         <span>Run</span>
                       </button>
@@ -584,10 +604,18 @@ export const Dashboard = () => {
                           e.stopPropagation();
                           navigate(`/builder/${wf._id}`);
                         }}
-                        title="Open Canvas Editor"
-                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                        title="Edit Canvas"
+                        className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] font-semibold flex items-center gap-1 transition-colors"
                       >
                         <span>Edit Canvas</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => handleDuplicateWorkflow(wf._id, e)}
+                        title="Duplicate Workflow"
+                        className="p-1 text-zinc-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -601,7 +629,7 @@ export const Dashboard = () => {
             <div className="text-center pt-2">
               <button
                 onClick={() => navigate('/workflows')}
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 transition-colors"
+                className="text-xs font-semibold text-orange-400 hover:text-orange-300 inline-flex items-center gap-1 transition-colors"
               >
                 <span>View all {totalWorkflows} workflows</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -613,15 +641,15 @@ export const Dashboard = () => {
         {/* Right 1 Column: Real-time Execution Feed & Quick Starter Templates */}
         <div className="space-y-6">
           {/* Live Execution Activity Feed */}
-          <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-4">
+          <div className="p-5 rounded-2xl bg-[#0e0e11] border border-zinc-800/90 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-400" />
+                <Activity className="w-4 h-4 text-orange-400" />
                 <h3 className="text-sm font-bold text-white tracking-tight">Recent Executions</h3>
               </div>
               <button
                 onClick={() => navigate('/executions')}
-                className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5"
+                className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 flex items-center gap-0.5"
               >
                 <span>All Logs</span>
                 <ChevronRight className="w-3 h-3" />
@@ -631,14 +659,14 @@ export const Dashboard = () => {
             {executionsLoading ? (
               <div className="space-y-2 py-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 bg-slate-950/60 rounded-xl animate-pulse" />
+                  <div key={i} className="h-12 bg-black/60 rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : recentExecutions.length === 0 ? (
-              <div className="py-6 text-center text-xs text-slate-500 space-y-1">
-                <Terminal className="w-6 h-6 mx-auto text-slate-600 opacity-60 mb-1" />
+              <div className="py-6 text-center text-xs text-zinc-500 space-y-1">
+                <Terminal className="w-6 h-6 mx-auto text-zinc-700 mb-1" />
                 <p>No recent execution logs.</p>
-                <p className="text-[10px]">Execute a workflow to see live trace logs.</p>
+                <p className="text-[10px]">Trigger a workflow to view real-time traces.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -646,16 +674,16 @@ export const Dashboard = () => {
                   <div
                     key={exec._id}
                     onClick={() => navigate('/executions')}
-                    className="p-3 rounded-xl bg-slate-950/70 hover:bg-slate-950 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer flex items-center justify-between gap-3"
+                    className="p-3 rounded-xl bg-black/70 hover:bg-black border border-zinc-800/80 hover:border-orange-500/30 transition-all cursor-pointer flex items-center justify-between gap-3 group"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-white truncate">
+                      <div className="text-xs font-semibold text-zinc-200 group-hover:text-orange-300 transition-colors truncate">
                         {exec.workflowName || exec.workflow?.name || 'Untitled Automation'}
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5 font-mono">
-                        <span className="uppercase text-slate-500">{exec.triggerType || 'manual'}</span>
+                      <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-0.5 font-mono">
+                        <span className="uppercase text-zinc-400 font-bold">{exec.triggerType || 'manual'}</span>
                         <span>·</span>
-                        <span>{exec.duration || 12}ms</span>
+                        <span>{exec.duration || 18}ms</span>
                         <span>·</span>
                         <span>{new Date(exec.startedAt || exec.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
@@ -671,15 +699,15 @@ export const Dashboard = () => {
           </div>
 
           {/* Quick Starter Templates */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950/30 border border-slate-800 shadow-xl space-y-4">
+          <div className="p-5 rounded-2xl bg-[#0e0e11] border border-zinc-800/90 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-bold text-white tracking-tight">Prebuilt Templates</h3>
+                <Layers className="w-4 h-4 text-orange-400" />
+                <h3 className="text-sm font-bold text-white tracking-tight">Starter Blueprints</h3>
               </div>
               <button
                 onClick={() => navigate('/templates')}
-                className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-0.5"
+                className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 flex items-center gap-0.5"
               >
                 <span>Store</span>
                 <ChevronRight className="w-3 h-3" />
@@ -691,26 +719,26 @@ export const Dashboard = () => {
                 starterTemplates.map((tpl) => (
                   <div
                     key={tpl._id}
-                    className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-indigo-500/30 transition-all flex items-center justify-between gap-2"
+                    className="p-3 rounded-xl bg-black/80 border border-zinc-800 hover:border-orange-500/40 transition-all flex items-center justify-between gap-2 group"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-white truncate">{tpl.name}</div>
-                      <p className="text-[10px] text-slate-400 line-clamp-1">{tpl.description}</p>
+                      <div className="text-xs font-semibold text-zinc-200 group-hover:text-orange-300 transition-colors truncate">{tpl.name}</div>
+                      <p className="text-[10px] text-zinc-400 line-clamp-1">{tpl.description}</p>
                     </div>
                     <button
                       onClick={() => handleInstantiateTemplate(tpl._id)}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-300 border border-indigo-500/20 text-[11px] font-semibold flex items-center gap-1 whitespace-nowrap transition-colors"
+                      className="px-2.5 py-1 rounded-lg bg-orange-600/10 hover:bg-orange-600/25 text-orange-400 border border-orange-500/30 text-[11px] font-semibold flex items-center gap-1 whitespace-nowrap transition-colors"
                     >
                       <Copy className="w-3 h-3" /> Use
                     </button>
                   </div>
                 ))
               ) : (
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-black/80 border border-zinc-800 text-xs text-zinc-400 flex items-center justify-between">
                   <span>Explore 20+ ready-to-run blueprints</span>
                   <button
                     onClick={() => navigate('/templates')}
-                    className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[11px] font-semibold"
+                    className="px-2.5 py-1 rounded-lg bg-orange-600 text-white text-[11px] font-semibold"
                   >
                     Browse
                   </button>
@@ -721,24 +749,24 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── 5. Connected Integrations Ecosystem Rail ────────────────────────── */}
-      <div className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 space-y-4">
+      {/* ── 5. Connected Integrations Ecosystem Rail (Dark Orange & Black) ──── */}
+      <div className="p-6 rounded-3xl bg-[#0e0e11] border border-zinc-800/90 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" /> Connected Apps & Integration Connectors
+              <ShieldCheck className="w-4 h-4 text-orange-400" /> Connected Apps & Integration Connectors
             </h3>
-            <p className="text-xs text-slate-400">
-              Plug in and authorize your enterprise software tools with one-click OAuth and encrypted tokens.
+            <p className="text-xs text-zinc-400">
+              Plug in and authorize your software stack with instant OAuth 2.0 and encrypted vaults.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/credentials')}
-            className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5 w-fit"
+            className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-orange-400 text-xs font-semibold border border-zinc-800 hover:border-orange-500/30 transition-all flex items-center gap-1.5 w-fit"
           >
-            <span>Manage Integrations Vault</span>
-            <ArrowRight className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Manage Vault</span>
+            <ArrowRight className="w-3.5 h-3.5 text-orange-400" />
           </button>
         </div>
 
@@ -746,9 +774,9 @@ export const Dashboard = () => {
           {[
             { name: 'Google Sheets', icon: FileSpreadsheet, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
             { name: 'Gmail OAuth', icon: Mail, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
-            { name: 'Discord Bot', icon: MessageSquare, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
+            { name: 'Discord Bot', icon: MessageSquare, color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
             { name: 'Slack API', icon: MessageSquare, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-            { name: 'Webhooks Gateway', icon: Zap, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' },
+            { name: 'Webhooks Gateway', icon: Zap, color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
             { name: 'MongoDB / SQL', icon: Database, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
           ].map((app, i) => {
             const Icon = app.icon;
@@ -756,12 +784,12 @@ export const Dashboard = () => {
               <div
                 key={i}
                 onClick={() => navigate('/credentials')}
-                className="p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-950 border border-slate-800/80 hover:border-slate-700 transition-all cursor-pointer flex items-center gap-2.5 group"
+                className="p-3 rounded-2xl bg-black/70 hover:bg-black border border-zinc-800 hover:border-orange-500/40 transition-all cursor-pointer flex items-center gap-2.5 group"
               >
                 <div className={`p-2 rounded-xl border ${app.color} group-hover:scale-105 transition-transform`}>
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-semibold text-slate-300 group-hover:text-white transition-colors truncate">
+                <span className="text-xs font-semibold text-zinc-300 group-hover:text-orange-300 transition-colors truncate">
                   {app.name}
                 </span>
               </div>
