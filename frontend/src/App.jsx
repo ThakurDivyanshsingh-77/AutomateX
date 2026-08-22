@@ -4,7 +4,9 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { DashboardLayout } from './layouts/DashboardLayout';
+import { PublicLayout } from './layouts/PublicLayout';
 
+// Landing & Auth Pages
 import { LandingPage } from './pages/landing/LandingPage';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
@@ -13,6 +15,39 @@ import { Profile } from './pages/Profile';
 import { NotFound } from './pages/NotFound';
 import { OAuthCallback } from './pages/OAuthCallback';
 
+// Public Product Pages
+import { FeaturesPage } from './pages/public/product/FeaturesPage';
+import { IntegrationsPage } from './pages/public/product/IntegrationsPage';
+import { PricingPage } from './pages/public/product/PricingPage';
+import { ChangelogPage } from './pages/public/product/ChangelogPage';
+import { StatusPage } from './pages/public/product/StatusPage';
+
+// Public Solutions Pages
+import { DevelopersPage } from './pages/public/solutions/DevelopersPage';
+import { EngineeringTeamsPage } from './pages/public/solutions/EngineeringTeamsPage';
+import { StartupsPage } from './pages/public/solutions/StartupsPage';
+import { EnterprisesPage } from './pages/public/solutions/EnterprisesPage';
+import { AIAutomationPage } from './pages/public/solutions/AIAutomationPage';
+
+// Public Resources Pages
+import { DocsPage } from './pages/public/resources/DocsPage';
+import { ApiReferencePage } from './pages/public/resources/ApiReferencePage';
+import { GuidesPage } from './pages/public/resources/GuidesPage';
+import { BlogPage } from './pages/public/resources/BlogPage';
+import { SupportPage } from './pages/public/resources/SupportPage';
+
+// Public Company Pages
+import { AboutPage } from './pages/public/company/AboutPage';
+import { CareersPage } from './pages/public/company/CareersPage';
+import { ContactPage } from './pages/public/company/ContactPage';
+import { SecurityPage } from './pages/public/company/SecurityPage';
+
+// Public Legal Pages
+import { PrivacyPage } from './pages/public/legal/PrivacyPage';
+import { TermsPage } from './pages/public/legal/TermsPage';
+import { CookiesPage } from './pages/public/legal/CookiesPage';
+
+// Workflows & Core Platform
 import { Workflows } from './features/workflow/pages/Workflows';
 import { CreateWorkflow } from './features/workflow/pages/CreateWorkflow';
 import { EditWorkflow } from './features/workflow/pages/EditWorkflow';
@@ -40,8 +75,44 @@ export function App() {
         }}
       />
       <Routes>
-        {/* Public Landing & Authentication Pages */}
-        <Route path="/" element={<LandingPage />} />
+        {/* Public Marketing & Resources Routes (Wrapped with PublicLayout) */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          
+          {/* Product Routes */}
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/integrations" element={<IntegrationsPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/status" element={<StatusPage />} />
+
+          {/* Solutions Routes */}
+          <Route path="/solutions/developers" element={<DevelopersPage />} />
+          <Route path="/solutions/engineering" element={<EngineeringTeamsPage />} />
+          <Route path="/solutions/startups" element={<StartupsPage />} />
+          <Route path="/solutions/enterprises" element={<EnterprisesPage />} />
+          <Route path="/solutions/ai-automation" element={<AIAutomationPage />} />
+
+          {/* Resources Routes */}
+          <Route path="/docs" element={<DocsPage />} />
+          <Route path="/api-docs" element={<ApiReferencePage />} />
+          <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/support" element={<SupportPage />} />
+
+          {/* Company Routes */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/security" element={<SecurityPage />} />
+
+          {/* Legal Routes */}
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/cookies" element={<CookiesPage />} />
+        </Route>
+
+        {/* Authentication Pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -59,16 +130,16 @@ export function App() {
             <Route path="/workflows/create" element={<CreateWorkflow />} />
             <Route path="/workflows/edit/:id" element={<EditWorkflow />} />
 
-            {/* Phase 9 Workflow History & Execution Logging System Route */}
+            {/* Workflow History & Execution Logging System Route */}
             <Route path="/executions" element={<Executions />} />
 
-            {/* Phase 11 Reliability Engine & Dead Letter Queue Route */}
+            {/* Reliability Engine & Dead Letter Queue Route */}
             <Route path="/reliability" element={<ReliabilityDashboard />} />
 
-            {/* Phase 12 AI Workflow Builder Route */}
+            {/* AI Workflow Builder Route */}
             <Route path="/ai-builder" element={<AIBuilderPage />} />
 
-            {/* Phase 7 Integrations Vault & Marketplace Routes */}
+            {/* Integrations Vault & Marketplace Routes */}
             <Route path="/credentials" element={<Credentials />} />
             <Route path="/templates" element={<Templates />} />
           </Route>

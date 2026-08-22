@@ -1,24 +1,55 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Zap } from 'lucide-react';
+import { Zap, Github, Twitter, MessageSquare, ArrowUpRight } from 'lucide-react';
 
 const COLS = [
   {
     heading: 'Product',
-    links: ['Features', 'Integrations', 'Pricing', 'Changelog', 'Status'],
+    links: [
+      { name: 'Features', path: '/features' },
+      { name: 'Integrations', path: '/integrations' },
+      { name: 'Pricing', path: '/pricing' },
+      { name: 'Changelog', path: '/changelog' },
+      { name: 'Status', path: '/status' },
+    ],
   },
   {
     heading: 'Solutions',
-    links: ['Developers', 'Engineering Teams', 'Startups', 'Enterprises', 'AI Automation'],
+    links: [
+      { name: 'Developers', path: '/solutions/developers' },
+      { name: 'Engineering Teams', path: '/solutions/engineering' },
+      { name: 'Startups', path: '/solutions/startups' },
+      { name: 'Enterprises', path: '/solutions/enterprises' },
+      { name: 'AI Automation', path: '/solutions/ai-automation' },
+    ],
   },
   {
     heading: 'Resources',
-    links: ['Documentation', 'API Reference', 'Guides', 'Blog', 'Support'],
+    links: [
+      { name: 'Documentation', path: '/docs' },
+      { name: 'API Reference', path: '/api-docs' },
+      { name: 'Guides', path: '/guides' },
+      { name: 'Blog', path: '/blog' },
+      { name: 'Support', path: '/support' },
+    ],
   },
   {
     heading: 'Company',
-    links: ['About', 'Careers', 'Contact', 'GitHub', 'Security'],
+    links: [
+      { name: 'About', path: '/about' },
+      { name: 'Careers', path: '/careers' },
+      { name: 'Contact', path: '/contact' },
+      { name: 'GitHub', path: 'https://github.com/ThakurDivyanshsingh-77/AutomateX', external: true },
+      { name: 'Security', path: '/security' },
+    ],
   },
+];
+
+const LEGAL_LINKS = [
+  { name: 'Privacy', path: '/privacy' },
+  { name: 'Terms', path: '/terms' },
+  { name: 'Security', path: '/security' },
+  { name: 'Cookies', path: '/cookies' },
 ];
 
 export function LandingFooter() {
@@ -31,7 +62,6 @@ export function LandingFooter() {
       }}
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
-
         {/* Main grid */}
         <div
           style={{
@@ -53,18 +83,51 @@ export function LandingFooter() {
               Visual workflow automation with AI. Connect everything, automate anything.
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
-              {['G', 'T', 'GH'].map((icon) => (
-                <div
-                  key={icon}
-                  style={{
-                    width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'default',
-                    fontSize: 11, fontWeight: 700, color: '#9A8E8E',
-                  }}
-                >
-                  {icon}
-                </div>
-              ))}
+              <a
+                href="https://github.com/ThakurDivyanshsingh-77/AutomateX"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="GitHub"
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 700, color: '#9A8E8E', textDecoration: 'none', transition: 'all 0.15s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#F7F5F0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#9A8E8E'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
+              >
+                GH
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Twitter"
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 700, color: '#9A8E8E', textDecoration: 'none', transition: 'all 0.15s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#F7F5F0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#9A8E8E'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
+              >
+                X
+              </a>
+              <a
+                href="https://discord.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Discord"
+                style={{
+                  width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 700, color: '#9A8E8E', textDecoration: 'none', transition: 'all 0.15s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#F7F5F0'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#9A8E8E'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
+              >
+                DC
+              </a>
             </div>
           </div>
 
@@ -76,15 +139,29 @@ export function LandingFooter() {
               </p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      style={{ fontSize: 14, color: '#9A8E8E', textDecoration: 'none', transition: 'color 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#F7F5F0'}
-                      onMouseLeave={e => e.currentTarget.style.color = '#9A8E8E'}
-                    >
-                      {link}
-                    </a>
+                  <li key={link.name}>
+                    {link.external ? (
+                      <a
+                        href={link.path}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: 14, color: '#9A8E8E', textDecoration: 'none', transition: 'color 0.15s', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#F7F5F0'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#9A8E8E'}
+                      >
+                        {link.name}
+                        <ArrowUpRight className="w-3 h-3 opacity-60" />
+                      </a>
+                    ) : (
+                      <Link
+                        to={link.path}
+                        style={{ fontSize: 14, color: '#9A8E8E', textDecoration: 'none', transition: 'color 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.color = '#F7F5F0'}
+                        onMouseLeave={e => e.currentTarget.style.color = '#9A8E8E'}
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -105,19 +182,19 @@ export function LandingFooter() {
           }}
         >
           <span style={{ fontSize: 13, color: '#9A8E8E' }}>
-            © {new Date().getFullYear()} AutomateX. All rights reserved.
+            © {new Date().getFullYear()} AutomateX Inc. All rights reserved.
           </span>
           <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy', 'Terms', 'Security', 'Cookies'].map((l) => (
-              <a
-                key={l}
-                href="#"
+            {LEGAL_LINKS.map((l) => (
+              <Link
+                key={l.name}
+                to={l.path}
                 style={{ fontSize: 13, color: '#9A8E8E', textDecoration: 'none', transition: 'color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#F7F5F0'}
                 onMouseLeave={e => e.currentTarget.style.color = '#9A8E8E'}
               >
-                {l}
-              </a>
+                {l.name}
+              </Link>
             ))}
           </div>
         </div>
@@ -125,3 +202,5 @@ export function LandingFooter() {
     </footer>
   );
 }
+
+export default LandingFooter;

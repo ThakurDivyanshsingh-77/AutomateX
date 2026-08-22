@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, Zap, ChevronDown } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Zap } from 'lucide-react';
 
 const NAV_LINKS = [
-  { label: 'Product',   href: '#features' },
-  { label: 'Solutions', href: '#workflow' },
-  { label: 'Resources', href: '#benefits' },
-  { label: 'Pricing',   href: '#pricing' },
+  { label: 'Features', href: '/features' },
+  { label: 'Integrations', href: '/integrations' },
+  { label: 'Solutions', href: '/solutions/developers' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Docs', href: '/docs' },
 ];
 
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -22,8 +25,14 @@ export function LandingNav() {
   const handleNavClick = (href) => {
     setMobileOpen(false);
     if (href.startsWith('#')) {
-      const el = document.querySelector(href);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (location.pathname !== '/') {
+        navigate('/' + href);
+      } else {
+        const el = document.querySelector(href);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      navigate(href);
     }
   };
 
@@ -32,7 +41,7 @@ export function LandingNav() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-cream/90 backdrop-blur-md border-b border-cream-border shadow-sm'
+            ? 'bg-cream/90 backdrop-blur-md border-b border-cream-border shadow-xs'
             : 'bg-cream border-b border-cream-border'
         }`}
         style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
@@ -54,28 +63,29 @@ export function LandingNav() {
 
           {/* ── Center nav — desktop ──────────────────── */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(({ label, href }) => (
-              <button
-                key={label}
-                onClick={() => handleNavClick(href)}
-                className="flex items-center gap-0.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={{ color: '#5C5050', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#1A1012'; e.currentTarget.style.background = '#EFECEA'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#5C5050'; e.currentTarget.style.background = 'transparent'; }}
-              >
-                {label}
-              </button>
-            ))}
+            {NAV_LINKS.map(({ label, href }) => {
+              const isActive = location.pathname === href;
+              return (
+                <button
+                  key={label}
+                  onClick={() => handleNavClick(href)}
+                  className={`flex items-center gap-0.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? 'bg-cream-soft text-ink font-semibold' : 'text-ink-body hover:text-ink hover:bg-cream-soft'
+                  }`}
+                  style={{ border: 'none', cursor: 'pointer' }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </nav>
 
           {/* ── Right CTAs — desktop ──────────────────── */}
           <div className="hidden md:flex items-center gap-2.5">
             <Link
               to="/login"
-              className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              style={{ color: '#5C5050', textDecoration: 'none' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#1A1012'; e.currentTarget.style.background = '#EFECEA'; e.currentTarget.style.borderRadius = '8px'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#5C5050'; e.currentTarget.style.background = 'transparent'; }}
+              className="text-sm font-medium px-4 py-2 rounded-lg transition-colors text-ink-body hover:text-ink hover:bg-cream-soft"
+              style={{ textDecoration: 'none' }}
             >
               Log in
             </Link>
@@ -116,8 +126,6 @@ export function LandingNav() {
                   onClick={() => handleNavClick(href)}
                   className="text-left px-4 py-3 rounded-lg text-sm font-medium w-full"
                   style={{ color: '#1A1012', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#EFECEA'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   {label}
                 </button>
@@ -150,3 +158,5 @@ export function LandingNav() {
     </>
   );
 }
+
+export default LandingNav;
