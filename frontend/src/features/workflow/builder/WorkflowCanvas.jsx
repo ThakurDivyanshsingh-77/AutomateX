@@ -390,7 +390,12 @@ const BuilderInner = () => {
       <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
         <NodeToolbar />
 
-        <div className="flex-1 h-full relative overflow-hidden bg-[#f8fafc]">
+        <div className="flex-1 h-full relative overflow-hidden bg-slate-50">
+          {/* Subtle Ambient Studio Lighting Meshes for Depth */}
+          <div className="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-15%,rgba(255,79,0,0.07),transparent_60%)]" />
+          <div className="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_60%_60%_at_90%_90%,rgba(249,115,22,0.05),transparent_50%)]" />
+          <div className="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_50%_50%_at_10%_80%,rgba(99,102,241,0.03),transparent_50%)]" />
+
           <CanvasControls
             saveStatus={saveStatus}
             onSave={() => saveWorkflow(nodes, edges)}
@@ -422,10 +427,14 @@ const BuilderInner = () => {
             }}
             fitView
             colorMode="light"
-            className="bg-[#f8fafc]"
+            className="bg-transparent"
           >
-            {/* Clean, sleek modern dot grid pattern */}
-            <Background variant="dots" gap={20} size={1.2} color="#cbd5e1" />
+            {/* Layer 1: Subtle Minor Sub-grid (24px) */}
+            <Background id="sub-grid" variant="lines" gap={24} color="rgba(226, 232, 240, 0.7)" lineWidth={1} />
+            {/* Layer 2: Major Section Grid (120px) with crisp precision accent */}
+            <Background id="major-grid" variant="lines" gap={120} color="rgba(203, 213, 225, 0.9)" lineWidth={1.2} />
+            {/* Layer 3: Precision Intersection Points */}
+            <Background id="dot-intersections" variant="dots" gap={120} size={2.5} color="#ea580c" className="opacity-40" />
             
             <MiniMap
               nodeColor={(node) => {
