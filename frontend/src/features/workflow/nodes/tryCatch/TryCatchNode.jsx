@@ -6,10 +6,10 @@ import { NodeNotesAction } from '../components/NodeNotesAction';
 export const TryCatchNode = ({ id, data, selected }) => {
   return (
     <div
-      className={`min-w-[240px] bg-white border rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
+      className={`min-w-[240px] bg-white border border-t-[3px] border-t-indigo-500 rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
-          : 'border-slate-200 hover:border-slate-300'
+          ? 'border-indigo-500 ring-2 ring-indigo-500/25 shadow-indigo-500/15'
+          : 'border-slate-200 hover:border-indigo-300'
       }`}
     >
       {/* Target Handle (Left) */}
@@ -22,22 +22,21 @@ export const TryCatchNode = ({ id, data, selected }) => {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600">
+          <div className="p-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 shrink-0">
             <ShieldAlert className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 tracking-tight">
               {data.label || 'Try / Catch'}
             </h3>
-            <span className="text-[10px] font-mono text-indigo-700 uppercase block">
-              LOGIC / ERROR INTERCEPTOR
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 block">
+              LOGIC • ERROR INTERCEPTOR
             </span>
           </div>
         </div>
 
         <NodeNotesAction nodeId={id} note={data?.note} />
       </div>
-
 
       {/* Handles Labels Summary */}
       <div className="space-y-1.5 font-mono text-[10px]">
@@ -77,3 +76,4 @@ export const TryCatchNode = ({ id, data, selected }) => {
   );
 };
 
+export default TryCatchNode;

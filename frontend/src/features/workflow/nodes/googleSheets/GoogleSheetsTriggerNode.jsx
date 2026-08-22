@@ -18,24 +18,24 @@ export const GoogleSheetsTriggerNode = ({ id, data, selected }) => {
 
   return (
     <div
-      className={`min-w-[240px] bg-white border rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
+      className={`min-w-[240px] bg-white border border-t-[3px] border-t-emerald-600 rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
-          : 'border-slate-200 hover:border-slate-300'
+          ? 'border-emerald-600 ring-2 ring-emerald-600/25 shadow-emerald-600/15'
+          : 'border-slate-200 hover:border-emerald-400'
       }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600">
+          <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-700 shrink-0">
             <Zap className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 tracking-tight">
               {data.label || 'Google Sheets Trigger'}
             </h3>
-            <span className="text-[10px] font-mono text-emerald-700 uppercase block">
-              POLLING TRIGGER
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 block">
+              GOOGLE SHEETS • POLLING
             </span>
           </div>
         </div>
@@ -47,7 +47,6 @@ export const GoogleSheetsTriggerNode = ({ id, data, selected }) => {
           <NodeNotesAction nodeId={id} note={data?.note} />
         </div>
       </div>
-
 
       {/* Configuration Summary Badge */}
       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-[10px] space-y-1">
@@ -71,7 +70,7 @@ export const GoogleSheetsTriggerNode = ({ id, data, selected }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-emerald-500 !w-3 !h-3 !border-2 !border-white hover:!bg-emerald-600 transition-colors"
+        className="!bg-emerald-600 !w-3 !h-3 !border-2 !border-white hover:!bg-emerald-700 transition-colors"
       />
     </div>
   );

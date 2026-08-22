@@ -16,31 +16,31 @@ export const ConditionNode = ({ id, data, selected }) => {
 
   return (
     <div
-      className={`min-w-[240px] bg-white border rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
+      className={`min-w-[240px] bg-white border border-t-[3px] border-t-violet-500 rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
-          : 'border-slate-200 hover:border-slate-300'
+          ? 'border-violet-500 ring-2 ring-violet-500/25 shadow-violet-500/15'
+          : 'border-slate-200 hover:border-violet-300'
       }`}
     >
       {/* Input Handle (Left) */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-amber-500 !w-3 !h-3 !border-2 !border-white hover:!bg-amber-600 transition-colors"
+        className="!bg-violet-500 !w-3 !h-3 !border-2 !border-white hover:!bg-violet-600 transition-colors"
       />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-600">
+          <div className="p-2 rounded-xl bg-violet-50 border border-violet-200 text-violet-600 shrink-0">
             <GitBranch className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 tracking-tight">
               {data.label || 'IF Condition'}
             </h3>
-            <span className="text-[10px] font-mono text-amber-700 capitalize block">
-              Logic / Branching
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-violet-50 text-violet-700 border border-violet-200 block">
+              LOGIC • BRANCHING
             </span>
           </div>
         </div>
@@ -56,14 +56,13 @@ export const ConditionNode = ({ id, data, selected }) => {
         </div>
       </div>
 
-
       {/* Condition Summary Preview */}
       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono text-[10px] space-y-1">
         <div className="flex items-center justify-between gap-1 text-slate-700">
           <span className="text-slate-600 truncate max-w-[90px] font-medium" title={leftDisplay}>
             {leftDisplay}
           </span>
-          <span className="text-amber-800 font-bold px-1.5 py-0.5 rounded bg-amber-100 border border-amber-300 text-[9px]">
+          <span className="text-violet-800 font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300 text-[9px]">
             {opDisplay}
           </span>
           <span className="text-slate-600 truncate max-w-[90px] font-medium" title={rightDisplay}>
@@ -102,3 +101,4 @@ export const ConditionNode = ({ id, data, selected }) => {
   );
 };
 
+export default ConditionNode;

@@ -10,29 +10,29 @@ export const GmailNode = ({ id, data, selected }) => {
 
   return (
     <div
-      className={`min-w-[240px] bg-white border rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
-        selected ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15' : 'border-slate-200 hover:border-slate-300'
+      className={`min-w-[240px] bg-white border border-t-[3px] border-t-red-500 rounded-2xl p-3.5 shadow-md transition-all font-sans select-none relative ${
+        selected ? 'border-red-500 ring-2 ring-red-500/25 shadow-red-500/15' : 'border-slate-200 hover:border-red-300'
       }`}
     >
       {/* Target Input Connection Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-slate-300 !w-3 !h-3 !border-2 !border-white hover:!bg-red-500 transition-colors"
+        className="!bg-red-500 !w-3 !h-3 !border-2 !border-white hover:!bg-red-600 transition-colors"
       />
 
       {/* Node Card Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5 mb-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-red-50 border border-red-200 text-red-600">
+          <div className="p-2 rounded-xl bg-red-50 border border-red-200 text-red-600 shrink-0">
             <Mail className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 tracking-tight">
               {data.label || 'Gmail'}
             </h3>
-            <span className="text-[10px] font-mono text-slate-500 capitalize block">
-              {config.operation || 'sendEmail'}
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-red-50 text-red-700 border border-red-200">
+              EMAIL • {config.operation || 'sendEmail'}
             </span>
           </div>
         </div>
@@ -47,7 +47,6 @@ export const GmailNode = ({ id, data, selected }) => {
           <NodeNotesAction nodeId={id} note={data?.note} />
         </div>
       </div>
-
 
       {/* Node Details Preview */}
       <div className="space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-200 font-mono text-[10px]">
@@ -75,3 +74,4 @@ export const GmailNode = ({ id, data, selected }) => {
   );
 };
 
+export default GmailNode;

@@ -146,9 +146,32 @@ export const NodeToolbar = () => {
 
             return (
               <div key={cat} className="space-y-1.5">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">
-                  {cat}
-                </h4>
+                <div className={`flex items-center gap-2 px-1 py-0.5 ${
+                  cat === 'TRIGGER' ? 'text-emerald-700' :
+                  cat === 'INTEGRATIONS' ? 'text-teal-700' :
+                  cat === 'AI / DOCUMENT PROCESSING' ? 'text-amber-700' :
+                  cat === 'CONTROL / FLOW' ? 'text-cyan-700' :
+                  cat === 'COMMUNICATION' ? 'text-indigo-700' :
+                  cat === 'DATABASE' ? 'text-teal-800' :
+                  cat === 'LOGIC' ? 'text-violet-700' :
+                  cat === 'GOOGLE' ? 'text-emerald-800' :
+                  'text-slate-500'
+                }`}>
+                  <div className={`h-2 w-2 rounded-full ${
+                    cat === 'TRIGGER' ? 'bg-emerald-500' :
+                    cat === 'INTEGRATIONS' ? 'bg-teal-500' :
+                    cat === 'AI / DOCUMENT PROCESSING' ? 'bg-amber-500' :
+                    cat === 'CONTROL / FLOW' ? 'bg-cyan-500' :
+                    cat === 'COMMUNICATION' ? 'bg-indigo-500' :
+                    cat === 'DATABASE' ? 'bg-teal-700' :
+                    cat === 'LOGIC' ? 'bg-violet-500' :
+                    cat === 'GOOGLE' ? 'bg-emerald-600' :
+                    'bg-slate-400'
+                  } shrink-0`} />
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider">
+                    {cat}
+                  </h4>
+                </div>
                 <div className="space-y-1.5">
                   {catNodes.map((node) => {
                     const Icon = node.icon;

@@ -8,15 +8,15 @@ export const ForEachProductNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = forEachProductManifest.validate(config);
   const isInvalid = !validation.isValid;
-  const executionStatus = data?.executionStatus; // 'RUNNING' | 'SUCCESS' | 'FAILED'
+  const executionStatus = data?.executionStatus;
 
   const total = data?.output?.totalItems !== undefined ? data.output.totalItems : null;
 
   return (
     <div
-      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
+      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border border-t-[3px] border-t-cyan-500 transition-all duration-200 shadow-md ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
+          ? 'border-cyan-500 ring-2 ring-cyan-500/25 shadow-cyan-500/15'
           : executionStatus === 'RUNNING'
           ? 'border-amber-500 animate-pulse ring-2 ring-amber-500/20'
           : executionStatus === 'SUCCESS'
@@ -25,39 +25,39 @@ export const ForEachProductNode = memo(({ id, data, selected }) => {
           ? 'border-rose-500 ring-2 ring-rose-500/20'
           : isInvalid
           ? 'border-amber-400 ring-1 ring-amber-400/30'
-          : 'border-slate-200 hover:border-slate-300'
+          : 'border-slate-200 hover:border-cyan-300'
       }`}
     >
       {/* Target Connection Handle (Left) */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-amber-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
+        className="!bg-cyan-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-lg gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-200">
+          <div className="p-1.5 rounded-lg border bg-cyan-50 text-cyan-600 border-cyan-200 shrink-0">
             <Repeat className="w-4 h-4" />
           </div>
           <div className="truncate">
             <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'For Each Product'}
             </h4>
-            <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
-              CONTROL / FLOW
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-cyan-50 text-cyan-700 border border-cyan-200">
+              LOOP • ITERATOR
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
           {total !== null ? (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-mono font-bold">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-700 border border-cyan-200 font-mono font-bold">
               {total} Items
             </span>
           ) : (
-            <Repeat className="w-3.5 h-3.5 text-amber-500" />
+            <Repeat className="w-3.5 h-3.5 text-cyan-500" />
           )}
           <NodeNotesAction nodeId={id} note={data?.note} />
         </div>
@@ -78,9 +78,10 @@ export const ForEachProductNode = memo(({ id, data, selected }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-amber-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
+        className="!bg-cyan-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
       />
     </div>
   );
 });
 
+export default ForEachProductNode;

@@ -8,10 +8,10 @@ export const DelayNode = memo(({ id, data, selected }) => {
 
   return (
     <div
-      className={`min-w-[220px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
+      className={`min-w-[220px] rounded-xl bg-white border border-t-[3px] border-t-amber-500 transition-all duration-200 shadow-md ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
-          : 'border-slate-200 hover:border-slate-300'
+          ? 'border-amber-500 ring-2 ring-amber-500/25 shadow-amber-500/15'
+          : 'border-slate-200 hover:border-amber-300'
       }`}
     >
       <Handle
@@ -20,17 +20,17 @@ export const DelayNode = memo(({ id, data, selected }) => {
         className="!bg-amber-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
       />
 
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-lg gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-200">
+          <div className="p-1.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-200 shrink-0">
             <Clock className="w-4 h-4" />
           </div>
           <div className="truncate">
             <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Delay / Sleep'}
             </h4>
-            <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
-              ACTION
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+              ACTION • TIMER
             </span>
           </div>
         </div>
@@ -51,4 +51,4 @@ export const DelayNode = memo(({ id, data, selected }) => {
   );
 });
 
-
+export default DelayNode;
