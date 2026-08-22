@@ -390,12 +390,7 @@ const BuilderInner = () => {
       <div className="flex-1 flex overflow-hidden relative" ref={reactFlowWrapper}>
         <NodeToolbar />
 
-        <div className="flex-1 h-full relative overflow-hidden bg-slate-50 canvas-blueprint-grid">
-          {/* Ambient Studio Lighting Meshes behind Canvas */}
-          <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-orange-500/12 rounded-full blur-[120px] pointer-events-none z-0" />
-          <div className="absolute top-1/3 -right-24 w-[500px] h-[500px] bg-amber-400/10 rounded-full blur-[120px] pointer-events-none z-0" />
-          <div className="absolute -bottom-24 left-1/3 w-[500px] h-[500px] bg-orange-500/8 rounded-full blur-[120px] pointer-events-none z-0" />
-
+        <div className="flex-1 h-full relative overflow-hidden bg-[#f8fafc]">
           <CanvasControls
             saveStatus={saveStatus}
             onSave={() => saveWorkflow(nodes, edges)}
@@ -427,14 +422,10 @@ const BuilderInner = () => {
             }}
             fitView
             colorMode="light"
-            className="bg-transparent"
+            className="bg-[#f8fafc]"
           >
-            {/* Layer 1: Visible Blueprint Grid Lines */}
-            <Background id="grid-lines" variant="lines" gap={40} color="#cbd5e1" lineWidth={1.2} />
-            {/* Layer 2: Precision Micro-Dot Matrix */}
-            <Background id="grid-dots" variant="dots" gap={20} size={1.8} color="#94a3b8" />
-            {/* Layer 3: High-End Major Section Crosshairs */}
-            <Background id="grid-cross" variant="cross" gap={120} size={8} color="#64748b" lineWidth={1.5} />
+            {/* Clean, sleek modern dot grid pattern */}
+            <Background variant="dots" gap={20} size={1.2} color="#cbd5e1" />
             
             <MiniMap
               nodeColor={(node) => {
