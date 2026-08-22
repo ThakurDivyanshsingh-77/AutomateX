@@ -12,6 +12,33 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ## 📅 Platform Milestones & Completed Phases
 
+### **Phase 21 Complete — Colorful Node Visual Identity System** — ✅ COMPLETED
+- **`nodeColorTheme.js`** (new utility): Dynamic resolver that maps node `type`, `category`, and `provider` to a unique, high-contrast color theme (primary color, icon bg, card hover, ring, handle color, tag bg, text hover, stripe bg).
+- **Node Color Themes Applied** (each node now has a distinct identity color):
+  - `TriggerNode.jsx` → **Emerald** (Start / Entry point)
+  - `EndNode.jsx` → **Rose / Crimson** (Terminal node)
+  - `WebhookNode.jsx` → **Sky Blue** (HTTP trigger)
+  - `CronNode.jsx` → **Royal Blue** (Schedule trigger)
+  - `GoogleSheetsTriggerNode.jsx` → **Forest Green** (Google Sheets)
+  - `GmailNode.jsx` → **Coral Red** (Gmail)
+  - `HttpNode.jsx` → **Teal** (REST calls)
+  - `WebsiteConnectNode.jsx` → **Teal** (Integrations)
+  - `WebsiteCreateProductNode.jsx` → **Emerald** (Product creation)
+  - `WebsiteCreateTournamentNode.jsx` → **Violet / Purple** (Tournament)
+  - `FileUploadNode.jsx` → **Sky Blue** (Document input)
+  - `DocumentExtractNode.jsx` → **Indigo** (Content parser)
+  - `GeminiStructureTournamentNode.jsx` → **Amber / Gold** (AI model)
+  - `GeminiStructureProductsNode.jsx` → **Amber** (AI structuring)
+  - `ForEachProductNode.jsx` → **Cyan** (Loop iterator)
+  - `ForEachTournamentNode.jsx` → **Cyan** (Loop iterator)
+  - `ConditionNode.jsx` → **Violet** (IF/ELSE logic)
+  - `TryCatchNode.jsx` → **Indigo** (Error interceptor)
+  - `DelayNode.jsx` → **Amber** (Timer)
+  - `LogNode.jsx` → **Steel Slate** (Debug)
+- **Design Pattern**: Every node card has a `border-t-[3px]` colored top accent stripe + matching icon bg, colored handle dots, and themed hover/ring states for selected nodes.
+- **`NodeToolbar.jsx`**: Colorful dot + category-colored headers in the sidebar palette, dynamic `theme.iconBg` and `theme.cardHover` per node type.
+- **Verification**: Production build passes cleanly with 0 errors across 2,101 modules.
+
 ### **Phase 20 Complete — Public Marketing, Resource Hub & Connected Footer Architecture** — ✅ COMPLETED
 - **Shared Public Architecture**:
   - `PublicLayout.jsx`: Master layout wrapper providing sticky `LandingNav`, responsive page container, `ScrollToTop` helper, and interconnected `LandingFooter`.
