@@ -3,7 +3,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Trophy, Globe, CheckCircle2, AlertCircle, ShieldAlert, Sparkles } from 'lucide-react';
 import { NodeNotesAction } from '../components/NodeNotesAction';
 
-const WebsiteCreateTournamentNode = ({ id, data, isConnectable, selected }) => {
+export const WebsiteCreateTournamentNode = ({ id, data, isConnectable, selected }) => {
   const config = data?.config || {};
   const dryRun = Boolean(config.dryRun);
   const endpoint = config.endpoint || '/api/v1/tournaments';
@@ -12,10 +12,10 @@ const WebsiteCreateTournamentNode = ({ id, data, isConnectable, selected }) => {
 
   return (
     <div
-      className={`relative min-w-[260px] max-w-[320px] rounded-xl bg-white border transition-all duration-200 shadow-md group ${
+      className={`relative min-w-[260px] max-w-[320px] rounded-xl bg-white border border-t-[3px] border-t-violet-500 transition-all duration-200 shadow-md group ${
         selected
-          ? 'border-brand-500 shadow-brand-500/15 ring-2 ring-brand-500/25'
-          : 'border-slate-200 hover:border-slate-300'
+          ? 'border-violet-500 shadow-violet-500/15 ring-2 ring-violet-500/25'
+          : 'border-slate-200 hover:border-violet-300'
       }`}
     >
       {/* Target Handle */}
@@ -27,19 +27,19 @@ const WebsiteCreateTournamentNode = ({ id, data, isConnectable, selected }) => {
       />
 
       {/* Header */}
-      <div className="p-3.5 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+      <div className="p-3.5 border-b border-slate-100 bg-slate-50/50 rounded-t-lg">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2.5 min-w-0">
-            <div className="p-2 rounded-lg bg-violet-50 border border-violet-200 text-violet-600">
+            <div className="p-2 rounded-lg bg-violet-50 border border-violet-200 text-violet-600 shrink-0">
               <Trophy className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5 truncate">
                 {data?.label || 'Website → Create Tournament'}
               </div>
-              <div className="text-[10px] text-slate-500 flex items-center gap-1">
-                <span>Apex Esports API</span>
-              </div>
+              <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-violet-50 text-violet-700 border border-violet-200">
+                INTEGRATION • APEX ESPORTS
+              </span>
             </div>
           </div>
 
@@ -53,7 +53,6 @@ const WebsiteCreateTournamentNode = ({ id, data, isConnectable, selected }) => {
           </div>
         </div>
       </div>
-
 
       {/* Body Content */}
       <div className="p-3 space-y-2 text-xs">

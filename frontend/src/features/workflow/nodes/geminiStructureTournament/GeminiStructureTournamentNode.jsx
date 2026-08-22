@@ -11,8 +11,8 @@ export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
 
   return (
     <div
-      className={`min-w-[280px] max-w-[340px] rounded-xl border bg-white p-4 shadow-md transition-all duration-200 ${
-        selected ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15' : 'border-slate-200 hover:border-slate-300'
+      className={`min-w-[280px] max-w-[340px] rounded-xl border border-t-[3px] border-t-amber-500 bg-white p-4 shadow-md transition-all duration-200 ${
+        selected ? 'border-amber-500 ring-2 ring-amber-500/25 shadow-amber-500/15' : 'border-slate-200 hover:border-amber-300'
       }`}
     >
       {/* Target handle */}
@@ -26,7 +26,7 @@ export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 border border-amber-200">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 border border-amber-200 shrink-0">
             <Trophy className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -36,7 +36,9 @@ export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
               </h3>
               <Sparkles className="h-3 w-3 text-amber-500" />
             </div>
-            <p className="text-[10px] text-slate-500 font-mono truncate">{model}</p>
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+              AI MODEL • {model}
+            </span>
           </div>
         </div>
 
@@ -54,7 +56,6 @@ export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
           <NodeNotesAction nodeId={id} note={data?.note} />
         </div>
       </div>
-
 
       {/* Body */}
       <div className="mt-3 space-y-2 text-[11px]">
@@ -81,4 +82,3 @@ export const GeminiStructureTournamentNode = memo(({ id, data, selected }) => {
 
 GeminiStructureTournamentNode.displayName = 'GeminiStructureTournamentNode';
 export default GeminiStructureTournamentNode;
-

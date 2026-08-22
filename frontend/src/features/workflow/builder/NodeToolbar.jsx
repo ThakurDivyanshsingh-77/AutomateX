@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NODE_REGISTRY } from '../nodes/registry/nodeRegistry';
+import { getNodeColorTheme } from '../nodes/utils/nodeColorTheme';
 import { GripVertical, Layers, Search } from 'lucide-react';
 
 export const NodeToolbar = () => {
@@ -151,19 +152,20 @@ export const NodeToolbar = () => {
                 <div className="space-y-1.5">
                   {catNodes.map((node) => {
                     const Icon = node.icon;
+                    const theme = getNodeColorTheme(node.type, node.category, node.provider);
                     return (
                       <div
                         key={node.type}
                         draggable
                         onDragStart={(e) => onDragStart(e, node.type)}
-                        className="group p-2.5 rounded-xl bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50/30 cursor-grab active:cursor-grabbing transition-all duration-150 flex items-center justify-between shadow-sm hover:shadow-md"
+                        className={`group p-2.5 rounded-xl bg-white border border-slate-200 ${theme.cardHover} cursor-grab active:cursor-grabbing transition-all duration-150 flex items-center justify-between shadow-xs hover:shadow-md hover:-translate-y-0.5`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className={`p-1.5 rounded-lg border ${node.badgeColor}`}>
+                          <div className={`p-1.5 rounded-lg border ${theme.iconBg} shrink-0 transition-transform group-hover:scale-105`}>
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div className="truncate">
-                            <h5 className="text-xs font-semibold text-slate-800 group-hover:text-brand-600 transition-colors truncate">
+                            <h5 className={`text-xs font-semibold text-slate-800 ${theme.textHover} transition-colors truncate`}>
                               {node.label}
                             </h5>
                             <p className="text-[10px] text-slate-500 truncate">
@@ -172,7 +174,7 @@ export const NodeToolbar = () => {
                           </div>
                         </div>
 
-                        <GripVertical className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-500 flex-shrink-0" />
+                        <GripVertical className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 flex-shrink-0 transition-colors" />
                       </div>
                     );
                   })}

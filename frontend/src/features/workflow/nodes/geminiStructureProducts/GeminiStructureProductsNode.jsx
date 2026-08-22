@@ -8,15 +8,15 @@ export const GeminiStructureProductsNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = geminiStructureProductsManifest.validate(config);
   const isInvalid = !validation.isValid;
-  const executionStatus = data?.executionStatus; // 'RUNNING' | 'SUCCESS' | 'FAILED'
+  const executionStatus = data?.executionStatus;
 
   const productCount = data?.output?.count || data?.output?.products?.length || null;
 
   return (
     <div
-      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
+      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border border-t-[3px] border-t-amber-500 transition-all duration-200 shadow-md ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
+          ? 'border-amber-500 ring-2 ring-amber-500/25 shadow-amber-500/15'
           : executionStatus === 'RUNNING'
           ? 'border-amber-500 animate-pulse ring-2 ring-amber-500/20'
           : executionStatus === 'SUCCESS'
@@ -25,27 +25,27 @@ export const GeminiStructureProductsNode = memo(({ id, data, selected }) => {
           ? 'border-rose-500 ring-2 ring-rose-500/20'
           : isInvalid
           ? 'border-amber-400 ring-1 ring-amber-400/30'
-          : 'border-slate-200 hover:border-slate-300'
+          : 'border-slate-200 hover:border-amber-300'
       }`}
     >
       {/* Target Connection Handle (Left) */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-purple-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
+        className="!bg-amber-500 !w-3 !h-3 !-left-[7px] border-2 border-white"
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-lg gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-purple-50 text-purple-600 border-purple-200">
+          <div className="p-1.5 rounded-lg border bg-amber-50 text-amber-600 border-amber-200 shrink-0">
             <Sparkles className="w-4 h-4" />
           </div>
           <div className="truncate">
             <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Gemini → Structure Products'}
             </h4>
-            <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
               AI / DOCUMENT
             </span>
           </div>
@@ -57,7 +57,7 @@ export const GeminiStructureProductsNode = memo(({ id, data, selected }) => {
               {productCount} Products
             </span>
           ) : (
-            <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           )}
           <NodeNotesAction nodeId={id} note={data?.note} />
         </div>
@@ -78,9 +78,10 @@ export const GeminiStructureProductsNode = memo(({ id, data, selected }) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!bg-purple-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
+        className="!bg-amber-500 !w-3 !h-3 !-right-[7px] border-2 border-white"
       />
     </div>
   );
 });
 
+export default GeminiStructureProductsNode;

@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { FileText, CheckCircle2, AlertTriangle, FileSearch, Layers } from 'lucide-react';
+import { FileSearch, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { documentExtractManifest } from './documentExtractManifest';
 import { NodeNotesAction } from '../components/NodeNotesAction';
 
@@ -9,7 +9,7 @@ export const DocumentExtractNode = memo(({ id, data, selected }) => {
   const validation = documentExtractManifest.validate(config);
   const isInvalid = !validation.isValid;
 
-  const status = data?.executionStatus; // 'RUNNING' | 'SUCCESS' | 'FAILED'
+  const status = data?.executionStatus;
   const outputData = data?.output || {};
   const stats = outputData.stats || null;
 
@@ -18,9 +18,9 @@ export const DocumentExtractNode = memo(({ id, data, selected }) => {
 
   return (
     <div
-      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
+      className={`min-w-[240px] max-w-[300px] rounded-xl bg-white border border-t-[3px] border-t-indigo-500 transition-all duration-200 shadow-md ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
+          ? 'border-indigo-500 ring-2 ring-indigo-500/25 shadow-indigo-500/15'
           : status === 'RUNNING'
           ? 'border-amber-500 animate-pulse ring-2 ring-amber-500/20'
           : status === 'SUCCESS'
@@ -29,7 +29,7 @@ export const DocumentExtractNode = memo(({ id, data, selected }) => {
           ? 'border-rose-500 ring-2 ring-rose-500/20'
           : isInvalid
           ? 'border-amber-400 ring-1 ring-amber-400/30'
-          : 'border-slate-200 hover:border-slate-300'
+          : 'border-slate-200 hover:border-indigo-300'
       }`}
     >
       {/* Target Handle (Left) */}
@@ -40,17 +40,17 @@ export const DocumentExtractNode = memo(({ id, data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-lg gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-indigo-50 text-indigo-600 border-indigo-200">
+          <div className="p-1.5 rounded-lg border bg-indigo-50 text-indigo-600 border-indigo-200 shrink-0">
             <FileSearch className="w-4 h-4" />
           </div>
           <div className="truncate">
             <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Document → Extract Content'}
             </h4>
-            <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
-              DOCUMENT
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+              DOCUMENT PARSER
             </span>
           </div>
         </div>
@@ -104,3 +104,4 @@ export const DocumentExtractNode = memo(({ id, data, selected }) => {
   );
 });
 
+export default DocumentExtractNode;

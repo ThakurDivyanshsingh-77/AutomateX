@@ -8,16 +8,16 @@ export const WebsiteCreateProductNode = memo(({ id, data, selected }) => {
   const config = data?.config || {};
   const validation = websiteCreateProductManifest.validate(config);
   const isInvalid = !validation.isValid;
-  const executionStatus = data?.executionStatus; // 'RUNNING' | 'SUCCESS' | 'FAILED'
+  const executionStatus = data?.executionStatus;
 
   const isDryRun = Boolean(config.dryRun);
   const summary = data?.output?.summary;
 
   return (
     <div
-      className={`min-w-[250px] max-w-[320px] rounded-xl bg-white border transition-all duration-200 shadow-md ${
+      className={`min-w-[250px] max-w-[320px] rounded-xl bg-white border border-t-[3px] border-t-emerald-500 transition-all duration-200 shadow-md ${
         selected
-          ? 'border-brand-500 ring-2 ring-brand-500/25 shadow-brand-500/15'
+          ? 'border-emerald-500 ring-2 ring-emerald-500/25 shadow-emerald-500/15'
           : executionStatus === 'RUNNING'
           ? 'border-amber-500 animate-pulse ring-2 ring-amber-500/20'
           : executionStatus === 'SUCCESS'
@@ -26,7 +26,7 @@ export const WebsiteCreateProductNode = memo(({ id, data, selected }) => {
           ? 'border-rose-500 ring-2 ring-rose-500/20'
           : isInvalid
           ? 'border-amber-400 ring-1 ring-amber-400/30'
-          : 'border-slate-200 hover:border-slate-300'
+          : 'border-slate-200 hover:border-emerald-300'
       }`}
     >
       {/* Target Connection Handle (Left) */}
@@ -37,17 +37,17 @@ export const WebsiteCreateProductNode = memo(({ id, data, selected }) => {
       />
 
       {/* Node Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl gap-2">
+      <div className="flex items-center justify-between p-3 border-b border-slate-100 bg-slate-50/50 rounded-t-lg gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-200">
+          <div className="p-1.5 rounded-lg border bg-emerald-50 text-emerald-600 border-emerald-200 shrink-0">
             <PackagePlus className="w-4 h-4" />
           </div>
           <div className="truncate">
             <h4 className="text-xs font-bold text-slate-900 truncate">
               {data?.label || 'Website → Create Product'}
             </h4>
-            <span className="text-[10px] text-slate-500 font-mono tracking-tight uppercase">
-              INTEGRATIONS / WEBSITE
+            <span className="text-[9px] font-mono font-bold tracking-tight uppercase px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+              INTEGRATION
             </span>
           </div>
         </div>
@@ -94,3 +94,4 @@ export const WebsiteCreateProductNode = memo(({ id, data, selected }) => {
   );
 });
 
+export default WebsiteCreateProductNode;
