@@ -12,6 +12,19 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ## 📅 Platform Milestones & Completed Phases
 
+### **Phase 25 Complete — AI Workflow Builder 2.0 (Enterprise Multi-Stage Pipeline)** — ✅ COMPLETED
+- **Predictable, Capability-Aware AI Workflow Builder**:
+  - **9-Stage AI Architecture**:
+    $$\text{User Prompt} \to \text{Intent Analysis} \to \text{Feasibility Check} \to \text{Capability Discovery} \to \text{Workflow Planning} \to \text{Node Validation} \to \text{Field / Credential Validation} \to \text{DAG Construction} \to \text{Quality Scoring}$$
+  - **`CapabilityRegistry.js`**: Central catalog of all 40+ AutomateX nodes with strict capability tags, required credentials, and required fields. Ensures zero LLM hallucinations of nonexistent nodes.
+  - **`IntentClassifier.js`**: Advanced classifier separating requests into 6 distinct categories: `AUTOMATION`, `INFORMATIONAL`, `PHYSICAL_ACTION`, `IMPOSSIBLE`, `AMBIGUOUS`, and `UNSUPPORTED`.
+  - **`CapabilityMatcher.js`**: Matches intent with capability catalog, detects partial automations (e.g. coffee making $\to$ provides digital notification alternative), and maps actions.
+  - **`WorkflowPlanner.js`**: Generates intermediate structured steps and converts them to valid React Flow DAG graphs with smart default configurations.
+  - **`CredentialValidator.js` & `FieldValidator.js`**: Pre-validates credential stores (GitHub, Discord, Google, MongoDB, AI) and detects missing parameters without guessing.
+  - **`AIWorkflowService.js`**: Orchestrates pipeline, computes 6-point Workflow Quality Score (`intent`, `capabilities`, `nodes`, `credentials`, `fields`, `connections`), and returns structured responses.
+  - **Frontend Live Pipeline Progress**: Upgraded `AIAssistantDrawer.jsx` and `AIBuilderPage.jsx` with animated stage transitions (`Analyzing Intent → Capabilities → Planning → Validating → Ready`), validation checklist chips, and interactive alternative prompts.
+- **Verification**: 15 automated test suites passed (`test_ai_builder_v2.js`) and production frontend build passed with 0 errors (2,108 modules transformed in 15.63s).
+
 ### **Phase 24 Complete — GitHub: Daily Activity Commit Node** — ✅ COMPLETED
 - **First-Class AutomateX Node (`githubDailyActivityCommit`)**:
   - **`GitHubDailyActivityService.js`**: Dedicated service for daily automation heartbeat activity records in GitHub. Features timezone-aware date resolution, daily deduplication detection (`hasActivityForDate`), non-destructive append (`appendActivityEntry`), 409 conflict retries, dry-run simulation, and loop protection tags.

@@ -4,8 +4,8 @@ export const aiService = {
   /**
    * Generate a workflow graph from a natural language prompt
    */
-  generateWorkflow: async (prompt) => {
-    const res = await api.post('/ai/generate', { prompt });
+  generateWorkflow: async (prompt, credentials = {}) => {
+    const res = await api.post('/ai/generate', { prompt, credentials });
     return res.data;
   },
 

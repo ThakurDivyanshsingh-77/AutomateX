@@ -5,7 +5,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 // @route   POST /api/v1/ai/generate
 // @access  Private (JWT)
 export const generateWorkflow = asyncHandler(async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, credentials, userCredentials } = req.body;
 
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
     return res.status(400).json({
@@ -14,7 +14,8 @@ export const generateWorkflow = asyncHandler(async (req, res) => {
     });
   }
 
-  const result = await AIWorkflowService.generate(prompt.trim(), req.user._id);
+  const creds = userCredentials || credentials || {};
+  const result = await AIWorkflowService.generate(prompt.trim(), req.user?._id, creds);
 
   return res.status(200).json(result);
 });

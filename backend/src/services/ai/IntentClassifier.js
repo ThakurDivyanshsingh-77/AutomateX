@@ -1,139 +1,207 @@
 /**
  * IntentClassifier.js
- * Intent Classification Subsystem for AutomateX AI Builder.
- * Classifies prompts into 5 categories before any workflow is generated:
- * 1. automation: Valid automation request (Trigger + Action)
- * 2. conversation: Casual conversation ("Hello", "Tell me a joke")
- * 3. knowledge: General knowledge questions ("What is React?", "Who is Elon Musk?")
- * 4. physical_action: Impossible physical world tasks ("Make me coffee", "Wash my car")
- * 5. unsupported_automation: Unsupported hardware/app automations ("Control my microwave", "Turn on TV")
+ * Advanced Intent Classification for AutomateX AI Workflow Builder 2.0.
+ *
+ * Supported Intent Categories:
+ * - AUTOMATION: Valid digital automation request (trigger + digital action).
+ * - INFORMATIONAL: General knowledge or how-to queries (e.g. "How does GitHub work?").
+ * - PHYSICAL_ACTION: Impossible physical actions (e.g. "Make a coffee", "Wash my car").
+ * - IMPOSSIBLE: Absurd or physically impossible tasks (e.g. "Teleport to Mars", "Predict lottery").
+ * - AMBIGUOUS: Underspecified requests needing parameters (e.g. "Send a message", "Send an email").
+ * - UNSUPPORTED: Integrations/devices not available in AutomateX (e.g. "Notion", "Microwave").
  */
 
 export class IntentClassifier {
   /**
-   * Classify user prompt intent & confidence score
+   * Classify user prompt intent & extract structured metadata
+   * @param {string} prompt
+   * @returns {Object} Structured intent analysis
    */
   static classify(prompt) {
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return {
+        intent: 'AMBIGUOUS',
         isAutomation: false,
-        category: 'conversation',
-        confidenceScore: 0.0,
-        message: this.getRejectionMessage('conversation'),
+        confidence: 0.0,
+        explanation: 'Please provide a description of the automation you want to build.',
+        suggestions: [
+          'Every morning at 9 AM send me a Gmail report',
+          'When a new GitHub repo is created, update my profile README',
+          'When a webhook is received, send a Discord message',
+        ],
       };
     }
 
-    const text = prompt.trim().toLowerCase();
+    const text = prompt.trim();
+    const lower = text.toLowerCase();
 
-    // 1. Check Physical Actions
+    // ─── 1. IMPOSSIBLE TASKS ──────────────────────────────────────────────────
+    const impossiblePatterns = [
+      /\bmars\b/i,
+      /\bteleport\b/i,
+      /\btime travel\b/i,
+      /\bpredict lottery\b/i,
+      /\bworld peace\b/i,
+      /\bdivide by zero\b/i,
+      /\bresurrect\b/i,
+    ];
+    if (impossiblePatterns.some((pattern) => pattern.test(lower))) {
+      return {
+        intent: 'IMPOSSIBLE',
+        isAutomation: false,
+        confidence: 0.99,
+        explanation: 'This request involves tasks that are scientifically or technologically impossible.',
+        suggestions: [
+          'Schedule an API request or webhook',
+          'Send daily notifications to Discord or Gmail',
+        ],
+      };
+    }
+
+    // ─── 2. PHYSICAL ACTIONS (Not digital automations) ─────────────────────────
     const physicalKeywords = [
-      'coffee', 'tea', 'pizza', 'cook', 'bake', 'wash', 'clean', 'drive', 'bike', 'car',
+      'coffee', 'tea', 'espresso', 'cook', 'bake', 'wash', 'clean', 'drive', 'bike', 'car',
       'dish', 'laundry', 'room', 'bed', 'food', 'lunch', 'dinner', 'breakfast', 'water plants',
-      'cut hair', 'mow', 'grass', 'walk dog', 'feed cat'
+      'cut hair', 'mow', 'grass', 'walk dog', 'feed cat', 'iron clothes', 'pack bags'
     ];
-    if (physicalKeywords.some((kw) => text.includes(kw) && !text.includes('send') && !text.includes('email'))) {
+    const isPhysicalKeyword = physicalKeywords.some((kw) => {
+      const regex = new RegExp(`\\b${kw}\\b`, 'i');
+      return regex.test(lower);
+    });
+
+    // Check if the user is asking to physically DO the action vs digitally REMIND/NOTIFY about it
+    const isNotificationOnly = lower.includes('remind') || lower.includes('alert') || lower.includes('notification') || lower.includes('email me to');
+    if (isPhysicalKeyword && !isNotificationOnly) {
       return {
+        intent: 'PHYSICAL_ACTION',
         isAutomation: false,
-        category: 'physical_action',
-        confidenceScore: 0.95,
-        message: this.getRejectionMessage('physical_action'),
+        confidence: 0.96,
+        explanation: 'AutomateX is a digital workflow platform and cannot perform physical real-world actions directly.',
+        suggestions: [
+          'Send me a reminder notification to make coffee every morning at 9 AM',
+          'Send a Discord alert for morning routine',
+          'Send a webhook to a smart device API',
+        ],
       };
     }
 
-    // 2. Check Unsupported Automations (hardware/devices without integrations)
-    const unsupportedKeywords = [
-      'microwave', 'refrigerator', 'fridge', 'tv', 'television', 'washing machine',
-      'fan', 'light bulb', 'ac', 'air conditioner', 'oven', 'toaster', 'vacuum', 'door lock'
+    // ─── 3. UNSUPPORTED INTEGRATIONS / DEVICES ────────────────────────────────
+    const unsupportedIntegrations = [
+      { name: 'Notion', regex: /\bnotion\b/i },
+      { name: 'TikTok', regex: /\btiktok\b/i },
+      { name: 'Instagram', regex: /\binstagram\b/i },
+      { name: 'WhatsApp', regex: /\bwhatsapp\b/i },
+      { name: 'Salesforce', regex: /\bsalesforce\b/i },
+      { name: 'HubSpot', regex: /\bhubspot\b/i },
+      { name: 'Airtable', regex: /\bairtable\b/i },
+      { name: 'Trello', regex: /\btrello\b/i },
+      { name: 'Asana', regex: /\basana\b/i },
+      { name: 'Microwave', regex: /\bmicrowave\b/i },
+      { name: 'Refrigerator', regex: /\brefrigerator|fridge\b/i },
+      { name: 'Washing Machine', regex: /\bwashing machine\b/i },
+      { name: 'TV', regex: /\btelevision|smart tv\b/i },
     ];
-    if (unsupportedKeywords.some((kw) => text.includes(kw))) {
+    const matchedUnsupported = unsupportedIntegrations.find((item) => item.regex.test(lower));
+    if (matchedUnsupported) {
       return {
+        intent: 'UNSUPPORTED',
         isAutomation: false,
-        category: 'unsupported_automation',
-        confidenceScore: 0.90,
-        message: this.getRejectionMessage('unsupported_automation'),
+        confidence: 0.94,
+        unsupportedTarget: matchedUnsupported.name,
+        explanation: `AutomateX does not currently have a native integration for ${matchedUnsupported.name}.`,
+        suggestions: [
+          'Use an HTTP Request node to call their public REST API or Webhook',
+          'Use supported platforms like Discord, Gmail, Google Sheets, or GitHub',
+        ],
       };
     }
 
-    // 3. Check Casual Conversation
-    const conversationKeywords = [
-      'hello', 'hi', 'hey', 'greetings', 'how are you', 'who are you', 'tell me a joke',
-      'joke', 'good morning', 'good evening', 'what is your name', 'are you human', 'what can you do'
+    // ─── 4. INFORMATIONAL / KNOWLEDGE QUERIES ─────────────────────────────────
+    const informationalPatterns = [
+      /^how (do|does|can|to)\b/i,
+      /^what (is|are|does)\b/i,
+      /^who (is|was)\b/i,
+      /^explain\b/i,
+      /^tell me about\b/i,
+      /^why (is|do|does)\b/i,
+      /^difference between\b/i,
     ];
-    if (conversationKeywords.some((kw) => text === kw || text.startsWith('hello') || text.startsWith('hi ') || text.includes('tell me a joke') || text.includes('how are you'))) {
+    const isInformational = informationalPatterns.some((pattern) => pattern.test(lower));
+    const hasExplicitAutomationVerbs = lower.includes('when') || lower.includes('every') || lower.includes('schedule') || lower.includes('send') || lower.includes('trigger');
+
+    if (isInformational && !hasExplicitAutomationVerbs) {
       return {
+        intent: 'INFORMATIONAL',
         isAutomation: false,
-        category: 'conversation',
-        confidenceScore: 0.95,
-        message: this.getRejectionMessage('conversation'),
+        confidence: 0.92,
+        explanation: 'This appears to be an informational question rather than an automation request.',
+        suggestions: [
+          'Ask questions about how to use AutomateX nodes in the documentation',
+          'Describe a trigger and an action to create an executable workflow',
+        ],
       };
     }
 
-    // 4. Check Knowledge Questions
-    const knowledgeKeywords = [
-      'what is', 'who is', 'explain', 'tell me about', 'definition of', 'history of',
-      'how does react work', 'what is mongodb', 'who is elon musk', 'who is virat kohli'
+    // ─── 5. AMBIGUOUS / UNDERSPECIFIED AUTOMATIONS ─────────────────────────────
+    const ultraVaguePrompts = [
+      /^send a message$/i,
+      /^send message$/i,
+      /^send an email$/i,
+      /^send email$/i,
+      /^post something$/i,
+      /^automate my work$/i,
+      /^do something$/i,
+      /^trigger workflow$/i,
+      /^run a task$/i,
     ];
-    if (knowledgeKeywords.some((kw) => text.startsWith(kw) || text.includes('who is') || text.includes('what is react'))) {
-      // Exception: "what is the status of" or "explain how to build workflow" might be valid
-      if (!text.includes('when') && !text.includes('send') && !text.includes('notify') && !text.includes('workflow')) {
-        return {
-          isAutomation: false,
-          category: 'knowledge',
-          confidenceScore: 0.92,
-          message: this.getRejectionMessage('knowledge'),
-        };
-      }
+    if (ultraVaguePrompts.some((pattern) => pattern.test(lower))) {
+      return {
+        intent: 'AMBIGUOUS',
+        isAutomation: false,
+        confidence: 0.90,
+        explanation: 'Your request is missing essential details such as the target destination (e.g. Discord, Gmail) or the message content.',
+        suggestions: [
+          'Send a Discord message to channel #general with "Good morning"',
+          'Send a Gmail email to team@example.com with daily summary',
+        ],
+        missingFields: ['targetService', 'recipientOrChannel', 'content'],
+      };
     }
 
-    // 5. Check Automation Intent & Trigger / Action Presence
+    // ─── 6. VALID DIGITAL AUTOMATION DETECTION ────────────────────────────────
     const triggerKeywords = [
-      'when', 'every', 'if', 'on', 'schedule', 'cron', 'webhook', 'start', 'after', 'whenever', 'daily', 'hourly'
+      'when', 'every', 'if', 'on', 'schedule', 'cron', 'webhook', 'start', 'whenever', 'daily', 'hourly', 'minutes'
     ];
     const actionKeywords = [
       'send', 'email', 'gmail', 'notify', 'slack', 'discord', 'telegram', 'post', 'http', 'api', 'request',
-      'log', 'save', 'database', 'mongo', 'mongodb', 'mysql', 'postgres', 'postgresql', 'sql', 'query', 'table',
-      'collection', 'insert', 'pdf', 'generate', 'groq', 'ai', 'call', 'fetch', 'fetch weather'
+      'log', 'save', 'database', 'mongo', 'mongodb', 'pdf', 'generate', 'groq', 'ai', 'call', 'fetch',
+      'sync', 'readme', 'activity', 'commit', 'sheet', 'sheets', 'append', 'extract'
     ];
 
-    const hasTrigger = triggerKeywords.some((kw) => text.includes(kw));
-    const hasAction = actionKeywords.some((kw) => text.includes(kw));
-
-    if (hasTrigger && hasAction) {
-      return {
-        isAutomation: true,
-        category: 'automation',
-        confidenceScore: 0.95,
-        triggerDetected: true,
-        actionDetected: true,
-      };
-    }
+    const hasTrigger = triggerKeywords.some((kw) => lower.includes(kw));
+    const hasAction = actionKeywords.some((kw) => lower.includes(kw));
 
     if (hasTrigger || hasAction) {
-      // Partial match: confidence is ~ 0.65 (< 70%)
       return {
-        isAutomation: false,
-        category: 'automation',
-        confidenceScore: 0.65,
+        intent: 'AUTOMATION',
+        isAutomation: true,
+        confidence: hasTrigger && hasAction ? 0.96 : 0.82,
+        explanation: 'Valid digital automation request detected.',
         triggerDetected: hasTrigger,
         actionDetected: hasAction,
-        message: 'Did you mean an automation workflow? Please specify both a trigger (e.g. "When a user signs up") and an action (e.g. "send an email").',
       };
     }
 
-    // Default fallback rejection
+    // Default fallback to ambiguous
     return {
+      intent: 'AMBIGUOUS',
       isAutomation: false,
-      category: 'conversation',
-      confidenceScore: 0.30,
-      message: this.getRejectionMessage('default'),
+      confidence: 0.60,
+      explanation: 'Could not confidently determine automation requirements. Please specify a trigger (e.g. "Every morning at 9 AM") and an action (e.g. "Send a Discord message").',
+      suggestions: [
+        'Every day at 9 AM send a Discord message',
+        'When a webhook is received, insert document into MongoDB',
+      ],
     };
-  }
-
-  static getRejectionMessage(category) {
-    if (category === 'unsupported_automation') {
-      return `Unsupported Automation.\nNo integration exists for hardware/smart home devices.\n\nPlease describe a supported software automation such as:\n• When a user signs up send an email.\n• Every morning send weather report.\n• Notify Slack after payment.`;
-    }
-
-    return `No automation workflow detected.\n\nPlease describe an automation such as:\n• When a user signs up send an email.\n• Every morning at 9 AM send weather report.\n• If payment succeeds notify Slack channel.`;
   }
 }
