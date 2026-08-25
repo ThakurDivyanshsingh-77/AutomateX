@@ -177,12 +177,71 @@ Here is my custom bio and skills.`;
     assert(!masked.includes('abcdef1234567890'));
   });
 
-  // ─── 5. Executor Registration & Engine Integration Tests ────────────────
+  // ─── 5. Executor Registry & Engine DAG Execution Tests ────────────────
   console.log('\n🚀 5. Executor Registry & Engine DAG Execution Tests:');
 
-  test('ExecutorRegistry has githubSyncProfileReadme registered', () => {
-    const executor = executorRegistry.getExecutor('githubSyncProfileReadme');
-    assert(executor !== null && executor !== undefined, 'Executor should be registered');
+  await asyncTest('ExecutorRegistry has githubSyncProfileReadme registered in both registries', async () => {
+    const { ExecutorRegistry: CentralRegistry } = await import('./engine/registry/ExecutorRegistry.js');
+    const centralExecutor = CentralRegistry.getExecutor('githubSyncProfileReadme');
+    assert(centralExecutor !== null && centralExecutor !== undefined, 'Central Registry executor should be registered');
+
+    const legacyExecutor = executorRegistry.getExecutor('githubSyncProfileReadme');
+    assert(legacyExecutor !== null && legacyExecutor !== undefined, 'Legacy Registry executor should be registered');
+  });
+
+  await asyncTest('WorkflowEngine.run executes Cron -> githubSyncProfileReadme -> End without missing executor error', async () => {
+    const { WorkflowEngine } = await import('./engine/WorkflowEngine.js');
+
+    const workflowDAG = {
+      _id: 'wf_cron_github_sync_end',
+      nodes: [
+        {
+          id: 'node_cron',
+          type: 'cron',
+          data: { label: 'Cron Schedule' },
+          config: { expression: '0 0 * * *' },
+        },
+        {
+          id: 'node_github',
+          type: 'githubSyncProfileReadme',
+          data: {
+            label: 'GitHub Profile README Sync',
+            config: {
+              repository: 'USERNAME/USERNAME',
+              branch: 'main',
+              sort: 'updated',
+              maxRepositories: 10,
+              managedMarkers: true,
+              autoCommit: true,
+              commitMessage: 'docs: sync profile README',
+              dryRun: true,
+            },
+          },
+        },
+        {
+          id: 'node_end',
+          type: 'end',
+          data: { label: 'End Completion' },
+        },
+      ],
+      edges: [
+        { id: 'e1', source: 'node_cron', target: 'node_github' },
+        { id: 'e2', source: 'node_github', target: 'node_end' },
+      ],
+    };
+
+    const initialPayload = {
+      message: 'AutomateX sync commit [automatex-sync]',
+      sender: { login: 'AutomateX Bot' },
+    };
+
+    const runResult = await WorkflowEngine.run(workflowDAG, 'exec_test_github_sync', initialPayload);
+    assert.strictEqual(runResult.status.toLowerCase(), 'success');
+    assert.strictEqual(runResult.logs.length, 3);
+
+    const githubLog = runResult.logs.find((l) => l.nodeId === 'node_github');
+    assert(githubLog !== undefined);
+    assert.strictEqual(githubLog.status.toLowerCase(), 'success');
   });
 
   await asyncTest('ExecutionEngine executes workflow with githubSyncProfileReadme (dry-run mode)', async () => {
