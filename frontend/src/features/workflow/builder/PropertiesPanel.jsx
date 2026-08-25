@@ -36,6 +36,7 @@ import { WebsiteCreateProductProperties } from '../nodes/websiteCreateProduct/We
 import WebsiteCreateTournamentProperties from '../nodes/websiteCreateTournament/WebsiteCreateTournamentProperties';
 import GeminiStructureTournamentProperties from '../nodes/geminiStructureTournament/GeminiStructureTournamentProperties';
 import ForEachTournamentProperties from '../nodes/forEachTournament/ForEachTournamentProperties';
+import { GitHubSyncProfileReadmeProperties } from '../nodes/github/GitHubSyncProfileReadmeProperties';
 import { WorkflowBuilderProvider } from '../../../context/WorkflowBuilderContext';
 
 
@@ -97,6 +98,7 @@ export const PropertiesPanel = ({
   const isDiscordRemoveRoleFromMemberNode = selectedNode.type === 'discordRemoveRoleFromMember' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('removerolefrommember'));
   const isDiscordEmbedNode = !isDiscordMessageReceivedNode && !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && (selectedNode.type === 'discordSendEmbed' || selectedNode.type === 'discordEmbed' || (selectedNode.type.toLowerCase().includes('discord') && selectedNode.type.toLowerCase().includes('embed')));
   const isDiscordNode = !isDiscordMessageReceivedNode && !isDiscordCreateChannelNode && !isDiscordDeleteChannelNode && !isDiscordCreateRoleNode && !isDiscordDeleteRoleNode && !isDiscordAddRoleToMemberNode && !isDiscordRemoveRoleFromMemberNode && !isDiscordEmbedNode && (selectedNode.type === 'discordSendMessage' || selectedNode.type === 'discord' || selectedNode.type.toLowerCase().includes('discord'));
+  const isGitHubSyncReadmeNode = selectedNode.type === 'githubSyncProfileReadme' || selectedNode.type === 'github_sync_profile_readme' || selectedNode.type === 'githubSyncReadme' || selectedNode.type === 'github';
 
 
 
@@ -286,7 +288,14 @@ export const PropertiesPanel = ({
               Configuration Parameters
             </h4>
 
-            {isFileUploadNode ? (
+            {isGitHubSyncReadmeNode ? (
+              <GitHubSyncProfileReadmeProperties
+                node={selectedNode}
+                onUpdateNodeData={onUpdateNodeData}
+                workflowNodes={workflowNodes}
+                executionSnapshot={executionSnapshot}
+              />
+            ) : isFileUploadNode ? (
               <FileUploadProperties
                 node={selectedNode}
                 onUpdateNodeData={onUpdateNodeData}

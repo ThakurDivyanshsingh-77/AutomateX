@@ -13,6 +13,7 @@ import { WebsiteCreateProductExecutor } from './executors/WebsiteCreateProductEx
 import { WebsiteCreateTournamentExecutor } from './executors/WebsiteCreateTournamentExecutor.js';
 import { GeminiStructureTournamentExecutor } from './executors/GeminiStructureTournamentExecutor.js';
 import { ForEachTournamentExecutor } from './executors/ForEachTournamentExecutor.js';
+import { GitHubSyncReadmeExecutor } from './executors/GitHubSyncReadmeExecutor.js';
 
 class ExecutorRegistry {
   constructor() {
@@ -66,6 +67,10 @@ class ExecutorRegistry {
     this.register('structureTournament', new GeminiStructureTournamentExecutor());
     this.register('forEachTournament', new ForEachTournamentExecutor());
     this.register('for_each_tournament', new ForEachTournamentExecutor());
+    this.register('githubSyncProfileReadme', new GitHubSyncReadmeExecutor());
+    this.register('github_sync_profile_readme', new GitHubSyncReadmeExecutor());
+    this.register('githubSyncReadme', new GitHubSyncReadmeExecutor());
+    this.register('github', new GitHubSyncReadmeExecutor());
   }
 
   register(nodeType, executorInstance) {

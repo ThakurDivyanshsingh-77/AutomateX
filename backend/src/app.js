@@ -17,6 +17,7 @@ import googleSheetsRoutes from './routes/googleSheetsRoutes.js';
 import discordRoutes from './discord/routes/DiscordRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
 import websiteConnectionRoutes from './routes/websiteConnectionRoutes.js';
+import githubRoutes from './routes/githubRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -61,6 +62,7 @@ app.use('/api/v1/discord', discordRoutes);
 app.use('/api/v1/files', fileRoutes);
 app.use('/api/v1/connections/websites', websiteConnectionRoutes);
 app.use('/api/connections/websites', websiteConnectionRoutes);
+app.use('/api/v1/github', githubRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

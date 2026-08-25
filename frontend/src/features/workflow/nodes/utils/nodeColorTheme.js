@@ -8,6 +8,21 @@ export const getNodeColorTheme = (type = '', category = '', provider = '') => {
   const c = String(category).toLowerCase();
   const p = String(provider).toLowerCase();
 
+  // 0. GitHub / Git Automations (Octocat Purple / Dark Slate)
+  if (t.includes('github') || p.includes('github')) {
+    return {
+      primaryColor: '#8b5cf6',
+      iconBg: 'bg-slate-900 text-white border-slate-700 shadow-xs',
+      iconFill: 'text-purple-400',
+      cardHover: 'hover:border-purple-400 hover:bg-purple-50/30',
+      tagBg: 'bg-purple-50 text-purple-800 border-purple-200',
+      ringColor: 'ring-purple-500/25 border-purple-500 shadow-purple-500/15',
+      handleColor: '#8b5cf6',
+      textHover: 'group-hover:text-purple-600',
+      stripeBg: 'bg-purple-600',
+    };
+  }
+
   // 1. Google Sheets (Forest Green)
   if (t.includes('googlesheets') || t.includes('sheets') || p.includes('google sheets')) {
     return {

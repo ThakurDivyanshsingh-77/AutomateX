@@ -36,6 +36,7 @@ import GeminiStructureTournamentNode from '../nodes/geminiStructureTournament/Ge
 import ForEachTournamentNode from '../nodes/forEachTournament/ForEachTournamentNode';
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
+import { GitHubSyncProfileReadmeNode } from '../nodes/github/GitHubSyncProfileReadmeNode';
 
 import { NodeToolbar } from './NodeToolbar';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -102,6 +103,11 @@ const nodeTypes = {
   googleSheetsTriggerWatchRows: GoogleSheetsTriggerNode,
   discordMessageReceived: DiscordMessageReceivedNode,
   discordMessageReceivedTrigger: DiscordMessageReceivedNode,
+  [NODE_TYPES.GITHUB_SYNC_PROFILE_README]: GitHubSyncProfileReadmeNode,
+  githubSyncProfileReadme: GitHubSyncProfileReadmeNode,
+  github_sync_profile_readme: GitHubSyncProfileReadmeNode,
+  githubSyncReadme: GitHubSyncProfileReadmeNode,
+  github: GitHubSyncProfileReadmeNode,
 };
 
 const BuilderInner = () => {

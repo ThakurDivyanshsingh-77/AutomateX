@@ -14,7 +14,9 @@ export const credentialService = {
     const target = (serviceType || '').toLowerCase();
     return allCreds.filter((cred) => {
       const s = (cred.service || cred.type || cred.serviceName || '').toLowerCase();
-      return s === target || s.includes('mongo');
+      if (!target) return true;
+      if (target === 'mongodb' || target === 'mongo') return s.includes('mongo');
+      return s === target || s.includes(target);
     });
   },
 

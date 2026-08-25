@@ -12,6 +12,17 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ## 📅 Platform Milestones & Completed Phases
 
+### **Phase 23 Complete — GitHub: Sync Profile README Node** — ✅ COMPLETED
+- **First-Class AutomateX Node (`githubSyncProfileReadme`)**:
+  - **`GitHubSyncReadmeService.js`**: Zero-dependency native `fetch` service providing authenticated GitHub REST API operations, repository filtering, deterministic markdown formatting, non-destructive marker injection, idempotency SHA comparison, and loop protection (`[skip ci] [automatex-sync]`).
+  - **Non-Destructive Markers**: Strictly replaces only content between `<!-- AUTOMATEX_PROJECTS_START -->` and `<!-- AUTOMATEX_PROJECTS_END -->`, preserving header, bio, and footer. Appends safely if markers are missing without overwriting existing content.
+  - **Idempotency & Zero Phantom Commits**: Compares existing file SHA and decoded content; if identical, returns `{ success: true, updated: false, reason: "README already up to date" }` with 0 unnecessary commits.
+  - **`GitHubSyncReadmeExecutor.js`**: Integrated with `ExecutionEngine` and `executorRegistry`. Includes execution loop protection when triggered by AutomateX commits.
+  - **Backend API Routes (`/api/v1/github/...`)**: Endpoints for token verification, repository listing, dry-run diff preview (`/profile-readme/preview`), and explicit commit trigger (`/profile-readme/apply`).
+  - **`GitHubSyncProfileReadmeNode.jsx`**: Canvas card with GitHub Octocat styling (`#8b5cf6` accent, `#1e293b` badge), repo pill, branch tag, and colorful notes support.
+  - **`GitHubSyncProfileReadmeProperties.jsx`**: Interactive properties panel with connection selector, profile repository auto-detection, sorting & filter toggles, field options (stars, language, topics, updated date), **"Test README Sync"** 3-step preview drawer, and **[ Apply to GitHub ]** action.
+- **Verification**: 10 automated test suites passed (`test_github_sync_profile_readme.js`) and production frontend build passed cleanly (2,105 modules transformed).
+
 ### **Phase 22 Complete — Vibrant & Colorful Node Notes System** — ✅ COMPLETED
 - **`noteThemes.js`** (new palette system): 9 vibrant, high-contrast visual color themes for notes with custom gradients, badges, hex colors, glow rings, and border accents:
   - ☀️ **Sunshine Gold** (`amber`), 🌿 **Mint Emerald** (`emerald`), 🌊 **Ocean Blue** (`blue`), 🔮 **Mystic Purple** (`purple`), 🌸 **Rose Berry** (`rose`), 🔥 **Sunset Coral** (`orange`), ⚡ **Cyber Cyan** (`cyan`), 🌌 **Cosmic Indigo** (`indigo`), 📓 **Modern Graphite** (`slate`).

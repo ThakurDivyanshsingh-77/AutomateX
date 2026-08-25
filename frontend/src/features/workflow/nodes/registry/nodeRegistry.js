@@ -20,6 +20,7 @@ import { websiteCreateProductManifest } from '../websiteCreateProduct/websiteCre
 import { websiteCreateTournamentManifest } from '../websiteCreateTournament/websiteCreateTournamentManifest';
 import { geminiStructureTournamentManifest } from '../geminiStructureTournament/geminiStructureTournamentManifest';
 import { forEachTournamentManifest } from '../forEachTournament/forEachTournamentManifest';
+import { githubSyncProfileReadmeManifest } from '../github/githubSyncProfileReadmeManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -63,6 +64,7 @@ export const NODE_TYPES = {
   WEBSITE_CREATE_TOURNAMENT: 'websiteCreateTournament',
   GEMINI_STRUCTURE_TOURNAMENT: 'geminiStructureTournament',
   FOR_EACH_TOURNAMENT: 'forEachTournament',
+  GITHUB_SYNC_PROFILE_README: 'githubSyncProfileReadme',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
   ...AI_NODE_TYPES,
@@ -129,6 +131,10 @@ export const nodeDefinitions = {
   [NODE_TYPES.FOR_EACH_TOURNAMENT]: forEachTournamentManifest,
   forEachTournament: forEachTournamentManifest,
   for_each_tournament: forEachTournamentManifest,
+  [NODE_TYPES.GITHUB_SYNC_PROFILE_README]: githubSyncProfileReadmeManifest,
+  githubSyncProfileReadme: githubSyncProfileReadmeManifest,
+  github_sync_profile_readme: githubSyncProfileReadmeManifest,
+  githubSyncReadme: githubSyncProfileReadmeManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
   discordMessageReceived: discordNodeDefinitions.discordMessageReceived,
