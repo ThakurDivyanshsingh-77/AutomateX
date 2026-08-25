@@ -66,4 +66,40 @@ export const protect = async (req, res, next) => {
   });
 };
 
+export const optionalAuth = async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  } else if (req.query && req.query.token) {
+    token = req.query.token;
+  }
+
+  if (token) {
+    try {
+      const secret = process.env.JWT_SECRET || 'workflow_platform_super_secret_key_2026';
+      const decoded = jwt.verify(token, secret);
+      if (mongoose.connection.readyState === 1) {
+        const user = await User.findById(decoded.id).select('-password');
+        if (user) req.user = user;
+      } else {
+        req.user = {
+          _id: decoded.id,
+          name: 'Divyansh',
+          email: 'abc@gmail.com',
+          role: decoded.role || 'user',
+          avatar: '',
+          isVerified: true,
+        };
+      }
+    } catch {
+      // Gracefully ignore token errors for optional auth
+    }
+  }
+  return next();
+};
+
 export const authenticate = protect;
+
