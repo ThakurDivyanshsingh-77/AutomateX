@@ -12,6 +12,17 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ## 📅 Platform Milestones & Completed Phases
 
+### **Phase 24 Complete — GitHub: Daily Activity Commit Node** — ✅ COMPLETED
+- **First-Class AutomateX Node (`githubDailyActivityCommit`)**:
+  - **`GitHubDailyActivityService.js`**: Dedicated service for daily automation heartbeat activity records in GitHub. Features timezone-aware date resolution, daily deduplication detection (`hasActivityForDate`), non-destructive append (`appendActivityEntry`), 409 conflict retries, dry-run simulation, and loop protection tags.
+  - **Executor Registration**: Registered in both central runtime `backend/src/engine/registry/ExecutorRegistry.js` (`WorkflowEngine.run`) and legacy `backend/src/engine/ExecutorRegistry.js` (`ExecutionEngine.executeWorkflow`). Supports node aliases: `githubDailyActivityCommit`, `github_daily_activity_commit`, `githubDailyActivity`, `githubActivityCommit`.
+  - **Strict Idempotency**: Running multiple times on the same date detects existing activity and returns `{ success: true, changed: false, committed: false, reason: "already_completed_today" }` with **zero duplicate commits**.
+  - **Dry Run Support**: When `dryRun: true`, calculates proposed file content and returns `{ success: true, dryRun: true, changed: true, committed: false, wouldCommit: true }`.
+  - **API Routes**: `/api/v1/github/activity/preview` and `/api/v1/github/activity/apply`.
+  - **`GitHubDailyActivityCommitNode.jsx`**: Canvas card with `@xyflow/react` handles, Octocat branding, repository pill, activity file path, and Daily/Idempotent badges.
+  - **`GitHubDailyActivityCommitProperties.jsx`**: Inspector panel with connection selector, repository input, branch, timezone, activity file path, commit message, description, daily deduplication toggle, dry run switch, test preview drawer, and manual apply button.
+- **Verification**: 10 automated test suites passed (`test_github_daily_activity_commit.js`) including `Cron Schedule -> githubDailyActivityCommit -> End Completion` DAG execution and production frontend build passed cleanly (2,108 modules transformed).
+
 ### **Phase 23 Complete — GitHub: Sync Profile README Node** — ✅ COMPLETED
 - **First-Class AutomateX Node (`githubSyncProfileReadme`)**:
   - **`GitHubSyncReadmeService.js`**: Zero-dependency native `fetch` service providing authenticated GitHub REST API operations, repository filtering, deterministic markdown formatting, non-destructive marker injection, idempotency SHA comparison, dry-run support, and loop protection (`[skip ci] [automatex-sync]`).

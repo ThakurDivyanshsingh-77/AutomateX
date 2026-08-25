@@ -26,6 +26,7 @@ import { WebsiteCreateTournamentExecutor } from '../executors/WebsiteCreateTourn
 import { GeminiStructureTournamentExecutor } from '../executors/GeminiStructureTournamentExecutor.js';
 import { ForEachTournamentExecutor } from '../executors/ForEachTournamentExecutor.js';
 import { GitHubSyncReadmeExecutor } from '../executors/GitHubSyncReadmeExecutor.js';
+import { GitHubDailyActivityCommitExecutor } from '../executors/GitHubDailyActivityCommitExecutor.js';
 
 const googleSheetsExecutor = new GoogleSheetsExecutor();
 const googleSheetsTriggerExecutor = new GoogleSheetsTriggerExecutor();
@@ -46,6 +47,7 @@ const websiteCreateTournamentExecutor = new WebsiteCreateTournamentExecutor();
 const geminiStructureTournamentExecutor = new GeminiStructureTournamentExecutor();
 const forEachTournamentExecutor = new ForEachTournamentExecutor();
 const githubSyncReadmeExecutor = new GitHubSyncReadmeExecutor();
+const githubDailyActivityCommitExecutor = new GitHubDailyActivityCommitExecutor();
 
 export class ExecutorRegistry {
   static executors = new Map([
@@ -154,6 +156,10 @@ export class ExecutorRegistry {
     ['github_sync_profile_readme', githubSyncReadmeExecutor],
     ['githubSyncReadme', githubSyncReadmeExecutor],
     ['github', githubSyncReadmeExecutor],
+    ['githubDailyActivityCommit', githubDailyActivityCommitExecutor],
+    ['github_daily_activity_commit', githubDailyActivityCommitExecutor],
+    ['githubDailyActivity', githubDailyActivityCommitExecutor],
+    ['githubActivityCommit', githubDailyActivityCommitExecutor],
   ]);
 
   static getExecutor(nodeType) {

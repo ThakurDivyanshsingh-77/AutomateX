@@ -107,6 +107,8 @@ router.post('/profile-readme/preview', optionalAuth, async (req, res, next) => {
   }
 });
 
+import { GitHubDailyActivityService } from '../engine/github/GitHubDailyActivityService.js';
+
 /**
  * POST /api/v1/github/profile-readme/apply
  * Explicitly apply and write the README to GitHub
@@ -126,4 +128,43 @@ router.post('/profile-readme/apply', optionalAuth, async (req, res, next) => {
   }
 });
 
+/**
+ * POST /api/v1/github/activity/preview
+ * Dry-run preview of Daily Activity Commit
+ */
+router.post('/activity/preview', optionalAuth, async (req, res, next) => {
+  try {
+    const userId = req.user?._id || req.user?.id || req.body.userId || null;
+    const config = req.body.config || req.body;
+
+    const preview = await GitHubDailyActivityService.previewActivityCommit(config, userId);
+    return res.status(200).json(preview);
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/v1/github/activity/apply
+ * Execute Daily Activity Commit to GitHub
+ */
+router.post('/activity/apply', optionalAuth, async (req, res, next) => {
+  try {
+    const userId = req.user?._id || req.user?.id || req.body.userId || null;
+    const config = req.body.config || req.body;
+
+    const result = await GitHubDailyActivityService.executeActivityCommit(config, userId);
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
 export default router;
+

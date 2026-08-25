@@ -37,6 +37,7 @@ import ForEachTournamentNode from '../nodes/forEachTournament/ForEachTournamentN
 import { GoogleSheetsTriggerNode } from '../nodes/googleSheets/GoogleSheetsTriggerNode';
 import { DiscordMessageReceivedNode } from '../components/DiscordMessageReceivedNode';
 import { GitHubSyncProfileReadmeNode } from '../nodes/github/GitHubSyncProfileReadmeNode';
+import GitHubDailyActivityCommitNode from '../nodes/github/GitHubDailyActivityCommitNode';
 
 import { NodeToolbar } from './NodeToolbar';
 import { PropertiesPanel } from './PropertiesPanel';
@@ -108,6 +109,11 @@ const nodeTypes = {
   github_sync_profile_readme: GitHubSyncProfileReadmeNode,
   githubSyncReadme: GitHubSyncProfileReadmeNode,
   github: GitHubSyncProfileReadmeNode,
+  [NODE_TYPES.GITHUB_DAILY_ACTIVITY_COMMIT]: GitHubDailyActivityCommitNode,
+  githubDailyActivityCommit: GitHubDailyActivityCommitNode,
+  github_daily_activity_commit: GitHubDailyActivityCommitNode,
+  githubDailyActivity: GitHubDailyActivityCommitNode,
+  githubActivityCommit: GitHubDailyActivityCommitNode,
 };
 
 const BuilderInner = () => {

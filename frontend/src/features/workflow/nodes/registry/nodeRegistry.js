@@ -21,6 +21,7 @@ import { websiteCreateTournamentManifest } from '../websiteCreateTournament/webs
 import { geminiStructureTournamentManifest } from '../geminiStructureTournament/geminiStructureTournamentManifest';
 import { forEachTournamentManifest } from '../forEachTournament/forEachTournamentManifest';
 import { githubSyncProfileReadmeManifest } from '../github/githubSyncProfileReadmeManifest';
+import { githubDailyActivityCommitManifest } from '../github/githubDailyActivityCommitManifest';
 
 import { validateHttpNode } from '../validators/httpValidator';
 import { validateDelayNode } from '../validators/delayValidator';
@@ -65,6 +66,7 @@ export const NODE_TYPES = {
   GEMINI_STRUCTURE_TOURNAMENT: 'geminiStructureTournament',
   FOR_EACH_TOURNAMENT: 'forEachTournament',
   GITHUB_SYNC_PROFILE_README: 'githubSyncProfileReadme',
+  GITHUB_DAILY_ACTIVITY_COMMIT: 'githubDailyActivityCommit',
   ...GOOGLE_SHEETS_NODE_TYPES,
   ...DISCORD_NODE_TYPES,
   ...AI_NODE_TYPES,
@@ -135,6 +137,11 @@ export const nodeDefinitions = {
   githubSyncProfileReadme: githubSyncProfileReadmeManifest,
   github_sync_profile_readme: githubSyncProfileReadmeManifest,
   githubSyncReadme: githubSyncProfileReadmeManifest,
+  [NODE_TYPES.GITHUB_DAILY_ACTIVITY_COMMIT]: githubDailyActivityCommitManifest,
+  githubDailyActivityCommit: githubDailyActivityCommitManifest,
+  github_daily_activity_commit: githubDailyActivityCommitManifest,
+  githubDailyActivity: githubDailyActivityCommitManifest,
+  githubActivityCommit: githubDailyActivityCommitManifest,
   googleSheets: googleSheetsNodeDefinitions.googleSheetsAppendRow,
   ...googleSheetsNodeDefinitions,
   discordMessageReceived: discordNodeDefinitions.discordMessageReceived,
@@ -203,8 +210,11 @@ export const nodeValidators = {
   website_create_product: websiteCreateProductManifest.validate,
   [NODE_TYPES.WEBSITE_CREATE_TOURNAMENT]: websiteCreateTournamentManifest.validate,
   websiteCreateTournament: websiteCreateTournamentManifest.validate,
-  website_create_tournament: websiteCreateTournamentManifest,
   createTournament: websiteCreateTournamentManifest.validate,
+  [NODE_TYPES.GITHUB_SYNC_PROFILE_README]: githubSyncProfileReadmeManifest.validate,
+  githubSyncProfileReadme: githubSyncProfileReadmeManifest.validate,
+  [NODE_TYPES.GITHUB_DAILY_ACTIVITY_COMMIT]: githubDailyActivityCommitManifest.validate,
+  githubDailyActivityCommit: githubDailyActivityCommitManifest.validate,
   [GOOGLE_SHEETS_NODE_TYPES.TRIGGER_WATCH_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.READ_ROWS]: googleSheetsValidator,
   [GOOGLE_SHEETS_NODE_TYPES.FIND_ROW]: googleSheetsValidator,
