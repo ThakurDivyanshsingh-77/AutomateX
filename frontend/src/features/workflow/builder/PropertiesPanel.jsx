@@ -5,9 +5,10 @@ import { GmailProperties } from '../nodes/properties/GmailProperties';
 import { ConditionProperties } from '../nodes/condition/ConditionProperties';
 import { WebhookProperties } from '../nodes/webhook/WebhookProperties';
 import { CronProperties } from '../nodes/cron/CronProperties';
-import { X, Trash2, Settings2, AlertTriangle, CheckCircle2, Zap } from 'lucide-react';
+import { X, Trash2, Settings2, AlertTriangle, CheckCircle2, Zap, StickyNote, Palette, Tag, Sparkles } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { DataMapperPanel } from '../components/DataMapperPanel';
+import { NOTE_THEMES, NOTE_TAGS, getNoteTheme, getNoteTag } from '../nodes/components/noteThemes';
 
 import { MongoCrudProperties } from '../nodes/database/MongoCrudProperties';
 import { MongoDBConnectionProperties } from '../nodes/database/MongoDBConnectionProperties';
@@ -187,22 +188,96 @@ export const PropertiesPanel = ({
             />
           </div>
 
-          {/* Node Private Note */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-700">
-                Node Note / Comment
-              </label>
-              <span className="text-[10px] text-slate-400 font-medium">Private</span>
-            </div>
-            <textarea
-              rows={2}
-              value={selectedNode.data?.note || ''}
-              onChange={(e) => onUpdateNodeData(selectedNode.id, { note: e.target.value })}
-              placeholder="Add private notes for this node..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 transition-all resize-none leading-relaxed"
-            />
-          </div>
+          {/* Node Private Note & Documentation */}
+          {(() => {
+            const currentNoteColor = selectedNode.data?.noteColor || 'amber';
+            const currentNoteTag = selectedNode.data?.noteTag || 'note';
+            const theme = getNoteTheme(currentNoteColor);
+            const tagObj = getNoteTag(currentNoteTag);
+            const noteContent = selectedNode.data?.note || '';
+
+            return (
+              <div className={`p-3 rounded-2xl border transition-all duration-200 ${noteContent ? theme.cardLightBg : 'bg-slate-50/60'} ${noteContent ? theme.cardBorder : 'border-slate-200/80'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs">{tagObj.emoji}</span>
+                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                      <span>Node Note</span>
+                      {noteContent && (
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: theme.colorHex }} />
+                      )}
+                    </label>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-bold uppercase border bg-white text-slate-600 border-slate-200">
+                    {theme.label}
+                  </span>
+                </div>
+
+                {/* Category Tag Selection */}
+                <div className="mb-2">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {NOTE_TAGS.map((t) => {
+                      const isSelected = currentNoteTag === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => onUpdateNodeData(selectedNode.id, { noteTag: t.id })}
+                          className={`px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer border ${
+                            isSelected
+                              ? `${theme.badgePill} shadow-xs`
+                              : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'
+                          }`}
+                        >
+                          <span>{t.emoji}</span>
+                          <span>{t.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Color Theme Selector */}
+                <div className="mb-2.5">
+                  <div className="grid grid-cols-9 gap-1 p-1 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+                    {Object.values(NOTE_THEMES).map((t) => {
+                      const isSelected = currentNoteColor === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => onUpdateNodeData(selectedNode.id, { noteColor: t.id })}
+                          title={`${t.label} ${t.emoji}`}
+                          className={`aspect-square rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${t.swatchBg} ${
+                            isSelected
+                              ? 'ring-2 ring-slate-900 ring-offset-1 scale-110 shadow-xs'
+                              : 'hover:scale-105 opacity-80 hover:opacity-100'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Note Content Textarea */}
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    value={noteContent}
+                    onChange={(e) => onUpdateNodeData(selectedNode.id, { note: e.target.value })}
+                    placeholder={`Add ${tagObj.label.toLowerCase()} or documentation for this node...`}
+                    className={`w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all resize-none leading-relaxed ${theme.glowRing}`}
+                  />
+                  {noteContent && (
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1 px-1">
+                      <span>Saved automatically</span>
+                      <span className="font-mono">{noteContent.length} chars</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
 
           {/* Configuration Parameter Panel */}
