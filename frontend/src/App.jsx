@@ -58,6 +58,7 @@ import { Templates } from './features/templates/pages/Templates';
 import { Executions } from './features/executions/pages/Executions';
 import { ReliabilityDashboard } from './features/reliability/pages/ReliabilityDashboard';
 import { AIBuilderPage } from './features/ai/pages/AIBuilderPage';
+import { AuditLogs } from './features/audit/pages/AuditLogs';
 
 export function App() {
   return (
@@ -142,6 +143,7 @@ export function App() {
             {/* Integrations Vault & Marketplace Routes */}
             <Route path="/credentials" element={<Credentials />} />
             <Route path="/templates" element={<Templates />} />
+            <Route path="/audit-logs" element={<AuditLogs />} />
           </Route>
 
           {/* Fullscreen Visual Builder Route */}

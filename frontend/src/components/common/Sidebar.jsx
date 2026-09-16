@@ -7,7 +7,7 @@ import {
   Activity,
   ShieldCheck,
   Layers,
-  Settings,
+  ScrollText,
   Lock,
   AlertOctagon,
   Sparkles,
@@ -27,8 +27,8 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
     { name: 'User Profile', path: '/profile', icon: User, badge: null },
   ];
 
-  const disabledNavItems = [
-    { name: 'Audit Logs', icon: Settings, badge: 'Enterprise' },
+  const enterpriseNavItems = [
+    { name: 'Audit Logs', path: '/audit-logs', icon: ScrollText, badge: 'Enterprise', badgeColor: 'bg-slate-100 text-slate-600 border-slate-200' },
   ];
 
   const sidebarContent = (
@@ -84,21 +84,23 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
             </h4>
           </div>
           <div className="space-y-1">
-            {disabledNavItems.map((item, idx) => {
+            {enterpriseNavItems.map((item) => {
               const Icon = item.icon;
               return (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 bg-slate-50 border border-slate-200/80 cursor-not-allowed"
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={onCloseMobile}
+                  className={({ isActive }) => `group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${isActive ? 'bg-orange-50 text-orange-600 border border-orange-200 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'}`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 opacity-50 text-slate-400" />
+                    <Icon className="w-4 h-4 text-slate-400 group-hover:text-slate-700" />
                     <span>{item.name}</span>
                   </div>
                   <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">
                     {item.badge}
                   </span>
-                </div>
+                </NavLink>
               );
             })}
           </div>
@@ -145,6 +147,5 @@ export const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
     </>
   );
 };
-
 
 
