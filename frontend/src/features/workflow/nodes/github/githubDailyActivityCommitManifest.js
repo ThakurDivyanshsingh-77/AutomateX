@@ -17,6 +17,9 @@ export const githubDailyActivityCommitManifest = {
     autoCommit: true,
     timezone: 'UTC',
     credentialId: '',
+    commitIdentity: 'connected',
+    customAuthorName: '',
+    customAuthorEmail: '',
   },
   validate: (config = {}) => {
     const errors = [];
@@ -25,6 +28,13 @@ export const githubDailyActivityCommitManifest = {
     }
     if (config.repository && !config.repository.includes('/')) {
       errors.push('Repository must be in "owner/repo" format (e.g. username/repo).');
+    }
+    if (config.commitIdentity === 'custom') {
+      if (!config.customAuthorEmail || !config.customAuthorEmail.trim()) {
+        errors.push('Custom commit author email is required when Custom Identity is selected.');
+      } else if (!config.customAuthorEmail.includes('@')) {
+        errors.push('Custom commit author email must be a valid email address.');
+      }
     }
     return {
       isValid: errors.length === 0,

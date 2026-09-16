@@ -126,6 +126,9 @@ export class GitHubDailyActivityService {
       changed = true;
     }
 
+    // 5. Resolve commit identity for attribution
+    const commitIdentity = await GitHubSyncReadmeService.resolveGitHubCommitIdentity(token, config);
+
     return {
       success: true,
       alreadyCompleted,
@@ -140,6 +143,12 @@ export class GitHubDailyActivityService {
       currentContent: fileData.content,
       proposedContent,
       entryDescription: entryDesc,
+      commitAuthor: {
+        login: commitIdentity.login,
+        name: commitIdentity.name,
+        email: commitIdentity.email,
+        source: commitIdentity.source,
+      },
     };
   }
 
@@ -173,7 +182,7 @@ export class GitHubDailyActivityService {
 
     // 1. Dry run preview
     const preview = await this.previewActivityCommit(config, userId);
-    const { owner, repo, sha, date, file, branch: targetBranch, alreadyCompleted, proposedContent, entryDescription } = preview;
+    const { owner, repo, sha, date, file, branch: targetBranch, alreadyCompleted, proposedContent, entryDescription, commitAuthor } = preview;
 
     // 2. Deduplication check: if today's activity is already recorded, do NOT commit!
     if (dailyDeduplication && alreadyCompleted) {
@@ -187,6 +196,7 @@ export class GitHubDailyActivityService {
         repository: `${owner}/${repo}`,
         file,
         branch: targetBranch,
+        commitAuthor,
       };
     }
 
@@ -204,10 +214,11 @@ export class GitHubDailyActivityService {
         file,
         branch: targetBranch,
         entryDescription,
+        commitAuthor,
       };
     }
 
-    // 4. Prepare Commit Payload
+    // 4. Prepare Commit Payload with full author & committer attribution
     const base64Content = Buffer.from(proposedContent, 'utf-8').toString('base64');
     const msg = (commitMessage || DEFAULT_COMMIT_MESSAGE).trim();
     const finalCommitMessage = msg.includes('[automatex-sync]')
@@ -218,9 +229,13 @@ export class GitHubDailyActivityService {
       message: finalCommitMessage,
       content: base64Content,
       branch: targetBranch,
+      author: {
+        name: commitAuthor.name,
+        email: commitAuthor.email,
+      },
       committer: {
-        name: 'AutomateX Bot',
-        email: 'bot@automatex.dev',
+        name: commitAuthor.name,
+        email: commitAuthor.email,
       },
     };
 
@@ -248,6 +263,12 @@ export class GitHubDailyActivityService {
         branch: targetBranch,
         commitSha: data.commit?.sha || null,
         commitUrl: data.commit?.html_url || null,
+        commitAuthor: {
+          login: commitAuthor.login,
+          name: commitAuthor.name,
+          email: commitAuthor.email,
+          source: commitAuthor.source,
+        },
         message: finalCommitMessage,
       };
     } catch (err) {
@@ -267,6 +288,7 @@ export class GitHubDailyActivityService {
             repository: `${owner}/${repo}`,
             file,
             branch: targetBranch,
+            commitAuthor,
             conflictResolved: true,
           };
         }
@@ -293,6 +315,12 @@ export class GitHubDailyActivityService {
           branch: targetBranch,
           commitSha: retryData.commit?.sha || null,
           commitUrl: retryData.commit?.html_url || null,
+          commitAuthor: {
+            login: commitAuthor.login,
+            name: commitAuthor.name,
+            email: commitAuthor.email,
+            source: commitAuthor.source,
+          },
           message: finalCommitMessage,
           retriedOnConflict: true,
         };

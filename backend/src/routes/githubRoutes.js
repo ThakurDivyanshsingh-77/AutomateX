@@ -34,7 +34,40 @@ router.post('/verify', optionalAuth, async (req, res, next) => {
     }
 
     const result = await GitHubSyncReadmeService.verifyGitHubToken(token);
+    try {
+      const identity = await GitHubSyncReadmeService.resolveGitHubCommitIdentity(token, req.body.config || req.body);
+      result.commitIdentity = identity;
+    } catch {
+      // Non-blocking fallback for verify
+    }
     return res.status(200).json(result);
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+/**
+ * POST /api/v1/github/identity
+ * Resolve commit author & committer identity for the connected GitHub account
+ */
+router.post('/identity', optionalAuth, async (req, res, next) => {
+  try {
+    const token = await resolveAuthToken(req);
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'No GitHub token or credentialId provided.',
+      });
+    }
+
+    const identity = await GitHubSyncReadmeService.resolveGitHubCommitIdentity(token, req.body.config || req.body);
+    return res.status(200).json({
+      success: true,
+      identity,
+    });
   } catch (err) {
     return res.status(err.statusCode || 500).json({
       success: false,

@@ -379,6 +379,46 @@
   50%       { transform: translateY(-8px); }
 }
 
+/* Case study live execution display */
+@keyframes caseNodeEnter { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes caseNodePulse { 50% { box-shadow: 0 0 0 9px rgba(255,79,0,0); } }
+@keyframes caseSignalFlow { from { transform: translateY(-6px); opacity: 0; } 25%, 75% { opacity: 1; } to { transform: translateY(20px); opacity: 0; } }
+@keyframes caseMetricEnter { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes caseOrbDrift { 50% { transform: translate3d(24px,-16px,0) scale(1.08); } }
+
+.case-study-display { background: #1A1012; border-radius: 20px; padding: clamp(24px,4vw,48px); position: relative; overflow: hidden; isolation: isolate; transition: opacity .8s ease, transform .8s ease; }
+.case-study-grid { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .04; pointer-events: none; }
+.case-study-layout { position: relative; display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 40px; align-items: start; }
+.case-study-eyebrow { font-size: 11px; font-weight: 600; color: #9A8E8E; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px; }
+.case-study-node { display: flex; align-items: center; gap: 12px; border: 1px solid; border-radius: 10px; padding: 12px 16px; animation: caseNodeEnter .65s cubic-bezier(.16,1,.3,1) both; transition: border-color .4s, background .4s, transform .4s, box-shadow .4s; }
+.case-study-node.is-active { transform: translateX(6px); box-shadow: 0 12px 30px rgba(255,79,0,.1); }
+.case-study-icon { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; transition: background .45s; }
+.case-study-icon.is-running { box-shadow: 0 0 0 0 rgba(255,79,0,.35); animation: caseNodePulse 1.5s ease-in-out infinite; }
+.case-study-label { font-size: 13px; font-weight: 600; color: #F7F5F0; flex: 1; }
+.case-study-status { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 5px; color: #9A8E8E; background: rgba(255,255,255,.06); transition: all .35s; }
+.case-study-status.is-running { color: #ff7a3d; background: rgba(255,79,0,.2); }
+.case-study-status.is-done { color: #4ade80; background: rgba(34,197,94,.15); }
+.case-study-connector { position: relative; width: 2px; height: 20px; margin-left: 22px; overflow: hidden; background: rgba(255,255,255,.08); transition: background .4s; }
+.case-study-connector.is-complete { background: #16a34a; }
+.case-study-connector span { position: absolute; left: -2px; width: 6px; height: 8px; border-radius: 99px; background: #ff6a27; box-shadow: 0 0 12px #ff4f00; animation: caseSignalFlow .9s linear infinite; }
+.case-study-metric { opacity: 0; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; animation: caseMetricEnter .7s cubic-bezier(.16,1,.3,1) both; transition: transform .3s, border-color .3s, background .3s; }
+.case-study-metric:hover { transform: translateX(-5px); border-color: rgba(255,79,0,.28); background: rgba(255,255,255,.065); }
+.case-study-metric p { font-size: 11px; color: #9A8E8E; margin: 0; }
+.case-study-metric strong { display: block; font-size: 26px; font-weight: 600; color: #F7F5F0; margin-top: 4px; letter-spacing: -.02em; }
+.case-study-metric > span { font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 8px; }
+.case-study-metric .positive { color: #4ade80; background: rgba(34,197,94,.12); }
+.case-study-metric .negative { color: #ff4f00; background: rgba(255,79,0,.12); }
+.case-study-timing { display: flex; align-items: center; gap: 8px; color: #F7F5F0; font-size: 13px; font-weight: 500; background: rgba(255,79,0,.08); border: 1px solid rgba(255,79,0,.2); border-radius: 10px; padding: 10px 14px; animation: zapPulse 2.4s ease-in-out infinite; }
+.case-study-timing svg, .case-study-timing strong { color: #ff4f00; }
+.case-study-orb { position: absolute; z-index: -1; width: 260px; height: 260px; border-radius: 50%; filter: blur(70px); pointer-events: none; animation: caseOrbDrift 8s ease-in-out infinite; }
+.case-study-orb--one { top: -130px; right: 10%; background: rgba(255,79,0,.2); }
+.case-study-orb--two { bottom: -180px; left: 25%; background: rgba(99,102,241,.13); animation-delay: -4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study-node, .case-study-node.is-active, .case-study-metric, .case-study-timing, .case-study-orb, .case-study-connector span { animation: none !important; transform: none !important; }
+  .case-study-node, .case-study-metric { opacity: 1; }
+}
+
 /* ─── Ultra-modern Light Theme Glassmorphism & UI Utilities ─────────────────────────── */
 .glass-panel {
   background: rgba(255, 255, 255, 0.92);
@@ -469,7 +509,6 @@
 .canvas-clean-bg {
   background-color: #f8fafc;
 }
-
 
 
 

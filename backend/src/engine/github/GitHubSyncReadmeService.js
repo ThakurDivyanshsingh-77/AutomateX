@@ -15,6 +15,11 @@ export const maskSecret = (secret) => {
 };
 
 /**
+ * In-memory cache for resolved commit identities (5 min TTL)
+ */
+const identityCache = new Map();
+
+/**
  * GitHub REST API Client & Profile README Synchronization Service
  * Uses native fetch for zero-dependency high performance.
  */
@@ -154,6 +159,151 @@ export class GitHubSyncReadmeService {
         totalPrivateRepos: data.total_private_repos || 0,
       },
     };
+  }
+
+  /**
+   * Resolve commit author and committer identity for the connected GitHub account.
+   * Priority:
+   *  1. Custom configured identity if explicitly set in config
+   *  2. In-memory cache (5-min TTL)
+   *  3. Verified email from GET /user/emails (primary or verified non-noreply)
+   *  4. Public email from GET /user
+   *  5. GitHub-provided noreply address: {id}+{login}@users.noreply.github.com
+   */
+  static async resolveGitHubCommitIdentity(token, options = {}) {
+    if (!token) {
+      const err = new Error('GitHub credential or token is required to resolve commit identity.');
+      err.code = 'GITHUB_CREDENTIAL_MISSING';
+      err.statusCode = 401;
+      throw err;
+    }
+
+    // 1. Check custom identity override if explicitly specified
+    if (options.commitIdentity === 'custom') {
+      const customEmail = (options.customAuthorEmail || options.authorEmail || '').trim();
+      if (!customEmail || !customEmail.includes('@')) {
+        const err = new Error('Custom commit identity selected, but a valid email was not provided.');
+        err.code = 'GITHUB_COMMIT_IDENTITY_INVALID';
+        err.statusCode = 400;
+        throw err;
+      }
+      const customName = (options.customAuthorName || options.authorName || '').trim() || customEmail.split('@')[0];
+      return {
+        login: options.username || customName,
+        name: customName,
+        email: customEmail,
+        source: 'custom_configured',
+      };
+    }
+
+    // 2. Check in-memory cache
+    const cacheKey = typeof token === 'string' ? token.slice(-16) : 'token';
+    const now = Date.now();
+    if (!options.bypassCache && identityCache.has(cacheKey)) {
+      const cached = identityCache.get(cacheKey);
+      if (cached && cached.expiresAt > now) {
+        return { ...cached.data };
+      }
+    }
+
+    // 3. Fetch authenticated user profile from GET /user
+    const { data: user } = await this.makeRequest('/user', { method: 'GET' }, token);
+    if (!user || !user.login) {
+      const err = new Error('Failed to retrieve GitHub user identity. The token may be invalid or expired.');
+      err.code = 'GITHUB_IDENTITY_NOT_FOUND';
+      err.statusCode = 401;
+      throw err;
+    }
+
+    const login = user.login;
+    const name = (user.name || login).trim();
+    let resolvedEmail = null;
+    let source = null;
+
+    // 4. Try fetching verified emails from GET /user/emails (requires user or user:email scope)
+    try {
+      const emailsRes = await this.makeRequest('/user/emails', { method: 'GET' }, token);
+      if (Array.isArray(emailsRes.data) && emailsRes.data.length > 0) {
+        // Look for primary verified email first (excluding noreply addresses)
+        const primaryVerified = emailsRes.data.find(
+          (e) => e.primary && e.verified && e.email && !e.email.includes('noreply.github.com')
+        );
+        if (primaryVerified) {
+          resolvedEmail = primaryVerified.email.trim();
+          source = 'github_verified_email';
+        } else {
+          // Any verified personal email
+          const anyVerified = emailsRes.data.find(
+            (e) => e.verified && e.email && !e.email.includes('noreply.github.com')
+          );
+          if (anyVerified) {
+            resolvedEmail = anyVerified.email.trim();
+            source = 'github_verified_email';
+          } else {
+            // Check for GitHub noreply email in the verified list
+            const noreplyInList = emailsRes.data.find(
+              (e) => e.verified && e.email && e.email.includes('noreply.github.com')
+            );
+            if (noreplyInList) {
+              resolvedEmail = noreplyInList.email.trim();
+              source = 'github_noreply';
+            }
+          }
+        }
+      }
+    } catch {
+      // Expected when token lacks user:email scope (e.g. 403 or 404). Silently fall through.
+    }
+
+    // 5. Fallback: Public email from GET /user
+    if (!resolvedEmail && user.email && typeof user.email === 'string' && user.email.includes('@')) {
+      resolvedEmail = user.email.trim();
+      source = 'github_public_email';
+    }
+
+    // 6. Fallback: Official GitHub-provided noreply email:
+    // Format: {id}+{login}@users.noreply.github.com (standard for GitHub accounts since 2017)
+    // Or {login}@users.noreply.github.com if user.id is unavailable.
+    // Commits authored with this email are guaranteed to be linked to user.login and count toward contributions graph.
+    if (!resolvedEmail && login) {
+      resolvedEmail = user.id
+        ? `${user.id}+${login}@users.noreply.github.com`
+        : `${login}@users.noreply.github.com`;
+      source = 'github_noreply';
+    }
+
+    // 7. If still no valid email can be determined, halt with an actionable error
+    if (!resolvedEmail) {
+      const err = new Error(
+        `Unable to resolve a valid GitHub commit author email for account "${login}". ` +
+        `Ensure your GitHub token has permission to read user identity, or configure a verified commit email.`
+      );
+      err.code = 'GITHUB_COMMIT_IDENTITY_FAILED';
+      err.statusCode = 422;
+      throw err;
+    }
+
+    const result = {
+      login,
+      name,
+      email: resolvedEmail,
+      source,
+    };
+
+    // Cache for 5 minutes
+    identityCache.set(cacheKey, {
+      data: result,
+      expiresAt: now + 5 * 60 * 1000,
+    });
+
+    return result;
+  }
+
+  /**
+   * Clear the in-memory commit identity cache (useful for testing or token refresh)
+   */
+  static clearIdentityCache() {
+    identityCache.clear();
   }
 
   /**
@@ -476,6 +626,9 @@ export class GitHubSyncReadmeService {
     const finalReadme = this.injectManagedSection(readmeData.content, generatedSection);
     const changed = this.hasContentChanged(readmeData.content, finalReadme);
 
+    // 7. Resolve commit identity for attribution preview
+    const commitAuthor = await this.resolveGitHubCommitIdentity(token, config);
+
     return {
       success: true,
       hasChanges: changed,
@@ -490,6 +643,12 @@ export class GitHubSyncReadmeService {
       currentReadme: readmeData.content,
       generatedSection,
       finalReadme,
+      commitAuthor: {
+        login: commitAuthor.login,
+        name: commitAuthor.name,
+        email: commitAuthor.email,
+        source: commitAuthor.source,
+      },
     };
   }
 
@@ -531,7 +690,7 @@ export class GitHubSyncReadmeService {
 
     // 1. Dry run preview to fetch, parse, and diff
     const preview = await this.previewSync(config, userId);
-    const { owner, repo, sha, finalReadme, projects, readmePath: path, branch: targetBranch, hasChanges } = preview;
+    const { owner, repo, sha, finalReadme, projects, readmePath: path, branch: targetBranch, hasChanges, commitAuthor } = preview;
 
     // 2. Handle dry run
     if (dryRun || autoCommit === false) {
@@ -544,6 +703,7 @@ export class GitHubSyncReadmeService {
         repository: `${owner}/${repo}`,
         repositoriesChecked: projects.length,
         projectsSynced: projects.length,
+        commitAuthor,
       };
     }
 
@@ -559,10 +719,11 @@ export class GitHubSyncReadmeService {
         branch: targetBranch,
         repositoriesChecked: projects.length,
         projectsSynced: projects.length,
+        commitAuthor,
       };
     }
 
-    // 4. Prepare GitHub Contents API commit payload
+    // 4. Prepare GitHub Contents API commit payload with correct author & committer attribution
     const base64Content = Buffer.from(finalReadme, 'utf-8').toString('base64');
     const msg = (commitMessage || 'docs: sync profile README').trim();
     const finalCommitMessage = msg.includes('[automatex-sync]')
@@ -573,9 +734,13 @@ export class GitHubSyncReadmeService {
       message: finalCommitMessage,
       content: base64Content,
       branch: targetBranch,
+      author: {
+        name: commitAuthor.name,
+        email: commitAuthor.email,
+      },
       committer: {
-        name: 'AutomateX Bot',
-        email: 'bot@automatex.dev',
+        name: commitAuthor.name,
+        email: commitAuthor.email,
       },
     };
 
@@ -603,6 +768,12 @@ export class GitHubSyncReadmeService {
         projectsSynced: projects.length,
         commitSha: data.commit?.sha || null,
         commitUrl: data.commit?.html_url || null,
+        commitAuthor: {
+          login: commitAuthor.login,
+          name: commitAuthor.name,
+          email: commitAuthor.email,
+          source: commitAuthor.source,
+        },
         commit: {
           sha: data.commit?.sha || null,
           url: data.commit?.html_url || null,
@@ -636,6 +807,12 @@ export class GitHubSyncReadmeService {
             projectsSynced: projects.length,
             commitSha: retryData.commit?.sha || null,
             commitUrl: retryData.commit?.html_url || null,
+            commitAuthor: {
+              login: commitAuthor.login,
+              name: commitAuthor.name,
+              email: commitAuthor.email,
+              source: commitAuthor.source,
+            },
             retriedOnConflict: true,
           };
         }
