@@ -26,10 +26,6 @@ import {
   ExternalLink,
   Bot,
   Terminal,
-  Database,
-  Mail,
-  MessageSquare,
-  FileSpreadsheet,
   Cpu,
   Flame,
   Wand2,
@@ -43,6 +39,7 @@ import {
   Gauge
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { IntegrationLogo } from '../components/ui/IntegrationLogo';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -769,22 +766,22 @@ export const Dashboard = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-2">
           {[
-            { name: 'Google Sheets', icon: FileSpreadsheet, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-            { name: 'Gmail OAuth', icon: Mail, color: 'text-rose-700 bg-rose-50 border-rose-200' },
-            { name: 'Discord Bot', icon: MessageSquare, color: 'text-brand-700 bg-orange-50 border-orange-200' },
-            { name: 'Slack API', icon: MessageSquare, color: 'text-amber-700 bg-amber-50 border-amber-200' },
-            { name: 'Webhooks Gateway', icon: Zap, color: 'text-cyan-700 bg-cyan-50 border-cyan-200' },
-            { name: 'MongoDB / SQL', icon: Database, color: 'text-indigo-700 bg-indigo-50 border-indigo-200' },
+            { name: 'Google Sheets', brand: 'sheets', color: 'bg-emerald-50 border-emerald-200' },
+            { name: 'Gmail OAuth', brand: 'gmail', color: 'bg-rose-50 border-rose-200' },
+            { name: 'Discord Bot', brand: 'discord', color: 'bg-indigo-50 border-indigo-200' },
+            { name: 'Slack API', brand: 'slack', color: 'bg-white border-slate-200' },
+            { name: 'Webhooks Gateway', brand: 'webhook', color: 'bg-cyan-50 border-cyan-200' },
+            { name: 'MongoDB / SQL', brand: 'mongodb', color: 'bg-green-50 border-green-200', badge: 'SQL' },
           ].map((app, i) => {
-            const Icon = app.icon;
             return (
               <div
                 key={i}
                 onClick={() => navigate('/credentials')}
                 className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-orange-300 transition-all cursor-pointer flex items-center gap-2.5 group"
               >
-                <div className={`p-2 rounded-xl border ${app.color} group-hover:scale-105 transition-transform`}>
-                  <Icon className="w-4 h-4" />
+                <div className={`relative p-2 rounded-xl border ${app.color} group-hover:scale-105 transition-transform`}>
+                  <IntegrationLogo name={app.brand} className="w-5 h-5" />
+                  {app.badge && <span className="absolute -right-1.5 -bottom-1 rounded bg-slate-800 px-1 text-[6px] font-black tracking-wide text-white">{app.badge}</span>}
                 </div>
                 <span className="text-xs font-bold text-slate-700 group-hover:text-brand-600 transition-colors truncate">
                   {app.name}
@@ -800,4 +797,3 @@ export const Dashboard = () => {
 };
 
 export default Dashboard;
-
