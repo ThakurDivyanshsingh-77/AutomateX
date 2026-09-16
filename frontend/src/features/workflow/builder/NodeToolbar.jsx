@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NODE_REGISTRY } from '../nodes/registry/nodeRegistry';
 import { getNodeColorTheme } from '../nodes/utils/nodeColorTheme';
 import { GripVertical, Layers, Search } from 'lucide-react';
+import { NodeServiceIcon } from '../../../components/ui/IntegrationLogo';
 
 export const NodeToolbar = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -185,7 +186,7 @@ export const NodeToolbar = () => {
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className={`p-1.5 rounded-lg border ${theme.iconBg} shrink-0 transition-transform group-hover:scale-105`}>
-                            <Icon className="w-3.5 h-3.5" />
+                            <NodeServiceIcon node={node} fallback={Icon} className="w-3.5 h-3.5" />
                           </div>
                           <div className="truncate">
                             <h5 className={`text-xs font-semibold text-slate-800 ${theme.textHover} transition-colors truncate`}>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NODE_REGISTRY } from '../nodeRegistry';
 import { Search, Plus, Layers } from 'lucide-react';
+import { NodeServiceIcon } from '../../../components/ui/IntegrationLogo';
 
 export const NodeSidebar = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,7 +88,7 @@ export const NodeSidebar = () => {
                 className="group flex items-start gap-3 p-2.5 bg-slate-900/80 border border-slate-800 rounded-xl hover:border-brand-500/50 hover:bg-slate-850 cursor-grab active:cursor-grabbing transition-all duration-200 shadow-sm"
               >
                 <div className={`p-2 rounded-lg border ${node.badgeColor} group-hover:scale-105 transition-transform`}>
-                  <Icon className="w-4 h-4" />
+                  <NodeServiceIcon node={node} fallback={Icon} className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">

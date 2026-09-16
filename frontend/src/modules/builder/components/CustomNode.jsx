@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { NODE_REGISTRY } from '../nodeRegistry';
 import { Zap, Play } from 'lucide-react';
+import { NodeServiceIcon } from '../../../components/ui/IntegrationLogo';
 
 export const CustomNode = memo(({ id, type, data, selected }) => {
   const meta = NODE_REGISTRY[type] || {
@@ -45,7 +46,7 @@ export const CustomNode = memo(({ id, type, data, selected }) => {
       <div className="flex items-center justify-between p-3 border-b border-slate-800/60 bg-slate-900/50 rounded-t-xl">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className={`p-1.5 rounded-lg border ${meta.badgeColor}`}>
-            <IconComponent className="w-4 h-4" />
+            <NodeServiceIcon node={meta} fallback={IconComponent} className="w-4 h-4" />
           </div>
           <div className="truncate">
             <h4 className="text-xs font-semibold text-slate-200 truncate">
