@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">AutomateX animated workflow</title>
+  <desc id="desc">An animated event travels from a webhook through a decision and AI step to completed app actions.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#171113"/><stop offset="1" stop-color="#261b1e"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".3"/></filter>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0v32" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern>
+  </defs>
+  <rect width="1200" height="430" rx="24" fill="url(#bg)"/>
+  <rect width="1200" height="430" rx="24" fill="url(#grid)"/>
+
+  <g font-family="Inter,Segoe UI,Arial,sans-serif">
+    <g transform="translate(42 36)">
+      <path fill="#ed0000" d="M0 25 13 2h9l5 8-5 8-4-7-11 19h5l8-13 7 12-4 5-4-6-6 10H4L0 25Z"/>
+      <path fill="#888" d="m32 17 7 13-3 6H22l2-6h9l-4-7 3-6Z"/>
+      <text x="49" y="25" fill="#fff" font-size="18" font-weight="700">AutomateX</text>
+    </g>
+    <text x="42" y="105" fill="#fff" font-size="28" font-weight="650">One event. A complete workflow.</text>
+    <text x="42" y="132" fill="#aa9da0" font-size="14">Watch data move through a production automation in real time.</text>
+
+    <path d="M200 253H382M514 253H696M828 253H1010" fill="none" stroke="#55484b" stroke-width="3" stroke-linecap="round"/>
+    <path d="M200 253H382M514 253H696M828 253H1010" fill="none" stroke="#ff4f00" stroke-width="3" stroke-linecap="round" stroke-dasharray="12 170" filter="url(#glow)">
+      <animate attributeName="stroke-dashoffset" values="182;0" dur="2.2s" repeatCount="indefinite"/>
+    </path>
+
+    <g filter="url(#shadow)">
+      <g transform="translate(70 195)">
+        <rect width="130" height="116" rx="15" fill="#302528" stroke="#57494c"/>
+        <rect x="16" y="16" width="34" height="34" rx="9" fill="#63301f"/><path d="M26 33h14m-4-5 5 5-5 5" fill="none" stroke="#ff7540" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="16" y="75" fill="#fff" font-size="13" font-weight="700">Webhook</text><text x="16" y="96" fill="#9f9195" font-size="10">Order received</text>
+      </g>
+      <g transform="translate(383 195)">
+        <rect width="130" height="116" rx="15" fill="#302528" stroke="#57494c"/>
+        <rect x="16" y="16" width="34" height="34" rx="9" fill="#3d344e"/><path d="M27 25v16m0-8h11m0 0-4-4m4 4-4 4" fill="none" stroke="#b9a1ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="16" y="75" fill="#fff" font-size="13" font-weight="700">Decision</text><text x="16" y="96" fill="#9f9195" font-size="10">Route priority</text>
+      </g>
+      <g transform="translate(697 195)">
+        <rect width="130" height="116" rx="15" fill="#302528" stroke="#57494c"/>
+        <rect x="16" y="16" width="34" height="34" rx="9" fill="#223b35"/><path d="m33 23 2.5 6.5L42 32l-6.5 2.5L33 41l-2.5-6.5L24 32l6.5-2.5L33 23Z" fill="none" stroke="#68d3a2" stroke-width="1.7"/>
+        <text x="16" y="75" fill="#fff" font-size="13" font-weight="700">AI enrich</text><text x="16" y="96" fill="#9f9195" font-size="10">Generate summary</text>
+      </g>
+      <g transform="translate(1010 195)">
+        <rect width="130" height="116" rx="15" fill="#302528" stroke="#57494c"/>
+        <rect x="16" y="16" width="34" height="34" rx="9" fill="#24364a"/><path d="M24 27h18v12H24Zm0 0 9 7 9-7" fill="none" stroke="#79b4f4" stroke-width="1.8" stroke-linejoin="round"/>
+        <text x="16" y="75" fill="#fff" font-size="13" font-weight="700">Notify team</text><text x="16" y="96" fill="#9f9195" font-size="10">Email + Discord</text>
+      </g>
+    </g>
+
+    <circle r="7" fill="#ff4f00" filter="url(#glow)">
+      <animateMotion dur="6s" repeatCount="indefinite" path="M200 253H382H514H696H828H1010" keyTimes="0;.2;.35;.55;.7;1" calcMode="linear"/>
+    </circle>
+
+    <g transform="translate(42 374)">
+      <circle cx="7" cy="7" r="7" fill="#173e2e"/><circle cx="7" cy="7" r="3" fill="#55d493"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" repeatCount="indefinite"/></circle>
+      <text x="22" y="11" fill="#a99ca0" font-size="12">Workflow running</text>
+      <text x="1040" y="11" fill="#a99ca0" font-size="12">4 steps · 1.8s</text>
+    </g>
+  </g>
+</svg>
