@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">AutomateX integrations</title><desc id="desc">Animated data travels between connected applications and the AutomateX workflow engine.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f7f5f0"/><stop offset="1" stop-color="#eee9e2"/></linearGradient>
+    <filter id="s" x="-30%" y="-40%" width="160%" height="180%"><feDropShadow dy="8" stdDeviation="9" flood-color="#321b20" flood-opacity=".12"/></filter>
+    <filter id="g" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1200" height="360" rx="24" fill="url(#bg)"/>
+  <g font-family="Inter,Segoe UI,Arial,sans-serif">
+    <text x="42" y="55" fill="#1a1012" font-size="24" font-weight="700">Everything connected. Data always moving.</text>
+    <text x="42" y="82" fill="#75686b" font-size="13">Bring triggers, data, decisions, and destinations into one dependable flow.</text>
+
+    <g fill="none" stroke="#cfc6c0" stroke-width="2">
+      <path d="M218 178C340 178 350 178 480 178"/><path d="M720 178C850 178 860 178 982 178"/>
+      <path d="M218 178C340 178 365 266 480 266"/><path d="M720 266C835 266 860 178 982 178"/>
+      <path d="M218 178C340 178 365 90 480 90"/><path d="M720 90C835 90 860 178 982 178"/>
+    </g>
+
+    <g filter="url(#s)">
+      <g transform="translate(58 128)"><rect width="160" height="100" rx="18" fill="#fff" stroke="#ded6d0"/><circle cx="36" cy="36" r="18" fill="#fff0e9"/><path d="M28 36h16m-5-5 5 5-5 5" fill="none" stroke="#ff4f00" stroke-width="2" stroke-linecap="round"/><text x="22" y="75" fill="#1a1012" font-size="13" font-weight="700">Webhook</text><text x="22" y="91" fill="#94878a" font-size="9">Incoming event</text></g>
+      <g transform="translate(480 40)"><rect width="240" height="276" rx="22" fill="#211719" stroke="#3b2c30"/><path fill="#ed0000" d="M96 51 118 13h15l8 14-7 11-7-12-21 37h5l16-27 12 20-7 8-5-8-12 20h-13L96 51Z"/><path fill="#777" d="m146 37 12 21-5 9h-24l4-9h15l-6-12 4-9Z"/><text x="120" y="104" fill="#fff" text-anchor="middle" font-size="17" font-weight="700">AutomateX engine</text><text x="120" y="128" fill="#a99da0" text-anchor="middle" font-size="10">Validate · Transform · Route</text><rect x="30" y="154" width="180" height="1" fill="#49393d"/><g transform="translate(35 178)"><circle cx="8" cy="8" r="8" fill="#1d4936"/><path d="m4 8 3 3 5-6" fill="none" stroke="#67d49e" stroke-width="1.7"/><text x="24" y="12" fill="#d9ced1" font-size="11">Schema validated</text></g><g transform="translate(35 213)"><circle cx="8" cy="8" r="8" fill="#553220"/><path d="M4 8h8M9 4l4 4-4 4" fill="none" stroke="#ff7a42" stroke-width="1.5"/><text x="24" y="12" fill="#d9ced1" font-size="11">Route selected</text></g></g>
+      <g transform="translate(982 128)"><rect width="160" height="100" rx="18" fill="#fff" stroke="#ded6d0"/><circle cx="36" cy="36" r="18" fill="#eaf3ff"/><path d="M28 31h16v12H28Zm0 0 8 6 8-6" fill="none" stroke="#4285f4" stroke-width="1.7"/><text x="22" y="75" fill="#1a1012" font-size="13" font-weight="700">Your apps</text><text x="22" y="91" fill="#94878a" font-size="9">Email · CRM · Chat</text></g>
+    </g>
+
+    <g fill="#ff4f00" filter="url(#g)">
+      <circle r="5"><animateMotion dur="3.2s" repeatCount="indefinite" path="M218 178C340 178 350 178 480 178"/></circle>
+      <circle r="5"><animateMotion begin=".7s" dur="3.2s" repeatCount="indefinite" path="M720 90C835 90 860 178 982 178"/></circle>
+      <circle r="5"><animateMotion begin="1.5s" dur="3.2s" repeatCount="indefinite" path="M218 178C340 178 365 266 480 266"/></circle>
+      <circle r="5"><animateMotion begin="2.1s" dur="3.2s" repeatCount="indefinite" path="M720 266C835 266 860 178 982 178"/></circle>
+    </g>
+  </g>
+</svg>

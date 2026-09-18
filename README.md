@@ -26,6 +26,10 @@ AutomateX is a full-stack workflow automation platform for building production-r
 - **Production visibility** through execution timelines, performance inspection, replay, and a dead-letter queue.
 - **Workflow lifecycle** with drafts, publishing, version history, comparison, and restoration.
 
+### Connect the tools your team already uses
+
+![AutomateX integrations animation](docs/automatex-integrations.svg)
+
 ## How it works
 
 ```text
@@ -36,6 +40,10 @@ Trigger → Transform or decide → Call apps and services → Inspect every res
 2. Add actions and logic on the drag-and-drop canvas.
 3. Map data between steps with dynamic expressions.
 4. Test, publish, and monitor the workflow from the same workspace.
+
+### Built to recover when services fail
+
+![AutomateX reliability animation](docs/automatex-reliability.svg)
 
 ## Technology
 

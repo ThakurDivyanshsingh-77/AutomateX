@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="310" viewBox="0 0 1200 310" role="img" aria-labelledby="title desc">
+  <title id="title">AutomateX reliability lifecycle</title><desc id="desc">An animated execution fails, retries, recovers, and completes while remaining observable.</desc>
+  <defs><linearGradient id="bg" x2="1"><stop stop-color="#18251f"/><stop offset="1" stop-color="#10221b"/></linearGradient><filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <rect width="1200" height="310" rx="24" fill="url(#bg)"/>
+  <g font-family="Inter,Segoe UI,Arial,sans-serif">
+    <text x="42" y="50" fill="#fff" font-size="24" font-weight="700">Failure is a state, not a dead end.</text>
+    <text x="42" y="76" fill="#9bb0a6" font-size="13">Automatic retries and full execution history keep every run accountable.</text>
+    <path d="M132 178H1055" stroke="#3d554a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M132 178H1055" stroke="#55d493" stroke-width="4" stroke-linecap="round" stroke-dasharray="16 907" filter="url(#glow)"><animate attributeName="stroke-dashoffset" from="923" to="0" dur="4.5s" repeatCount="indefinite"/></path>
+
+    <g text-anchor="middle">
+      <g transform="translate(132 178)"><circle r="30" fill="#244437" stroke="#4e806a"/><path d="m-9 0 6 6 12-14" fill="none" stroke="#62d9a1" stroke-width="3" stroke-linecap="round"/><text y="55" fill="#fff" font-size="12" font-weight="700">Started</text><text y="73" fill="#8fa59a" font-size="9">Event accepted</text></g>
+      <g transform="translate(360 178)"><circle r="30" fill="#4b2b29" stroke="#81504c"/><path d="m-8-8 16 16m0-16-16 16" stroke="#ff8177" stroke-width="3" stroke-linecap="round"/><circle r="35" fill="none" stroke="#ff8177" stroke-opacity=".2"><animate attributeName="r" values="32;43;32" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0;.8" dur="2s" repeatCount="indefinite"/></circle><text y="55" fill="#fff" font-size="12" font-weight="700">Failed</text><text y="73" fill="#8fa59a" font-size="9">Service timeout</text></g>
+      <g transform="translate(590 178)"><circle r="30" fill="#4b4126" stroke="#89784b"/><path d="M8-5A11 11 0 1 0 8 6M8-5v-8m0 8h-8" fill="none" stroke="#ffd166" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="2s" repeatCount="indefinite"/></path><text y="55" fill="#fff" font-size="12" font-weight="700">Retrying</text><text y="73" fill="#8fa59a" font-size="9">Backoff · attempt 2</text></g>
+      <g transform="translate(820 178)"><circle r="30" fill="#243b4b" stroke="#4c7188"/><path d="M-10 5-3-3l7 6 8-10" fill="none" stroke="#77bce5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text y="55" fill="#fff" font-size="12" font-weight="700">Recovered</text><text y="73" fill="#8fa59a" font-size="9">Service healthy</text></g>
+      <g transform="translate(1055 178)"><circle r="30" fill="#244437" stroke="#4e806a"/><path d="m-9 0 6 6 12-14" fill="none" stroke="#62d9a1" stroke-width="3" stroke-linecap="round"/><text y="55" fill="#fff" font-size="12" font-weight="700">Completed</text><text y="73" fill="#8fa59a" font-size="9">1.8s total</text></g>
+    </g>
+    <circle r="7" fill="#fff" filter="url(#glow)"><animateMotion dur="4.5s" repeatCount="indefinite" path="M132 178H1055"/></circle>
+  </g>
+</svg>
