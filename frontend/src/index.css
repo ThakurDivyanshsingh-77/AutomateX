@@ -510,8 +510,77 @@
   background-color: #f8fafc;
 }
 
+/* ─── Auth Experience Motion & Grid Utilities ────────────────────────────── */
+.auth-grid-pattern {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.22) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
 
+@keyframes authFloatA {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1.2deg); }
+}
 
+@keyframes authFloatB {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(12px) rotate(-1.5deg); }
+}
 
+@keyframes authOrbGlow {
+  0%, 100% { opacity: 0.35; transform: scale(1) translate3d(0, 0, 0); }
+  50% { opacity: 0.65; transform: scale(1.12) translate3d(20px, -15px, 0); }
+}
 
+@keyframes authShimmerSweep {
+  0% { transform: translateX(-120%) skewX(-15deg); }
+  100% { transform: translateX(220%) skewX(-15deg); }
+}
 
+@keyframes authPipelinePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+  50% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+}
+
+@keyframes authSignalFlow {
+  0% { transform: translateY(-8px); opacity: 0; }
+  25%, 75% { opacity: 1; }
+  100% { transform: translateY(24px); opacity: 0; }
+}
+
+.animate-auth-float-a {
+  animation: authFloatA 6s ease-in-out infinite;
+}
+
+.animate-auth-float-b {
+  animation: authFloatB 7.5s ease-in-out infinite;
+}
+
+.animate-auth-orb-1 {
+  animation: authOrbGlow 8s ease-in-out infinite;
+}
+
+.animate-auth-orb-2 {
+  animation: authOrbGlow 10s ease-in-out infinite -4s;
+}
+
+.btn-shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: skewX(-20deg);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.btn-shimmer-sweep:hover::after {
+  opacity: 1;
+  animation: authShimmerSweep 1.2s ease-in-out infinite;
+}
