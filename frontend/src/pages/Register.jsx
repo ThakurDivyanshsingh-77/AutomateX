@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, LockKeyhole, Mail, User, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, LockKeyhole, Mail, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
+import { BrandLogo } from '../components/common/BrandLogo';
 
 export const Register = () => {
   const { register: createAccount, loading } = useAuth();
@@ -16,13 +17,13 @@ export const Register = () => {
   const submit=async data=>{if(!terms)return toast.error('Please accept the terms to continue.');const res=await createAccount(data);if(res.success)navigate('/dashboard',{replace:true});};
   return <main className="auth-page">
     <section className="auth-story auth-story-register">
-      <Link to="/" className="auth-brand auth-reveal"><span><Zap size={17}/></span>AutomateX</Link>
+      <Link to="/" className="auth-brand auth-reveal"><BrandLogo/>AutomateX</Link>
       <div className="auth-story-copy auth-reveal auth-delay-1"><p>Start with a blank canvas.</p><h2>Make busywork<br/>run itself.</h2><div>Connect the tools you already use and build dependable workflows without waiting on engineering.</div></div>
       <div className="auth-quote auth-reveal auth-delay-2"><blockquote>“Our onboarding workflow went from a two-day handoff to twelve minutes.”</blockquote><div><i>MK</i><p><strong>Maya Kapoor</strong><span>Operations lead, Northstar</span></p></div></div>
       <div className="auth-metrics auth-reveal auth-delay-3"><div><strong>2.4m</strong><span>tasks this week</span></div><div><strong>99.99%</strong><span>platform uptime</span></div><div><strong>&lt; 1 min</strong><span>to first workflow</span></div></div>
     </section>
     <section className="auth-form-side auth-register-side">
-      <div className="auth-mobile-top"><Link to="/" className="auth-brand"><span><Zap size={16}/></span>AutomateX</Link></div>
+      <div className="auth-mobile-top"><Link to="/" className="auth-brand"><BrandLogo/>AutomateX</Link></div>
       <div className="auth-form-wrap auth-reveal">
         <Link to="/" className="auth-back"><ArrowLeft/>Back to home</Link>
         <header className="auth-form-header"><span>Free forever plan</span><h1>Create your workspace</h1><p>No credit card. Set up takes less than a minute.</p></header>

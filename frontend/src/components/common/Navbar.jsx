@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Flame, LogOut, Menu, X, Plus, Sparkles, Shield, User, ExternalLink, Activity } from 'lucide-react';
+import { LogOut, Menu, X, Plus, Sparkles, Shield, User, ExternalLink, Activity } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 export const Navbar = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -23,9 +24,7 @@ export const Navbar = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
         )}
 
         <Link to="/dashboard" className="flex items-center gap-3 group">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform duration-200">
-            <Flame className="w-5 h-5 fill-white" />
-          </div>
+          <BrandLogo className="w-9 h-9 object-contain group-hover:scale-105 transition-transform duration-200" />
           <div className="flex items-center gap-2">
             <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
               AutomateX

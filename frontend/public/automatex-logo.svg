@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 375">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 375" role="img" aria-labelledby="title">
+  <title id="title">AutomateX logo</title>
   <path fill="#ed0000" d="M6 309 166 26h69l37 65-34 55-37-62L72 312h29l101-170 69 116-35 42-34-49-73 117H38L6 309Z"/>
   <path fill="#4a4a4a" d="m322 185 73 128-32 55H216l23-55h94l-39-73 28-55Z"/>
 </svg>

@@ -3,6 +3,7 @@ import {
   Zap, GitBranch, Cpu, Mail, CheckCircle2,
   Play, Settings, Clock, BarChart3, ArrowRight, Circle,
 } from 'lucide-react';
+import { BrandLogo } from '../../../components/common/BrandLogo';
 
 /* ── Mini workflow nodes ──────────────────────────────────────────────── */
 const NODES = [
@@ -208,9 +209,7 @@ export function HeroProductPreview() {
         >
           {/* App logo in sidebar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px', marginBottom: 16 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 6, background: '#ff4f00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap className="w-3.5 h-3.5 fill-white text-white" />
-            </div>
+            <BrandLogo className="w-6 h-6 object-contain" />
             <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1012' }}>AutomateX</span>
           </div>
 

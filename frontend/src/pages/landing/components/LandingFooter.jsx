@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Github, Twitter, MessageSquare, ArrowUpRight } from 'lucide-react';
+import { Github, Twitter, MessageSquare, ArrowUpRight } from 'lucide-react';
+import { BrandLogo } from '../../../components/common/BrandLogo';
 
 const COLS = [
   {
@@ -74,9 +75,7 @@ export function LandingFooter() {
           {/* Brand column */}
           <div style={{ gridColumn: 'span 1' }}>
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', marginBottom: 16 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: '#ff4f00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Zap className="w-4 h-4 fill-white text-white" />
-              </div>
+              <BrandLogo className="w-8 h-8 object-contain" />
               <span style={{ fontSize: 16, fontWeight: 700, color: '#F7F5F0' }}>AutomateX</span>
             </Link>
             <p style={{ fontSize: 13, color: '#9A8E8E', lineHeight: 1.6, margin: '0 0 16px', maxWidth: 200 }}>

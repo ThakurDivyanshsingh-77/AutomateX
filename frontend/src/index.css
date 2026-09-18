@@ -589,7 +589,7 @@
 .auth-story{position:relative;overflow:hidden;display:flex;min-height:100svh;flex-direction:column;padding:42px clamp(38px,5vw,76px);background:#201719;color:#fff}
 .auth-story:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 76%)}
 .auth-brand{position:relative;z-index:2;display:inline-flex;width:max-content;align-items:center;gap:10px;color:inherit;font-size:17px;font-weight:750;letter-spacing:-.3px;text-decoration:none}
-.auth-brand>span{display:grid;width:32px;height:32px;place-items:center;border-radius:9px;background:#ff4f00;color:#fff}.auth-brand svg{width:17px;height:17px}
+.auth-brand>img{display:block;width:37px;height:37px;object-fit:contain}
 .auth-story-copy{position:relative;z-index:2;margin:auto 0 32px;max-width:560px}.auth-story-copy>p{margin:0 0 18px;color:#ff8752;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.auth-story-copy h2{margin:0 0 22px;font-size:clamp(40px,4.6vw,66px);font-weight:520;line-height:1.02;letter-spacing:-.045em}.auth-story-copy>div{max-width:500px;color:#c9bec0;font-size:17px;line-height:1.7}
 .auth-story footer{position:relative;z-index:2;margin-top:26px;color:#a99ca0;font-size:12px}.auth-story footer strong{color:#fff}
 .auth-flow{position:relative;z-index:2;width:min(100%,480px);padding:14px;border:1px solid #493c3f;border-radius:18px;background:#2a2022;box-shadow:0 24px 60px rgba(0,0,0,.2)}

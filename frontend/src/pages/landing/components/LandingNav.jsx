@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { BrandLogo } from '../../../components/common/BrandLogo';
 
 const NAV_LINKS = [
   { label: 'Features', href: '/features' },
@@ -50,12 +51,7 @@ export function LandingNav() {
 
           {/* ── Brand ─────────────────────────────────── */}
           <Link to="/" className="flex items-center gap-2.5 shrink-0" style={{ textDecoration: 'none' }}>
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: '#ff4f00' }}
-            >
-              <Zap className="w-4 h-4 fill-white text-white" />
-            </div>
+            <BrandLogo className="w-9 h-9 object-contain" />
             <span style={{ fontWeight: 700, fontSize: 17, color: '#1A1012', letterSpacing: '-0.3px' }}>
               AutomateX
             </span>
