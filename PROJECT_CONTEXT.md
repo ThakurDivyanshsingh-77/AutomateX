@@ -12,6 +12,19 @@ The **AutomateX Workflow Automation Platform** is an enterprise-grade, modular, 
 
 ## 📅 Platform Milestones & Completed Phases
 
+### **Phase 27 Complete — GitHub Daily Activity Commit Engine & Scheduler Overhaul** — ✅ COMPLETED
+- **Root-Cause Fixes for Cron Scheduling, Published Version Loading, & GitHub Daily Activity Commit**:
+  - **Stale Execution Deadlock Resolution in `CronScheduler.js`**: Replaced unbounded active execution count checks with a 30-minute staleness window (`startedAt >= thirtyMinutesAgo`), preventing lingering or killed zombie executions from permanently blocking future scheduled runs.
+  - **Published Snapshot Execution in `ExecutionWorker.js`**: Background workers now resolve `PublishManager.getPublishedDefinition(workflowId)` when `workflow.publishedVersion` is present, guaranteeing that scheduled cron jobs execute the immutable published snapshot rather than unsaved canvas drafts.
+  - **Flexible Cron Key & Timezone Propagation**: Extended `CronScheduler` to recognize fallback config keys (`cronExpression`, `expression`, `cron`, `schedule`) and propagate workflow trigger timezone (e.g. `Asia/Kolkata`) into execution trigger metadata.
+  - **Safe Repository URL Normalization**: Added robust `normalizeRepository()` in `GitHubDailyActivityService.js` handling full URLs (`https://github.com/owner/repo`), SSH URLs (`git@github.com:owner/repo`), trailing slashes, and `.git` suffixes.
+  - **Credential Resolution Resilience**: Augmented token resolution in `GitHubSyncReadmeService.js` to support `{ connectionUri }`, `{ value }`, `{ pat }`, `{ personalAccessToken }`, `{ githubToken }`, and environment variable fallbacks without secret leakage.
+  - **Strict Deduplication & Conflict Retries**: Replaced loose substring checks in `hasActivityForDate()` with strict line-level regex (`/^\s*[-*•]?\s*YYYY-MM-DD\b/m`). Added commit SHA verification and automated 409 conflict retries.
+  - **Commit Attribution Integrity**: Authenticated commit author and committer metadata derived dynamically via GitHub API profile (`name` and public/noreply email) to guarantee GitHub contribution graph attribution.
+  - **Phase 14 & Phase 2 Diagnostic Structured Logging**: Added safe, secret-free diagnostic logs (`[GitHubDailyActivity]` and `[AutomateX Scheduler]`) tracking execution IDs, timestamps, local dates, deduplication keys, and commit SHAs.
+  - **Structured Error Handling**: Standardized error payloads (`errorCode: 'GITHUB_CREDENTIAL_ERROR'`) with zero token leakage across API routes, workers, and engines.
+- **Verification**: 20/20 comprehensive automated test suite (`test_github_daily_activity_commit_comprehensive.js`) passing, existing 11/11 README sync tests passing, live GitHub commit (`3c8590a3cfecc3a03503d89232ed0d813b30ef37`) verified on GitHub with author attribution, and live cron deduplication verified.
+
 ### **Phase 26 Complete — Authentication UX & Dynamic Motion Overhaul** — ✅ COMPLETED
 - **Architectural & Motion Canvas Upgrade**:
   - **`auth-grid-pattern` & Ambient Mesh**: High-contrast architectural dot-matrix canvas with multi-layered glowing brand orbs (`animate-auth-orb-1`, `animate-auth-orb-2`) with organic floating trajectories.
