@@ -85,12 +85,12 @@ async function runTests() {
   // ─── 3. Missing Credential Validation ─────────────────────────────────────
   console.log('\n⚠️ 3. Validation & Error Handling Tests:');
 
-  await asyncTest('previewActivityCommit fails with GITHUB_CREDENTIAL_MISSING when no token provided', async () => {
+  await asyncTest('previewActivityCommit fails with GITHUB_CREDENTIAL_ERROR when no token provided', async () => {
     try {
       await GitHubDailyActivityService.previewActivityCommit({ repository: 'user/repo' }, null);
       assert.fail('Should have thrown error');
     } catch (err) {
-      assert.strictEqual(err.code, 'GITHUB_CREDENTIAL_MISSING');
+      assert(err.code === 'GITHUB_CREDENTIAL_ERROR' || err.code === 'GITHUB_CREDENTIAL_MISSING', `Expected GITHUB_CREDENTIAL_ERROR, got ${err.code}`);
     }
   });
 

@@ -28,14 +28,32 @@ export class GitHubSyncReadmeService {
    * Resolve token from credential ID or direct string
    */
   static async resolveToken(credentialId, userId = null) {
-    if (!credentialId) return null;
+    if (!credentialId) {
+      if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN.trim();
+      return null;
+    }
     try {
       const secret = await credentialService.getCredentialById(credentialId, userId);
-      if (!secret) return null;
+      if (!secret) return process.env.GITHUB_TOKEN ? process.env.GITHUB_TOKEN.trim() : null;
       if (typeof secret === 'string') return secret.trim();
-      return (secret.token || secret.accessToken || secret.apiKey || secret.secret || '').trim();
+      const resolved = (
+        secret.token ||
+        secret.accessToken ||
+        secret.apiKey ||
+        secret.secret ||
+        secret.connectionUri ||
+        secret.value ||
+        secret.personalAccessToken ||
+        secret.pat ||
+        secret.githubToken ||
+        ''
+      ).trim();
+      if (resolved) return resolved;
+      if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN.trim();
+      return null;
     } catch (err) {
       console.warn(`[GitHubSyncReadmeService] ⚠️ Failed to resolve credential (${credentialId}): ${err.message}`);
+      if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN.trim();
       return null;
     }
   }

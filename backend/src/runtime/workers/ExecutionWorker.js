@@ -26,7 +26,19 @@ export class ExecutionWorker {
       throw new Error(`Workflow ${workflowId} not found`);
     }
 
-    const definition = workflow?.definition || jobData.definition;
+    let definition = jobData.definition;
+    if (workflow && workflow.publishedVersion) {
+      try {
+        const { PublishManager } = await import('../../services/PublishManager.js');
+        const publishedDef = await PublishManager.getPublishedDefinition(workflowId);
+        definition = publishedDef || workflow.definition || jobData.definition;
+      } catch {
+        definition = workflow.definition || jobData.definition;
+      }
+    } else {
+      definition = workflow?.definition || jobData.definition;
+    }
+
     if (!definition) {
       throw new Error(`Workflow definition missing for execution ${executionId}`);
     }

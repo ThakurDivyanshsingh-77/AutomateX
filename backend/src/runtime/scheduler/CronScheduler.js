@@ -103,7 +103,7 @@ export class CronScheduler {
     }
 
     const config = cronNode.config || cronNode.data?.config || {};
-    const cronExpression = (config.cronExpression || '0 9 * * *').trim();
+    const cronExpression = (config.cronExpression || config.expression || config.cron || config.schedule || '0 9 * * *').trim();
     const timezone = config.timezone || 'UTC';
     const enabled = config.enabled !== false;
 
@@ -198,24 +198,43 @@ export class CronScheduler {
         return;
       }
 
-      // 2. Overlap Protection: Check if a previous execution is currently running
+      // Load published snapshot definition to prevent executing stale / uncommitted draft changes
+      try {
+        const { PublishManager } = await import('../../services/PublishManager.js');
+        const publishedDef = await PublishManager.getPublishedDefinition(idStr);
+        if (publishedDef) {
+          workflow.definition = publishedDef;
+        }
+      } catch (pubErr) {
+        // Fallback to workflow.definition
+      }
+
+      // 2. Overlap Protection: Check if an active execution is currently running
+      // Ignore stale stuck executions older than 30 minutes to prevent permanent cron deadlock
       if (mongoose.connection.readyState === 1) {
+        const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
         const runningCount = await Execution.countDocuments({
           workflow: workflow._id,
           status: { $in: ['running', 'queued', 'pending'] },
+          startedAt: { $gte: thirtyMinutesAgo },
         });
 
         if (runningCount > 0) {
-          console.warn(`⏰ [CronScheduler]: [Overlap Protection] Workflow "${workflow.name}" is currently executing (${runningCount} active). Skipping this run.`);
+          console.warn(`⏰ [CronScheduler]: [Overlap Protection] Workflow "${workflow.name}" is currently executing (${runningCount} active in last 30m). Skipping this run.`);
           return;
         }
       }
+
+      const cronNode = (workflow.definition?.nodes || []).find((n) => n.type === 'cron');
+      const nodeConfig = cronNode?.config || cronNode?.data?.config || {};
+      const effectiveTz = job?.timezone || nodeConfig.timezone || 'UTC';
 
       // 3. Trigger execution through RuntimeManager (Routes through Queue → Worker → History)
       const triggerPayload = {
         cronEvent: true,
         source: 'scheduler',
         timestamp: new Date().toISOString(),
+        timezone: effectiveTz,
       };
 
       const result = await RuntimeManager.triggerExecution('cron', workflow, triggerPayload);
@@ -231,6 +250,21 @@ export class CronScheduler {
           job.nextRun = interval.next().toDate();
         } catch (e) {}
       }
+
+      // Phase 2: Structured Scheduler Output
+      const versionTag = workflow.publishedVersion || workflow.currentVersion || (workflow.version ? `v${workflow.version}` : 'v1.0.0');
+      const cronExprStr = job?.cronExpression || nodeConfig.cronExpression || nodeConfig.expression || '0 9 * * *';
+      const actualRunIso = new Date().toISOString();
+      const nextRunIso = job?.nextRun ? job.nextRun.toISOString() : 'N/A';
+
+      console.log(`[AutomateX Scheduler]
+Workflow ID: ${idStr}
+Workflow Version: ${versionTag}
+Cron: ${cronExprStr}
+Timezone: ${effectiveTz}
+Next Run: ${nextRunIso}
+Actual Run: ${actualRunIso}
+Execution ID: ${result.executionId}`);
 
       console.log(`⏰ [CronScheduler]: Scheduled execution enqueued cleanly (Execution ID: ${result.executionId})`);
     } catch (err) {

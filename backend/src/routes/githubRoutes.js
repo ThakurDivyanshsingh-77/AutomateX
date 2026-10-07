@@ -175,6 +175,7 @@ router.post('/activity/preview', optionalAuth, async (req, res, next) => {
   } catch (err) {
     return res.status(err.statusCode || 500).json({
       success: false,
+      errorCode: err.code || err.errorCode || 'GITHUB_ERROR',
       message: err.message,
     });
   }
@@ -194,6 +195,7 @@ router.post('/activity/apply', optionalAuth, async (req, res, next) => {
   } catch (err) {
     return res.status(err.statusCode || 500).json({
       success: false,
+      errorCode: err.code || err.errorCode || 'GITHUB_ERROR',
       message: err.message,
     });
   }
