@@ -148,4 +148,4 @@ Health check: `GET /health`
 
 ## License
 
-AutomateX is available under the [MIT License](LICENSE).
+AutomateX is available under the [MIT License](LICENSE)
